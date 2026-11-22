@@ -6,7 +6,7 @@
   <title>Edirne Sayaç Saha Rehberi</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { background-color: #0b1120; color: #f8fafc; min-height: 100vh; padding-bottom: 48px; }
+    body { background-color: #0b1120; color: #f8fafc; min-height: 100vh; padding-bottom: 56px; }
 
     .header {
       background: linear-gradient(135deg, #101c3d 0%, #0d162f 100%);
@@ -52,7 +52,7 @@
       margin-bottom: 12px;
     }
 
-    .btn-toggle-form {
+    .form-header-title {
       width: 100%;
       background-color: #172554;
       border: 1px solid #2563eb;
@@ -61,7 +61,6 @@
       font-weight: 700;
       padding: 11px 14px;
       border-radius: 12px;
-      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -71,9 +70,8 @@
       margin-top: 12px;
       padding-top: 12px;
       border-top: 1px solid #1f2937;
-      display: none;
+      display: block;
     }
-    .form-panel.open { display: block; }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .form-label { font-size: 11px; color: #94a3b8; font-weight: 600; margin-bottom: 4px; display: block; }
 
@@ -126,6 +124,7 @@
       border-radius: 10px;
       cursor: pointer;
     }
+    .btn-add-job:active { transform: scale(0.98); }
 
     .chip-row { display: flex; gap: 7px; flex-wrap: wrap; }
     .chip-btn {
@@ -209,25 +208,106 @@
       margin-bottom: 8px;
     }
 
-    .status-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 6px;
+    .action-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
     }
-    .btn-status {
+    .action-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+    .btn-action {
+      width: 100%;
       border: none;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 9px 8px;
-      border-radius: 9px;
+      font-size: 13px;
+      padding: 10px;
+      border-radius: 10px;
       cursor: pointer;
     }
-    .btn-status:active { transform: scale(0.98); }
-    .st-done { grid-column: span 2; background-color: #10b981; color: #052e16; font-weight: 800; }
-    .st-yok { background-color: #451a03; border: 1px solid #b45309; color: #fde68a; }
-    .st-kapali { background-color: #1e1b4b; border: 1px solid #4f46e5; color: #c7d2fe; }
-    .st-kullanilmiyor { background-color: #3f1d2e; border: 1px solid #be123c; color: #fecdd3; }
-    .st-kilit { background-color: #1f2937; border: 1px solid #4b5563; color: #e5e7eb; }
+    .btn-action:active { transform: scale(0.98); }
+    .btn-done {
+      background-color: #10b981;
+      color: #052e16;
+      font-weight: 800;
+    }
+    .btn-abone-yok {
+      background-color: #451a03;
+      border: 1px solid #b45309;
+      color: #fde68a;
+      font-weight: 700;
+    }
+    .btn-edit {
+      background-color: #1e3a8a;
+      border: 1px solid #3b82f6;
+      color: #dbeafe;
+      font-weight: 700;
+    }
+    .btn-delete {
+      background-color: #450a0a;
+      border: 1px solid #dc2626;
+      color: #fecaca;
+      font-weight: 700;
+    }
+
+    .edit-box {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #1f2937;
+    }
+
+    .processed-section-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #f8fafc;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .processed-item {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .processed-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .status-badge-done {
+      background-color: #064e3b;
+      color: #6ee7b7;
+      border: 1px solid #10b981;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .status-badge-abone {
+      background-color: #451a03;
+      color: #fde68a;
+      border: 1px solid #d97706;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .btn-undo {
+      background-color: #1e293b;
+      border: 1px solid #475569;
+      color: #e2e8f0;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
 
     .empty-state {
       text-align: center;
@@ -272,12 +352,11 @@
   </div>
 
   <div class="container">
-    <!-- İş Emri Doldurma / Ekleme Kartı -->
     <div class="card">
-      <button class="btn-toggle-form" type="button" onclick="toggleForm()">
+      <div class="form-header-title">
         <span>➕ Yeni İş Emri Doldur / Ekle</span>
-        <span id="formArrow">▼</span>
-      </button>
+        <span>AÇIK</span>
+      </div>
 
       <div class="form-panel" id="formPanel">
         <div class="form-grid">
@@ -294,7 +373,7 @@
         <div class="form-grid">
           <div>
             <label class="form-label">İlçe</label>
-            <select id="newIlce" class="select-box" onchange="fillDefaultMahalle()">
+            <select id="newIlce" class="select-box">
               <option value="EDİRNE MERKEZ">EDİRNE MERKEZ</option>
               <option value="KEŞAN">KEŞAN</option>
               <option value="UZUNKÖPRÜ">UZUNKÖPRÜ</option>
@@ -338,7 +417,6 @@
       </div>
     </div>
 
-    <!-- Filtre Kartı -->
     <div class="card">
       <div class="region-tabs">
         <button class="region-btn active" data-region="ALL" onclick="setRegion('ALL', this)">Tümü</button>
@@ -363,7 +441,6 @@
       </div>
     </div>
 
-    <!-- İlerleme -->
     <div class="card">
       <div class="progress-top">
         <span id="progressLabel">Ekranda Kalan İş: 0</span>
@@ -375,41 +452,278 @@
     </div>
 
     <div class="job-list" id="jobList"></div>
+
+    <div class="card" style="margin-top: 14px;">
+      <div class="processed-section-title">
+        <span>✅ İşlenen Kayıtlar (Tamamlandı / Abone Yok)</span>
+        <span id="processedBadgeCount" style="color:#10b981;">0</span>
+      </div>
+      <div id="processedList"></div>
+    </div>
   </div>
 
   <div class="toast" id="toast">✓ Kaydedildi</div>
 
   <script>
-    // =========================================================================
-    // TAM LİSTE VERİSİ (1.983 kayıt buraya eklenecek)
-    // =========================================================================
     const BASE_IS_EMIRLERI = [
-      { id: "EDI-1-2000010188", ilce: "EDİRNE MERKEZ", bolge: "MERKEZ", mahalle: "1.MURAT", tesisat: "2000010188", tip: "Monofaze", seri: "LUN-40093226", adres: "1.MURAT MAH HASIM ISCAN SOK. NO: 18 DAIRE: MERKEZ/EDIRNE" },
-      { id: "EDI-2-2000630061", ilce: "EDİRNE MERKEZ", bolge: "MERKEZ", mahalle: "1.MURAT", tesisat: "2000630061", tip: "Monofaze", seri: "BYL-271450612", adres: "1.MURAT MAH. 20._ SK. ÇAKIR-3 APARTMANI BLOK NO: 8 İÇ KAPI NO: Z11 MERKEZ / EDİRNE" },
-      { id: "EDI-1-2000099137", ilce: "EDİRNE MERKEZ", bolge: "KOY", mahalle: "AVARIZ", tesisat: "2000099137", tip: "Monofaze", seri: "LUN-40129071", adres: "AVARIZ KÖYÜ KÖYÜN KENDISI MAH SOK. NO: 18 DAIRE: MERKEZ/EDIRNE" },
-      { id: "KES-1-2000189359", ilce: "KEŞAN", bolge: "MERKEZ", mahalle: "AŞAĞI ZAFERİYE", tesisat: "2000189359", tip: "Monofaze", seri: "LUN-40111282", adres: "AŞAĞI ZAFERİYE MAH. ANAFARTALAR CAD. NO: 64A İÇ KAPI NO: 0 KEŞAN / EDİRNE" },
-      { id: "UZU-1-2000018404", ilce: "UZUNKÖPRÜ", bolge: "MERKEZ", mahalle: "ATATÜRK", tesisat: "2000018404", tip: "Monofaze", seri: "LUN-40073243", adres: "ATATÜRK MAH. LİSE CAD. NO: 81 İÇ KAPI NO: A UZUNKÖPRÜ / EDİRNE" }
+      {
+        id: "EDI-1-2000010009",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "TALATPAŞA",
+        tesisat: "2000010009",
+        tip: "EKO M",
+        seri: "123456",
+        adres: "TALATPAŞA MAH. MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-2-2000194855",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "TALATPAŞA",
+        tesisat: "2000194855",
+        tip: "EKO M",
+        seri: "654321",
+        adres: "TALATPAŞA MAH. MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-3-2000010188",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "1.MURAT",
+        tesisat: "2000010188",
+        tip: "Monofaze",
+        seri: "LUN-40093226",
+        adres: "1.MURAT MAH HASIM ISCAN SOK. NO: 18 DAIRE: MERKEZ/EDIRNE"
+      },
+      {
+        id: "EDI-4-2000630061",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "1.MURAT",
+        tesisat: "2000630061",
+        tip: "Monofaze",
+        seri: "BYL-271450612",
+        adres: "1.MURAT MAH. 20._ SK. ÇAKIR-3 APARTMANI BLOK NO: 8 İÇ KAPI NO: Z11 MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-5-2000637825",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "1.MURAT",
+        tesisat: "2000637825",
+        tip: "Monofaze",
+        seri: "LUN-18662948",
+        adres: "1. MURAT MAH. İLHAMİ ERTEM CAD. DISKAPINO:28 NECDET/DAIRENO:DÜKKAN:11"
+      },
+      {
+        id: "EDI-6-2000660002",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "1.MURAT",
+        tesisat: "2000660002",
+        tip: "Monofaze",
+        seri: "BYL-20514396",
+        adres: "1.MURAT MAH. 43. SK. - SİTESİ - BLOK NO: 2 İÇ KAPI NO: 11 MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-7-2000664213",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "1.MURAT",
+        tesisat: "2000664213",
+        tip: "Monofaze",
+        seri: "LUN-103084068",
+        adres: "1.MURAT MAH ILHAMI ERTEM SOK. NO: 28 NECDET ÖZER APT. DAIRE:A MERKEZ/EDIRNE"
+      },
+      {
+        id: "EDI-8-2000665722",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "1.MURAT",
+        tesisat: "2000665722",
+        tip: "Trifaze",
+        seri: "BYL-40137757",
+        adres: "1. MURAT MAH. 44. SK. NO:7 ZEYNEP TAŞ-2 APT. ASANSÖR"
+      },
+      {
+        id: "EDI-9-2000671434",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "1.MURAT",
+        tesisat: "2000671434",
+        tip: "Trifaze",
+        seri: "LUN-302316380",
+        adres: "ZÜBEYDE HANIM CAD. FIRAT SİT. C BL. DÜKKAN:2 VESTEL SERVİSİ EDIRNE"
+      },
+      {
+        id: "EDI-10-2001144760",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "1.MURAT",
+        tesisat: "2001144760",
+        tip: "Monofaze",
+        seri: "LUN-101830242",
+        adres: "1.MURAT MAH ZÜBEYDE HANIM SOK. NO: 11 B FIRAT SITESI B BLOK DAIRE:9 MERKEZ/EDIRNE"
+      },
+      {
+        id: "EDI-11-2001301993",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "1.MURAT",
+        tesisat: "2001301993",
+        tip: "Monofaze",
+        seri: "LUN-103084152",
+        adres: "1.MURAT MAH. 42. SK. NO: 19A İÇ KAPI NO: 1 MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-12-2001407480",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "1.MURAT",
+        tesisat: "2001407480",
+        tip: "Monofaze",
+        seri: "LUN-40038358",
+        adres: "1.MURAT MAH. İLHAMİ ERTEM CAD. NO: 28 İÇ KAPI NO: 3 MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-13-2000001809",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "ABDURRAHMAN",
+        tesisat: "2000001809",
+        tip: "Trifaze",
+        seri: "LUN-302437288",
+        adres: "ABDURRAHMAN MAH. TAŞHAN CAD. NO: 27 İÇ KAPI NO: 0 MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-14-2000004192",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "ABDURRAHMAN",
+        tesisat: "2000004192",
+        tip: "Trifaze",
+        seri: "LUN-46028352",
+        adres: "ABDURRAHMAN MAH. TAŞHAN CAD. NO: 40 İÇ KAPI NO: 0 MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-15-2000004386",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "ABDURRAHMAN",
+        tesisat: "2000004386",
+        tip: "Trifaze",
+        seri: "LUN-302437920",
+        adres: "ABDURRAHMAN MAH. TAŞHAN CAD. NO: 48 İÇ KAPI NO: 0 MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-16-2000004556",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "ABDURRAHMAN",
+        tesisat: "2000004556",
+        tip: "Trifaze",
+        seri: "BYL-40138953",
+        adres: "ABDURRAHMAN MAH. KALEİÇİ KARAKOLU KARŞISI TAŞHAN CAD. NO: 50 İÇ KAPI NO: 0 MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-17-2000005143",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "ABDURRAHMAN",
+        tesisat: "2000005143",
+        tip: "Trifaze",
+        seri: "LUN-302437289",
+        adres: "ABDURRAHMAN MAH. TAŞHAN CAD. NO: 25 İÇ KAPI NO: 0 MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-18-2000010924",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "ABDURRAHMAN",
+        tesisat: "2000010924",
+        tip: "Trifaze",
+        seri: "LUN-46028351",
+        adres: "ABDURRAHMAN MAH. TAŞHAN CAD. NO: 42 İÇ KAPI NO: 0 MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-19-2000184323",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "ABDURRAHMAN",
+        tesisat: "2000184323",
+        tip: "Monofaze",
+        seri: "LUN-40086578",
+        adres: "ABDURRAHMAN MAH. ÇİFTEKAPI SK. NO: 17 İÇ KAPI NO: 0 MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-20-2000184426",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "ABDURRAHMAN",
+        tesisat: "2000184426",
+        tip: "Monofaze",
+        seri: "LUN-40086580",
+        adres: "ABDURRAHMAN MAH. ÇİFTEKAPI SK. NO: 19 İÇ KAPI NO: 0 MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-21-2000184478",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "ABDURRAHMAN",
+        tesisat: "2000184478",
+        tip: "Monofaze",
+        seri: "LUN-40086577",
+        adres: "ABDURRAHMAN MAH. ÇİFTEKAPI SK. NO: 21 İÇ KAPI NO: 0 MERKEZ / EDİRNE"
+      },
+      {
+        id: "EDI-22-2000184563",
+        ilce: "EDİRNE MERKEZ",
+        bolge: "MERKEZ",
+        mahalle: "ABDURRAHMAN",
+        tesisat: "2000184563",
+        tip: "Trifaze",
+        seri: "LUN-302437282",
+        adres: "ABDURRAHMAN MAH. ÇİFTEKAPI SK. NO: 23 İÇ KAPI NO: 0 MERKEZ / EDİRNE"
+      }
     ];
 
-    const STORAGE_PROCESSED = "tredas_edirne_islenen_v2";
-    const STORAGE_CUSTOM_JOBS = "tredas_edirne_ozel_isler_v2";
-    const DB_NAME = "TredasEdirneSahaDB_v2";
+    const STORAGE_PROCESSED = "tredas_edirne_islenen_v4";
+    const STORAGE_CUSTOM_JOBS = "tredas_edirne_ozel_isler_v4";
+    const STORAGE_OVERRIDES = "tredas_edirne_duzenlenenler_v4";
+    const STORAGE_DELETED = "tredas_edirne_silinenler_v4";
+    const DB_NAME = "TredasEdirneSahaDB_v4";
     const STORE_PROCESSED = "processedJobs";
     const STORE_CUSTOM = "customJobs";
+    const STORE_OVERRIDES = "overrideJobs";
+    const STORE_DELETED = "deletedJobIds";
 
     let processedMap = {};
     let customJobs = [];
+    let overrideMap = {};
+    let deletedIds = [];
     let currentRegion = "ALL";
     let currentPhase = "ALL";
 
     function getAllJobs() {
-      return [...customJobs, ...BASE_IS_EMIRLERI];
+      const deletedSet = new Set(deletedIds);
+      const mergedBase = BASE_IS_EMIRLERI
+        .filter(j => !deletedSet.has(j.id))
+        .map(j => overrideMap[j.id] ? { ...j, ...overrideMap[j.id], id: j.id } : j);
+
+      const mergedCustom = customJobs
+        .filter(j => !deletedSet.has(j.id))
+        .map(j => overrideMap[j.id] ? { ...j, ...overrideMap[j.id], id: j.id } : j);
+
+      return [...mergedCustom, ...mergedBase];
     }
 
     function saveAllData() {
       try {
         localStorage.setItem(STORAGE_PROCESSED, JSON.stringify(processedMap));
         localStorage.setItem(STORAGE_CUSTOM_JOBS, JSON.stringify(customJobs));
+        localStorage.setItem(STORAGE_OVERRIDES, JSON.stringify(overrideMap));
+        localStorage.setItem(STORAGE_DELETED, JSON.stringify(deletedIds));
       } catch (e) {}
 
       if (window.indexedDB) {
@@ -422,18 +736,32 @@
           if (!db.objectStoreNames.contains(STORE_CUSTOM)) {
             db.createObjectStore(STORE_CUSTOM, { keyPath: "id" });
           }
+          if (!db.objectStoreNames.contains(STORE_OVERRIDES)) {
+            db.createObjectStore(STORE_OVERRIDES, { keyPath: "id" });
+          }
+          if (!db.objectStoreNames.contains(STORE_DELETED)) {
+            db.createObjectStore(STORE_DELETED, { keyPath: "id" });
+          }
         };
         req.onsuccess = (e) => {
           const db = e.target.result;
-          const tx1 = db.transaction(STORE_PROCESSED, "readwrite");
-          const s1 = tx1.objectStore(STORE_PROCESSED);
+          const tx = db.transaction([STORE_PROCESSED, STORE_CUSTOM, STORE_OVERRIDES, STORE_DELETED], "readwrite");
+
+          const s1 = tx.objectStore(STORE_PROCESSED);
           s1.clear();
           Object.entries(processedMap).forEach(([id, info]) => s1.put({ id, ...info }));
 
-          const tx2 = db.transaction(STORE_CUSTOM, "readwrite");
-          const s2 = tx2.objectStore(STORE_CUSTOM);
+          const s2 = tx.objectStore(STORE_CUSTOM);
           s2.clear();
           customJobs.forEach(j => s2.put(j));
+
+          const s3 = tx.objectStore(STORE_OVERRIDES);
+          s3.clear();
+          Object.entries(overrideMap).forEach(([id, data]) => s3.put({ id, ...data }));
+
+          const s4 = tx.objectStore(STORE_DELETED);
+          s4.clear();
+          deletedIds.forEach(id => s4.put({ id }));
         };
       }
     }
@@ -444,6 +772,10 @@
         if (pRaw) processedMap = JSON.parse(pRaw) || {};
         const cRaw = localStorage.getItem(STORAGE_CUSTOM_JOBS);
         if (cRaw) customJobs = JSON.parse(cRaw) || [];
+        const oRaw = localStorage.getItem(STORAGE_OVERRIDES);
+        if (oRaw) overrideMap = JSON.parse(oRaw) || {};
+        const dRaw = localStorage.getItem(STORAGE_DELETED);
+        if (dRaw) deletedIds = JSON.parse(dRaw) || [];
       } catch (e) {}
 
       if (window.indexedDB) {
@@ -456,12 +788,20 @@
           if (!db.objectStoreNames.contains(STORE_CUSTOM)) {
             db.createObjectStore(STORE_CUSTOM, { keyPath: "id" });
           }
+          if (!db.objectStoreNames.contains(STORE_OVERRIDES)) {
+            db.createObjectStore(STORE_OVERRIDES, { keyPath: "id" });
+          }
+          if (!db.objectStoreNames.contains(STORE_DELETED)) {
+            db.createObjectStore(STORE_DELETED, { keyPath: "id" });
+          }
         };
         req.onsuccess = (e) => {
           const db = e.target.result;
-          const tx = db.transaction([STORE_PROCESSED, STORE_CUSTOM], "readonly");
+          const tx = db.transaction([STORE_PROCESSED, STORE_CUSTOM, STORE_OVERRIDES, STORE_DELETED], "readonly");
           const r1 = tx.objectStore(STORE_PROCESSED).getAll();
           const r2 = tx.objectStore(STORE_CUSTOM).getAll();
+          const r3 = tx.objectStore(STORE_OVERRIDES).getAll();
+          const r4 = tx.objectStore(STORE_DELETED).getAll();
           tx.oncomplete = () => {
             let changed = false;
             (r1.result || []).forEach(item => {
@@ -474,6 +814,19 @@
             (r2.result || []).forEach(job => {
               if (!existingIds.has(job.id)) {
                 customJobs.push(job);
+                changed = true;
+              }
+            });
+            (r3.result || []).forEach(ov => {
+              if (!overrideMap[ov.id]) {
+                overrideMap[ov.id] = ov;
+                changed = true;
+              }
+            });
+            const delSet = new Set(deletedIds);
+            (r4.result || []).forEach(d => {
+              if (!delSet.has(d.id)) {
+                deletedIds.push(d.id);
                 changed = true;
               }
             });
@@ -494,13 +847,6 @@
       t.classList.add("show");
       clearTimeout(window._toastTimer);
       window._toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
-    }
-
-    function toggleForm() {
-      const panel = document.getElementById("formPanel");
-      const arrow = document.getElementById("formArrow");
-      const isOpen = panel.classList.toggle("open");
-      arrow.textContent = isOpen ? "▲" : "▼";
     }
 
     function addNewJob() {
@@ -542,10 +888,63 @@
       showToast("✓ Yeni iş emri eklendi");
     }
 
+    function saveEditedJob(id) {
+      const tesisat = document.getElementById("edit_tesisat_" + id).value.trim();
+      const seri = document.getElementById("edit_seri_" + id).value.trim();
+      const mahalle = document.getElementById("edit_mahalle_" + id).value.trim().toLocaleUpperCase("tr");
+      const tip = document.getElementById("edit_tip_" + id).value.trim();
+      const adres = document.getElementById("edit_adres_" + id).value.trim();
+
+      if (!tesisat || !seri || !mahalle || !adres) {
+        alert("Düzenleme için Tesisat No, Seri No, Mahalle/Köy ve Açık Adres boş bırakılamaz.");
+        return;
+      }
+
+      overrideMap[id] = {
+        ...(overrideMap[id] || {}),
+        id,
+        tesisat,
+        seri,
+        mahalle,
+        tip,
+        adres
+      };
+
+      customJobs = customJobs.map(j => j.id === id ? { ...j, tesisat, seri, mahalle, tip, adres } : j);
+
+      saveAllData();
+      populateIlceDropdown();
+      populateMahalleDropdown();
+      renderList();
+      showToast("✓ Kayıt güncellendi");
+    }
+
+    function deleteJob(id) {
+      if (!confirm("Bu kaydı silmek istediğine emin misin?")) return;
+      customJobs = customJobs.filter(j => j.id !== id);
+      delete overrideMap[id];
+      delete processedMap[id];
+      if (!deletedIds.includes(id)) {
+        deletedIds.push(id);
+      }
+      saveAllData();
+      populateIlceDropdown();
+      populateMahalleDropdown();
+      renderList();
+      showToast("✓ Kayıt silindi");
+    }
+
     function markJobStatus(id, durum) {
       processedMap[id] = { durum, ts: Date.now() };
       saveAllData();
       showToast("✓ Kaydedildi: " + durum);
+      renderList();
+    }
+
+    function undoJobStatus(id) {
+      delete processedMap[id];
+      saveAllData();
+      showToast("↩ Bekleyen işlere geri alındı");
       renderList();
     }
 
@@ -603,6 +1002,48 @@
       if (mahalleler.includes(prev)) sel.value = prev;
     }
 
+    function escapeAttr(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function renderProcessedList(allJobs) {
+      const listEl = document.getElementById("processedList");
+      const badgeEl = document.getElementById("processedBadgeCount");
+      const processedItems = allJobs
+        .filter(item => Boolean(processedMap[item.id]))
+        .sort((a, b) => (processedMap[b.id]?.ts || 0) - (processedMap[a.id]?.ts || 0));
+
+      badgeEl.textContent = processedItems.length;
+
+      if (processedItems.length === 0) {
+        listEl.innerHTML = '<div style="color:#94a3b8; font-size:13px; padding:8px 2px;">Henüz işlenen kayıt yok.</div>';
+        return;
+      }
+
+      listEl.innerHTML = processedItems.map(item => {
+        const info = processedMap[item.id];
+        const isDone = info.durum === "Tamamlandı";
+        const badgeClass = isDone ? "status-badge-done" : "status-badge-abone";
+        return `
+          <div class="processed-item">
+            <div class="processed-top">
+              <span style="font-size:12px; font-weight:700; color:#f59e0b;">Tesisat: ${item.tesisat} (${item.seri})</span>
+              <span class="${badgeClass}">${info.durum}</span>
+            </div>
+            <div style="font-size:12px; color:#cbd5e1; margin-bottom:6px;">${item.ilce} / ${item.mahalle} — ${item.adres}</div>
+            <div style="display:flex; gap:6px; justify-content:flex-end;">
+              <button class="btn-undo" type="button" onclick="undoJobStatus('${item.id}')">↩ Geri Al</button>
+              <button class="btn-undo" style="border-color:#dc2626; color:#fecaca;" type="button" onclick="deleteJob('${item.id}')">🗑 Sil</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
     function renderList() {
       const allJobs = getAllJobs();
       const selectedIlce = document.getElementById("ilceSelect").value;
@@ -617,6 +1058,8 @@
       document.getElementById("totalCount").textContent = total;
       document.getElementById("progressPct").textContent = "%" + pct;
       document.getElementById("progressFill").style.width = pct + "%";
+
+      renderProcessedList(allJobs);
 
       const visible = allJobs.filter(item => {
         if (processedMap[item.id]) return false;
@@ -650,12 +1093,40 @@
             <div class="job-meta">Seri No: <strong>${item.seri}</strong> • ${item.ilce} / ${item.mahalle}</div>
             <div class="job-address">📍 ${item.adres}</div>
             <a class="btn-map" href="${mapsUrl}" target="_blank" rel="noopener">🗺️ Haritada Göster</a>
-            <div class="status-grid">
-              <button class="btn-status st-done" onclick="markJobStatus('${item.id}', 'Tamamlandı')">✓ İşi Tamamla</button>
-              <button class="btn-status st-yok" onclick="markJobStatus('${item.id}', 'Yerinde Yok')">📍 Yerinde Yok</button>
-              <button class="btn-status st-kapali" onclick="markJobStatus('${item.id}', 'Kapı Kapalı')">🚪 Kapı Kapalı</button>
-              <button class="btn-status st-kullanilmiyor" onclick="markJobStatus('${item.id}', 'Kullanılmıyor')">🚫 Kullanılmıyor</button>
-              <button class="btn-status st-kilit" onclick="markJobStatus('${item.id}', 'Erişim Yok / Kilitli')">🔒 Erişim Yok</button>
+            <div class="action-stack">
+              <button class="btn-action btn-done" type="button" onclick="markJobStatus('${item.id}', 'Tamamlandı')">✓ İşi Tamamla</button>
+              <button class="btn-action btn-abone-yok" type="button" onclick="markJobStatus('${item.id}', 'Abone Yok / Kapalı')">🚪 Abone Yok / Kapalı</button>
+              <div class="action-row-2">
+                <button class="btn-action btn-edit" type="button" onclick="saveEditedJob('${item.id}')">✎ Değişiklik Kaydet</button>
+                <button class="btn-action btn-delete" type="button" onclick="deleteJob('${item.id}')">🗑 Kaydı Sil</button>
+              </div>
+            </div>
+
+            <div class="edit-box">
+              <div class="form-grid">
+                <div>
+                  <label class="form-label">Tesisat No</label>
+                  <input type="text" id="edit_tesisat_${item.id}" class="input-box" style="margin-bottom:6px;" value="${escapeAttr(item.tesisat)}" />
+                </div>
+                <div>
+                  <label class="form-label">Seri No</label>
+                  <input type="text" id="edit_seri_${item.id}" class="input-box" style="margin-bottom:6px;" value="${escapeAttr(item.seri)}" />
+                </div>
+              </div>
+              <div class="form-grid">
+                <div>
+                  <label class="form-label">Mahalle / Köy</label>
+                  <input type="text" id="edit_mahalle_${item.id}" class="input-box" style="margin-bottom:6px;" value="${escapeAttr(item.mahalle)}" />
+                </div>
+                <div>
+                  <label class="form-label">Tip</label>
+                  <input type="text" id="edit_tip_${item.id}" class="input-box" style="margin-bottom:6px;" value="${escapeAttr(item.tip)}" />
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Açık Adres</label>
+                <input type="text" id="edit_adres_${item.id}" class="input-box" style="margin-bottom:8px;" value="${escapeAttr(item.adres)}" />
+              </div>
             </div>
           </div>
         `;
