@@ -53,63 +53,24 @@
       margin-bottom: 12px;
     }
 
-    .btn-toggle-form {
-      width: 100%;
-      background-color: #172554;
-      border: 1px solid #2563eb;
-      color: #bfdbfe;
-      font-size: 13px;
-      font-weight: 700;
-      padding: 11px 14px;
-      border-radius: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    .btn-toggle-form:last-child { margin-bottom: 0; }
-
-    .btn-toggle-pdf {
-      width: 100%;
-      background-color: #064e3b;
-      border: 1px solid #10b981;
-      color: #a7f3d0;
-      font-size: 13px;
-      font-weight: 700;
-      padding: 11px 14px;
-      border-radius: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-
-    .form-panel {
-      margin-top: 8px;
-      margin-bottom: 10px;
-      padding-top: 12px;
-      border-top: 1px solid #1f2937;
-      display: none;
-    }
-    .form-panel.open { display: block; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .form-label { font-size: 11px; color: #94a3b8; font-weight: 600; margin-bottom: 4px; display: block; }
-
-    .file-drop-box {
+    .pdf-box {
       background-color: #0f172a;
       border: 2px dashed #10b981;
       border-radius: 12px;
       padding: 14px 12px;
       text-align: center;
-      margin-bottom: 10px;
+    }
+    .pdf-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #a7f3d0;
+      margin-bottom: 6px;
+      display: block;
     }
     .file-input {
       width: 100%;
       color: #e2e8f0;
       font-size: 12px;
-      margin-top: 6px;
     }
     .scan-status {
       font-size: 12px;
@@ -144,7 +105,7 @@
       color: #ffffff;
     }
 
-    .select-box, .search-box, .input-box {
+    .select-box, .search-box {
       width: 100%;
       background-color: #0f172a;
       border: 1px solid #263244;
@@ -155,42 +116,7 @@
       margin-bottom: 10px;
       outline: none;
     }
-    .select-box:focus, .search-box:focus, .input-box:focus { border-color: #3b82f6; }
-
-    .btn-add-job {
-      width: 100%;
-      background-color: #f59e0b;
-      border: none;
-      color: #0f172a;
-      font-size: 13px;
-      font-weight: 800;
-      padding: 11px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-
-    .btn-clear-imported {
-      width: 100%;
-      background-color: #3f1219;
-      border: 1px solid #991b1b;
-      color: #fecaca;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 9px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-
-    .help-note {
-      font-size: 11px;
-      color: #94a3b8;
-      line-height: 1.45;
-      margin-bottom: 10px;
-      background-color: #0b1120;
-      border: 1px solid #1e293b;
-      border-radius: 10px;
-      padding: 8px 10px;
-    }
+    .select-box:focus, .search-box:focus { border-color: #3b82f6; }
 
     .chip-row { display: flex; gap: 7px; flex-wrap: wrap; }
     .chip-btn {
@@ -299,12 +225,6 @@
       color: #fde68a;
       font-weight: 700;
     }
-    .btn-delete-job {
-      background-color: #2a1016;
-      border: 1px solid #7f1d1d;
-      color: #fca5a5;
-      font-weight: 700;
-    }
 
     .empty-state {
       text-align: center;
@@ -350,116 +270,16 @@
 
   <div class="container">
     <div class="card">
-      <button class="btn-toggle-pdf" type="button" onclick="togglePdfPanel()">
-        <span>📂 PDF Dosyası Yükle (Otomatik Tara &amp; Kaydet)</span>
-        <span id="pdfArrow">▼</span>
-      </button>
-
-      <div class="form-panel" id="pdfPanel">
-        <div class="help-note">
-          PDF dosyasını seçtiğin anda sayfa içinde otomatik açılır, tüm sayfalar taranır ve tesisat/seri/adres kayıtları listeye kaydedilir. İstediğin kartı <b>Sil</b> butonuyla silebilirsin.
-        </div>
-
-        <div class="form-grid">
-          <div>
-            <label class="form-label">Varsayılan İlçe</label>
-            <select id="pdfDefaultIlce" class="select-box">
-              <option value="EDİRNE MERKEZ">EDİRNE MERKEZ</option>
-              <option value="KEŞAN">KEŞAN</option>
-              <option value="UZUNKÖPRÜ">UZUNKÖPRÜ</option>
-              <option value="İPSALA">İPSALA</option>
-              <option value="HAVSA">HAVSA</option>
-              <option value="ENEZ">ENEZ</option>
-              <option value="LALAPAŞA">LALAPAŞA</option>
-              <option value="MERİÇ">MERİÇ</option>
-              <option value="SÜLOĞLU">SÜLOĞLU</option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label">Varsayılan Bölge</label>
-            <select id="pdfDefaultBolge" class="select-box">
-              <option value="MERKEZ">MERKEZ</option>
-              <option value="KOY">KÖY / BELDE</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="file-drop-box">
-          <label class="form-label" for="pdfFileInput">PDF Dosyasını Seçin (.pdf)</label>
-          <input
-            type="file"
-            id="pdfFileInput"
-            class="file-input"
-            accept=".pdf,application/pdf"
-            onchange="handlePdfFileSelect(event)"
-          />
-          <div class="scan-status" id="pdfScanStatus"></div>
-        </div>
-
-        <button class="btn-clear-imported" type="button" onclick="clearImportedJobs()">🗑️ PDF / Manuel Eklenen Tüm Kayıtları Sil</button>
-      </div>
-
-      <button class="btn-toggle-form" type="button" onclick="toggleForm()">
-        <span>➕ Yeni İş Emri Doldur / Ekle</span>
-        <span id="formArrow">▼</span>
-      </button>
-
-      <div class="form-panel" id="formPanel">
-        <div class="form-grid">
-          <div>
-            <label class="form-label">Tesisat No *</label>
-            <input type="text" id="newTesisat" class="input-box" placeholder="Örn: 2000123456" />
-          </div>
-          <div>
-            <label class="form-label">Mevcut Seri No *</label>
-            <input type="text" id="newSeri" class="input-box" placeholder="Örn: LUN-40123456" />
-          </div>
-        </div>
-
-        <div class="form-grid">
-          <div>
-            <label class="form-label">İlçe</label>
-            <select id="newIlce" class="select-box">
-              <option value="EDİRNE MERKEZ">EDİRNE MERKEZ</option>
-              <option value="KEŞAN">KEŞAN</option>
-              <option value="UZUNKÖPRÜ">UZUNKÖPRÜ</option>
-              <option value="İPSALA">İPSALA</option>
-              <option value="HAVSA">HAVSA</option>
-              <option value="ENEZ">ENEZ</option>
-              <option value="LALAPAŞA">LALAPAŞA</option>
-              <option value="MERİÇ">MERİÇ</option>
-              <option value="SÜLOĞLU">SÜLOĞLU</option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label">Bölge</label>
-            <select id="newBolge" class="select-box">
-              <option value="MERKEZ">MERKEZ</option>
-              <option value="KOY">KÖY / BELDE</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-grid">
-          <div>
-            <label class="form-label">Mahalle / Köy *</label>
-            <input type="text" id="newMahalle" class="input-box" placeholder="Örn: ŞÜKRÜPAŞA" />
-          </div>
-          <div>
-            <label class="form-label">Sayaç Tipi</label>
-            <select id="newTip" class="select-box">
-              <option value="Monofaze">Monofaze</option>
-              <option value="Trifaze">Trifaze</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label class="form-label">Açık Adres *</label>
-          <input type="text" id="newAdres" class="input-box" placeholder="Mahalle, sokak, kapı/daire, ilçe..." />
-        </div>
-
-        <button class="btn-add-job" type="button" onclick="addNewJob()">✓ İş Emrini Listeye Ekle</button>
+      <div class="pdf-box">
+        <label class="pdf-title" for="pdfFileInput">📂 PDF Seç (Otomatik Tarar ve Kaydeder)</label>
+        <input
+          type="file"
+          id="pdfFileInput"
+          class="file-input"
+          accept=".pdf,application/pdf"
+          onchange="handlePdfFileSelect(event)"
+        />
+        <div class="scan-status" id="pdfScanStatus"></div>
       </div>
     </div>
 
@@ -522,33 +342,29 @@
         ["EDI-10-2001407480","EDİRNE MERKEZ","MERKEZ","1.MURAT","2001407480","Monofaze","LUN-40038358","1.MURAT MAH. İLHAMİ ERTEM CAD. NO: 28 İÇ KAPI NO: 3 MERKEZ / EDİRNE"]
       ];
       window.BASE_IS_EMIRLERI = FULL_DATA.map(r => ({
-        id: r[0], ilce: r[1], bolge: r[2], mahalle: r[3], tesisat: r[4], tip: r[5], seri: r[6], adres: r[7], isCustom: false
+        id: r[0], ilce: r[1], bolge: r[2], mahalle: r[3], tesisat: r[4], tip: r[5], seri: r[6], adres: r[7]
       }));
     })();
 
     const STORAGE_PROCESSED = "tredas_edirne_islenen_v3";
     const STORAGE_CUSTOM_JOBS = "tredas_edirne_ozel_isler_v3";
-    const STORAGE_DELETED_BASE = "tredas_edirne_silinen_base_v3";
     const DB_NAME = "TredasEdirneSahaDB_v3";
     const STORE_PROCESSED = "processedJobs";
     const STORE_CUSTOM = "customJobs";
 
     let processedMap = {};
     let customJobs = [];
-    let deletedBaseIds = [];
     let currentRegion = "ALL";
     let currentPhase = "ALL";
 
     function getAllJobs() {
-      const baseFiltered = (window.BASE_IS_EMIRLERI || []).filter(j => !deletedBaseIds.includes(j.id));
-      return [...customJobs, ...baseFiltered];
+      return [...customJobs, ...(window.BASE_IS_EMIRLERI || [])];
     }
 
     function saveAllData() {
       try {
         localStorage.setItem(STORAGE_PROCESSED, JSON.stringify(processedMap));
         localStorage.setItem(STORAGE_CUSTOM_JOBS, JSON.stringify(customJobs));
-        localStorage.setItem(STORAGE_DELETED_BASE, JSON.stringify(deletedBaseIds));
       } catch (e) {}
 
       if (window.indexedDB) {
@@ -583,8 +399,6 @@
         if (pRaw) processedMap = JSON.parse(pRaw) || {};
         const cRaw = localStorage.getItem(STORAGE_CUSTOM_JOBS);
         if (cRaw) customJobs = JSON.parse(cRaw) || [];
-        const dRaw = localStorage.getItem(STORAGE_DELETED_BASE);
-        if (dRaw) deletedBaseIds = JSON.parse(dRaw) || [];
       } catch (e) {}
 
       if (window.indexedDB) {
@@ -637,21 +451,7 @@
       window._toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
     }
 
-    function togglePdfPanel() {
-      const panel = document.getElementById("pdfPanel");
-      const arrow = document.getElementById("pdfArrow");
-      const isOpen = panel.classList.toggle("open");
-      arrow.textContent = isOpen ? "▲" : "▼";
-    }
-
-    function toggleForm() {
-      const panel = document.getElementById("formPanel");
-      const arrow = document.getElementById("formArrow");
-      const isOpen = panel.classList.toggle("open");
-      arrow.textContent = isOpen ? "▲" : "▼";
-    }
-
-    function detectIlce(text, fallbackIlce) {
+    function detectIlce(text) {
       const upper = text.toLocaleUpperCase("tr");
       const ilceler = [
         "EDİRNE MERKEZ", "KEŞAN", "UZUNKÖPRÜ", "İPSALA",
@@ -660,14 +460,13 @@
       for (const il of ilceler) {
         if (upper.includes(il)) return il;
       }
-      return fallbackIlce;
+      return "EDİRNE MERKEZ";
     }
 
-    function detectBolge(text, fallbackBolge) {
+    function detectBolge(text) {
       const upper = text.toLocaleUpperCase("tr");
       if (/\bKÖYÜ?\b|\bBELDESİ?\b|\bKOY\b/.test(upper)) return "KOY";
-      if (/\bMAH\.?\b|\bMAHALLESİ\b|\bMERKEZ\b/.test(upper)) return "MERKEZ";
-      return fallbackBolge;
+      return "MERKEZ";
     }
 
     function detectMahalle(text) {
@@ -689,7 +488,7 @@
       return /trifaze|3\s*faz|üç\s*faz/i.test(text) ? "Trifaze" : "Monofaze";
     }
 
-    function parseSingleChunk(chunk, defaultIlce, defaultBolge) {
+    function parseSingleChunk(chunk) {
       const cleaned = chunk.replace(/\s+/g, " ").trim();
       if (!cleaned) return null;
 
@@ -700,27 +499,21 @@
       const seriMatch = cleaned.match(/\b([A-ZÇĞİÖŞÜ]{2,6}[-_ ]?\d{4,12})\b/i);
       const seri = seriMatch ? seriMatch[1].toLocaleUpperCase("tr").replace(/\s+/g, "-") : "BİLİNMİYOR";
 
-      const tip = detectTip(cleaned);
-      const ilce = detectIlce(cleaned, defaultIlce);
-      const bolge = detectBolge(cleaned, defaultBolge);
-      const mahalle = detectMahalle(cleaned);
-
       return {
         id: "PDF-" + Date.now() + "-" + tesisat + "-" + Math.random().toString(36).slice(2, 6),
-        ilce,
-        bolge,
-        mahalle,
+        ilce: detectIlce(cleaned),
+        bolge: detectBolge(cleaned),
+        mahalle: detectMahalle(cleaned),
         tesisat,
-        tip,
+        tip: detectTip(cleaned),
         seri,
-        adres: cleaned,
-        isCustom: true
+        adres: cleaned
       };
     }
 
     async function extractTextFromPdfFile(file) {
       if (!window.pdfjsLib) {
-        throw new Error("PDF okuyucu kütüphanesi yüklenemedi. İnternet bağlantını kontrol et.");
+        throw new Error("PDF okuyucu yüklenemedi.");
       }
       const buffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
@@ -754,13 +547,10 @@
       const statusEl = document.getElementById("pdfScanStatus");
       if (!file) return;
 
-      statusEl.textContent = "⏳ PDF açılıyor ve taranıyor...";
+      statusEl.textContent = "⏳ PDF taranıyor...";
 
       try {
         const rawText = await extractTextFromPdfFile(file);
-        const defaultIlce = document.getElementById("pdfDefaultIlce").value;
-        const defaultBolge = document.getElementById("pdfDefaultBolge").value;
-
         const lines = rawText.split(/\r?\n/);
         const chunks = [];
 
@@ -769,8 +559,7 @@
           if (!trimmed) continue;
           const multiMatches = trimmed.match(/\b\d{7,15}\b/g);
           if (multiMatches && multiMatches.length > 1) {
-            const parts = trimmed.split(/(?=\b\d{7,15}\b)/);
-            parts.forEach(p => {
+            trimmed.split(/(?=\b\d{7,15}\b)/).forEach(p => {
               if (p.trim()) chunks.push(p.trim());
             });
           } else {
@@ -782,7 +571,7 @@
         let addedCount = 0;
 
         for (const chunk of chunks) {
-          const parsed = parseSingleChunk(chunk, defaultIlce, defaultBolge);
+          const parsed = parseSingleChunk(chunk);
           if (!parsed) continue;
           const dedupKey = parsed.tesisat + "|" + parsed.seri;
           if (existingKeys.has(dedupKey)) continue;
@@ -797,14 +586,140 @@
         renderList();
 
         if (addedCount > 0) {
-          statusEl.textContent = "✅ " + addedCount + " kayıt PDF'den taranıp kaydedildi.";
-          showToast("✓ " + addedCount + " kayıt PDF'den kaydedildi");
+          statusEl.textContent = "✅ " + addedCount + " kayıt PDF'den kaydedildi.";
+          showToast("✓ " + addedCount + " kayıt kaydedildi");
         } else {
-          statusEl.textContent = "⚠️ PDF tarandı; eklenecek yeni kayıt bulunamadı.";
+          statusEl.textContent = "⚠️ Yeni kayıt bulunamadı.";
           showToast("Yeni kayıt bulunamadı");
         }
       } catch (err) {
-        statusEl.textContent = "❌ PDF okunamadı: " + (err && err.message ? err.message : "Hata");
-        alert("PDF dosyası okunurken bir hata oluştu.");
+        statusEl.textContent = "❌ PDF okunamadı.";
       } finally {
         event.target.value = "";
+      }
+    }
+
+    function markJobStatus(id, durum) {
+      processedMap[id] = { durum, ts: Date.now() };
+      saveAllData();
+      showToast("✓ Kaydedildi: " + durum);
+      renderList();
+    }
+
+    function setRegion(region, btn) {
+      currentRegion = region;
+      document.querySelectorAll(".region-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      populateMahalleDropdown();
+      renderList();
+    }
+
+    function setPhase(phase, btn) {
+      currentPhase = phase;
+      document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderList();
+    }
+
+    function populateIlceDropdown() {
+      const sel = document.getElementById("ilceSelect");
+      const prev = sel.value;
+      const ilceler = [...new Set(getAllJobs().map(j => j.ilce))].sort((a, b) => a.localeCompare(b, "tr"));
+      sel.innerHTML = '<option value="ALL">Tüm İlçeler</option>';
+      ilceler.forEach(il => {
+        const opt = document.createElement("option");
+        opt.value = il;
+        opt.textContent = il;
+        sel.appendChild(opt);
+      });
+      if (ilceler.includes(prev)) sel.value = prev;
+    }
+
+    function onIlceChange() {
+      populateMahalleDropdown();
+      renderList();
+    }
+
+    function populateMahalleDropdown() {
+      const sel = document.getElementById("mahalleSelect");
+      const prev = sel.value;
+      const selectedIlce = document.getElementById("ilceSelect").value;
+      const filtered = getAllJobs().filter(j => {
+        if (selectedIlce !== "ALL" && j.ilce !== selectedIlce) return false;
+        if (currentRegion !== "ALL" && j.bolge !== currentRegion) return false;
+        return true;
+      });
+      const mahalleler = [...new Set(filtered.map(j => j.mahalle))].sort((a, b) => a.localeCompare(b, "tr"));
+      sel.innerHTML = '<option value="ALL">Tüm Mahalle / Köyler</option>';
+      mahalleler.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        sel.appendChild(opt);
+      });
+      if (mahalleler.includes(prev)) sel.value = prev;
+    }
+
+    function renderList() {
+      const allJobs = getAllJobs();
+      const selectedIlce = document.getElementById("ilceSelect").value;
+      const selectedMahalle = document.getElementById("mahalleSelect").value;
+      const query = document.getElementById("searchInput").value.trim().toLocaleLowerCase("tr");
+
+      const total = allJobs.length;
+      const done = allJobs.filter(j => Boolean(processedMap[j.id])).length;
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+      document.getElementById("doneCount").textContent = done;
+      document.getElementById("totalCount").textContent = total;
+      document.getElementById("progressPct").textContent = "%" + pct;
+      document.getElementById("progressFill").style.width = pct + "%";
+
+      const visible = allJobs.filter(item => {
+        if (processedMap[item.id]) return false;
+        if (selectedIlce !== "ALL" && item.ilce !== selectedIlce) return false;
+        if (currentRegion !== "ALL" && item.bolge !== currentRegion) return false;
+        if (selectedMahalle !== "ALL" && item.mahalle !== selectedMahalle) return false;
+        if (currentPhase !== "ALL" && item.tip !== currentPhase) return false;
+        if (query) {
+          const hay = (item.tesisat + " " + item.seri + " " + item.ilce + " " + item.mahalle + " " + item.adres).toLocaleLowerCase("tr");
+          if (!hay.includes(query)) return false;
+        }
+        return true;
+      });
+
+      document.getElementById("progressLabel").textContent = "Ekranda Kalan İş: " + visible.length;
+
+      const listEl = document.getElementById("jobList");
+      if (visible.length === 0) {
+        listEl.innerHTML = '<div class="empty-state">🎉 Bu filtrede bekleyen iş kalmadı!</div>';
+        return;
+      }
+
+      listEl.innerHTML = visible.map(item => {
+        const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(item.adres);
+        return `
+          <div class="job-card">
+            <div class="job-top">
+              <span class="job-id">Tesisat: ${item.tesisat}</span>
+              <span class="job-type">${item.tip}</span>
+            </div>
+            <div class="job-meta">Seri No: <strong>${item.seri}</strong> • ${item.ilce} / ${item.mahalle}</div>
+            <div class="job-address">📍 ${item.adres}</div>
+            <a class="btn-map" href="${mapsUrl}" target="_blank" rel="noopener">🗺️ Haritada Göster</a>
+            <div class="action-stack">
+              <button class="btn-action btn-done" onclick="markJobStatus('${item.id}', 'Tamamlandı')">✓ İşi Tamamla</button>
+              <button class="btn-action btn-abone-yok" onclick="markJobStatus('${item.id}', 'Abone Yok / Kapalı')">🚪 Abone Yok / Kapalı</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    loadAllData();
+    populateIlceDropdown();
+    populateMahalleDropdown();
+    renderList();
+  </script>
+</body>
+</html>
