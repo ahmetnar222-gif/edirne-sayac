@@ -265,6 +265,14 @@
       margin-bottom: 10px;
     }
 
+    .selected-job-card {
+      border: 2px solid var(--accent);
+      background: #131d33;
+      border-radius: 14px;
+      padding: 13px;
+      margin-top: 10px;
+    }
+
     .job-top {
       display: flex;
       justify-content: space-between;
@@ -360,7 +368,7 @@
 
     #map {
       width: 100%;
-      height: 390px;
+      height: 410px;
       border-radius: 12px;
       border: 1px solid var(--border);
       margin-top: 10px;
@@ -391,6 +399,7 @@
       border-radius: 12px;
       padding: 10px 12px;
       margin-top: 8px;
+      cursor: pointer;
     }
 
     .nearby-info { min-width: 0; flex: 1; }
@@ -556,8 +565,9 @@
           <button id="locateBtn" class="btn btn-warning">📍 Uzaklıkları Hesapla (GPS)</button>
           <button id="fitMapBtn" class="btn btn-secondary">🧭 Tüm Noktaları Göster</button>
         </div>
-        <div id="mapStatus" class="map-info">Filtrelenen mahalle ve köyler haritada gösteriliyor. Gerçek mesafe için GPS butonuna dokunun.</div>
+        <div id="mapStatus" class="map-info">Haritadaki herhangi bir noktaya basarak o işin tesisat, adres ve Git bilgisini açabilirsiniz.</div>
         <div id="map"></div>
+        <div id="selectedMapJobWrap" class="hidden"></div>
       </section>
 
       <section class="card">
@@ -852,8 +862,10 @@
     let showCompleted = false;
     let isAdmin = false;
     let activeTab = "list";
+    let selectedMapJobId = null;
 
     let mapInstance = null;
+    let canvasRenderer = null;
     let markerLayer = null;
     let userLatLng = null;
     let userMarker = null;
@@ -892,6 +904,7 @@
       locateBtn: document.getElementById("locateBtn"),
       fitMapBtn: document.getElementById("fitMapBtn"),
       mapStatus: document.getElementById("mapStatus"),
+      selectedMapJobWrap: document.getElementById("selectedMapJobWrap"),
       nearbyList: document.getElementById("nearbyList")
     };
 
@@ -1265,13 +1278,70 @@
       return `<span class="tag tag-mahalle">🏙️ Mahalle</span>`;
     }
 
+    // Genel "Merkez Merkez Mahallesi" yerine gerçek yerleşim / sokak + koordinat hedefi üretir
     function buildGoogleMapsUrl(job) {
-      const basePlace = job.settlement.replace(/\bMah\./i, "Mahallesi");
-      const streetPart = job.streetOnly ? `${properTr(job.streetOnly)}, ` : "";
-      const distPart = job.district === "Merkez" ? "Edirne Merkez" : `${job.district}, Edirne`;
-      const query = encodeURIComponent(`${streetPart}${basePlace}, ${distPart}`);
-      return `https://www.google.com/maps/search/?api=1&query=${query}`;
+      const [lat, lng] = resolveCoordinates(job);
+      const cleanStreetNorm = asciiKey(job.streetOnly || "");
+      const hasSpecificStreet =
+        cleanStreetNorm &&
+        !["genel", "merkez", "koy ici", "koyun kendisi"].includes(cleanStreetNorm) &&
+        cleanStreetNorm.length > 3;
+
+      if (hasSpecificStreet) {
+        const placeFull = job.settlement.replace(/\bMah\./i, "Mahallesi");
+        const distLabel = job.district === "Merkez" ? "Edirne" : `${job.district}, Edirne`;
+        const query = encodeURIComponent(`${properTr(job.streetOnly)}, ${placeFull}, ${distLabel}`);
+        return `https://www.google.com/maps/search/?api=1&query=${query}`;
+      }
+
+      return `https://www.google.com/maps/search/?api=1&query=${lat.toFixed(6)},${lng.toFixed(6)}`;
     }
+
+    function renderSelectedMapJobCard() {
+      const job = filteredJobs.find(j => j.id === selectedMapJobId);
+      if (!job) {
+        el.selectedMapJobWrap.classList.add("hidden");
+        el.selectedMapJobWrap.innerHTML = "";
+        return;
+      }
+
+      const refPt = getReferencePoint();
+      const [lat, lng] = resolveCoordinates(job);
+      const km = haversineKm(refPt.lat, refPt.lng, lat, lng);
+      const kmLabel = userLatLng ? `${km.toFixed(1)} km` : `Merkeze ~${km.toFixed(1)} km`;
+      const meterText = job.meterType === "TRI" ? "Trifaze" : "Monofaze";
+
+      el.selectedMapJobWrap.classList.remove("hidden");
+      el.selectedMapJobWrap.innerHTML = `
+        <div class="selected-job-card">
+          <div class="job-top">
+            <div class="job-title">${job.displayTitle}</div>
+            ${categoryBadge(job.category)}
+          </div>
+          <div class="job-meta">
+            ${job.seriNo ? `Seri No: <strong>${job.seriNo}</strong> • ` : ""}
+            <strong>${job.settlement}</strong> • ${meterText} • <strong>${kmLabel}</strong>
+          </div>
+          <div class="job-addr">📍 ${job.address}</div>
+          <div class="job-actions">
+            <a class="btn btn-primary" href="${buildGoogleMapsUrl(job)}" target="_blank" rel="noopener">🧭 Git</a>
+            <button class="btn ${job.completed ? "btn-secondary" : "btn-success"}" onclick="window.__toggleJob('${job.id}', ${!job.completed})">
+              ${job.completed ? "↩️ Bekleyene Al" : "✓ İşi Tamamla"}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    window.__selectMapJob = (id, focusMap = true) => {
+      selectedMapJobId = id;
+      renderSelectedMapJobCard();
+      const job = filteredJobs.find(j => j.id === id);
+      if (job && focusMap && mapInstance) {
+        const [lat, lng] = resolveCoordinates(job);
+        mapInstance.setView([lat, lng], 15, { animate: true });
+      }
+    };
 
     function renderList() {
       if (!filteredJobs.length) {
@@ -1305,7 +1375,7 @@
             </div>
             <div class="job-addr">📍 ${j.address}</div>
             <div class="job-actions">
-              <a class="btn btn-primary" href="${navUrl}" target="_blank" rel="noopener">🧭 Haritada Göster / Git</a>
+              <a class="btn btn-primary" href="${navUrl}" target="_blank" rel="noopener">🧭 Git</a>
               <button class="btn ${j.completed ? "btn-secondary" : "btn-success"}" onclick="window.__toggleJob('${j.id}', ${!j.completed})">
                 ${j.completed ? "↩️ Bekleyene Al" : "✓ İşi Tamamla"}
               </button>
@@ -1327,7 +1397,8 @@
         setTimeout(() => mapInstance.invalidateSize(), 120);
         return;
       }
-      mapInstance = L.map("map", { zoomControl: true }).setView([41.665, 26.555], 11);
+      canvasRenderer = L.canvas({ padding: 0.4 });
+      mapInstance = L.map("map", { zoomControl: true, renderer: canvasRenderer }).setView([41.6771, 26.5557], 12);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap"
       }).addTo(mapInstance);
@@ -1339,35 +1410,29 @@
       markerLayer.clearLayers();
 
       const refPt = getReferencePoint();
-      const sortedForMap = [...filteredJobs]
-        .map(j => {
-          const [lat, lng] = resolveCoordinates(j);
-          const km = haversineKm(refPt.lat, refPt.lng, lat, lng);
-          return { ...j, _lat: lat, _lng: lng, _km: km };
-        })
-        .sort((a, b) => a._km - b._km);
-
-      const points = sortedForMap.slice(0, 400);
       const bounds = [];
 
-      points.forEach(j => {
-        bounds.push([j._lat, j._lng]);
+      // Seçili filtredeki TÜM işler haritada nokta olarak gösterilir
+      filteredJobs.forEach(j => {
+        const [lat, lng] = resolveCoordinates(j);
+        bounds.push([lat, lng]);
+
+        const isSelected = j.id === selectedMapJobId;
         const color = j.category === "KOY" ? "#10b981" : j.category === "BELDE" ? "#f59e0b" : "#3b82f6";
-        const marker = L.circleMarker([j._lat, j._lng], {
-          radius: 7,
-          color: "#ffffff",
-          weight: 1.5,
+
+        const marker = L.circleMarker([lat, lng], {
+          renderer: canvasRenderer,
+          radius: isSelected ? 10 : 6.5,
+          color: isSelected ? "#fde047" : "#ffffff",
+          weight: isSelected ? 2.5 : 1.3,
           fillColor: color,
           fillOpacity: 0.92
         });
 
-        marker.bindPopup(`
-          <b>${j.displayTitle}</b><br/>
-          <b>${j.settlement}</b> (${j.district})<br/>
-          ${j.address}<br/>
-          Mesafe: <b>${j._km.toFixed(1)} km</b><br/>
-          <a href="${buildGoogleMapsUrl(j)}" target="_blank" rel="noopener">Google Haritalar'da Aç</a>
-        `);
+        marker.on("click", () => {
+          window.__selectMapJob(j.id, false);
+        });
+
         marker.addTo(markerLayer);
       });
 
@@ -1380,30 +1445,37 @@
             weight: 2,
             fillColor: "#ef4444",
             fillOpacity: 1
-          }).bindPopup("<b>Mevcut Konumunuz</b>").addTo(mapInstance);
+          }).bindPopup("<b>Konumunuz</b>").addTo(mapInstance);
         } else {
           userMarker.setLatLng([userLatLng.lat, userLatLng.lng]);
         }
       }
 
-      el.mapStatus.textContent = userLatLng
-        ? `Konumunuza göre en yakın ${points.length} iş haritada (Mavi: Mahalle, Yeşil: Köy, Turuncu: Belde).`
-        : `Edirne genelinde ${points.length} iş gösteriliyor. Kendi konumunuza göre mesafe için 'Uzaklıkları Hesapla (GPS)' butonuna basın.`;
+      el.mapStatus.textContent = `Haritada ${filteredJobs.length} işin tamamı nokta olarak gösteriliyor. Detay ve Git için bir noktaya basın.`;
 
       if (fitBounds && bounds.length) {
-        mapInstance.fitBounds(bounds, { padding: [26, 26], maxZoom: 13 });
+        mapInstance.fitBounds(bounds, { padding: [24, 24], maxZoom: 14 });
       }
 
-      const topNearby = sortedForMap.slice(0, 25);
-      el.nearbyList.innerHTML = topNearby.length
-        ? topNearby.map(j => `
-            <div class="nearby-item">
+      renderSelectedMapJobCard();
+
+      const sortedByDist = [...filteredJobs]
+        .map(j => {
+          const [lat, lng] = resolveCoordinates(j);
+          return { ...j, _km: haversineKm(refPt.lat, refPt.lng, lat, lng) };
+        })
+        .sort((a, b) => a._km - b._km)
+        .slice(0, 30);
+
+      el.nearbyList.innerHTML = sortedByDist.length
+        ? sortedByDist.map(j => `
+            <div class="nearby-item" onclick="window.__selectMapJob('${j.id}', true)">
               <div class="nearby-info">
-                <div class="nearby-title">${j.settlement} • ${j.tesisatNo || j.seriNo || ""}</div>
+                <div class="nearby-title">${j.displayTitle} • ${j.settlement}</div>
                 <div class="nearby-sub">${j.address}</div>
               </div>
               <span class="km-badge">${j._km.toFixed(1)} km</span>
-              <a class="btn btn-success" style="padding:7px 11px; font-size:12px;" href="${buildGoogleMapsUrl(j)}" target="_blank" rel="noopener">Git</a>
+              <a class="btn btn-success" style="padding:7px 11px; font-size:12px;" href="${buildGoogleMapsUrl(j)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Git</a>
             </div>
           `).join("")
         : `<div class="map-info">Listelenecek iş bulunamadı.</div>`;
@@ -1445,8 +1517,10 @@
         btn.classList.add("active");
         selectedCat = btn.dataset.cat;
         selectedSettlement = "ALL";
+        selectedMapJobId = null;
         populateFilters();
         applyFilters(true);
+        if (activeTab === "map") renderMapAndNearby(true);
       });
     });
 
@@ -1469,6 +1543,7 @@
       selectedSettlement = "ALL";
       populateFilters();
       applyFilters(true);
+      if (activeTab === "map") renderMapAndNearby(true);
     });
 
     el.settlementSelect.addEventListener("change", () => {
