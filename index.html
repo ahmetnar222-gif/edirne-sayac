@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Edirne Sayaç Saha Rehberi - TREDAŞ</title>
+  <title>Edirne & Kırklareli Sayaç Saha Rehberi - TREDAŞ</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -473,7 +473,7 @@
       <div class="brand-row">
         <span class="badge-tredas">TREDAŞ</span>
         <div class="title-group">
-          <h1 class="app-title">Edirne Sayaç Saha Rehberi</h1>
+          <h1 class="app-title">Edirne & Kırklareli Saha Rehberi</h1>
           <div id="syncStatus" class="sync-status sync-busy">⏳ Sunucuya bağlanıyor...</div>
         </div>
       </div>
@@ -517,7 +517,7 @@
 
       <div class="filter-stack">
         <select id="districtSelect">
-          <option value="ALL">Tüm İlçeler</option>
+          <option value="ALL">Tüm İlçeler (Edirne & Kırklareli)</option>
         </select>
 
         <select id="settlementSelect">
@@ -611,12 +611,29 @@
     const ADMIN_PIN = "1923";
     const PAGE_SIZE = 40;
 
-    const EDIRNE_DISTRICTS = [
-      "Merkez", "Keşan", "Uzunköprü", "İpsala", "Havsa",
-      "Meriç", "Enez", "Süloğlu", "Lalapaşa"
-    ];
+    // Edirne + Kırklareli ilçe ve il eşleşmeleri
+    const DISTRICT_META = {
+      "Edirne Merkez": { province: "Edirne", districtName: "Merkez", coords: [41.6771, 26.5557] },
+      "Keşan": { province: "Edirne", districtName: "Keşan", coords: [40.8559, 26.6305] },
+      "Uzunköprü": { province: "Edirne", districtName: "Uzunköprü", coords: [41.2706, 26.6889] },
+      "İpsala": { province: "Edirne", districtName: "İpsala", coords: [40.9197, 26.3797] },
+      "Havsa": { province: "Edirne", districtName: "Havsa", coords: [41.5517, 26.8211] },
+      "Meriç": { province: "Edirne", districtName: "Meriç", coords: [41.1917, 26.4183] },
+      "Enez": { province: "Edirne", districtName: "Enez", coords: [40.7253, 26.0822] },
+      "Süloğlu": { province: "Edirne", districtName: "Süloğlu", coords: [41.7667, 26.9069] },
+      "Lalapaşa": { province: "Edirne", districtName: "Lalapaşa", coords: [41.8389, 26.7375] },
+      "Kırklareli Merkez": { province: "Kırklareli", districtName: "Merkez", coords: [41.7355, 27.2252] },
+      "Lüleburgaz": { province: "Kırklareli", districtName: "Lüleburgaz", coords: [41.4069, 27.3608] },
+      "Babaeski": { province: "Kırklareli", districtName: "Babaeski", coords: [41.4339, 27.0933] },
+      "Vize": { province: "Kırklareli", districtName: "Vize", coords: [41.5736, 27.7642] },
+      "Pınarhisar": { province: "Kırklareli", districtName: "Pınarhisar", coords: [41.6228, 27.5153] },
+      "Demirköy": { province: "Kırklareli", districtName: "Demirköy", coords: [41.8217, 27.7611] },
+      "Pehlivanköy": { province: "Kırklareli", districtName: "Pehlivanköy", coords: [41.3514, 26.9358] },
+      "Kofçaz": { province: "Kırklareli", districtName: "Kofçaz", coords: [41.9442, 27.1678] }
+    };
 
     const CANONICAL_NAMES = {
+      // Edirne Merkez Mahalleler
       "sukrupasa": "Şükrüpaşa",
       "saricapasa": "Sarıcapaşa",
       "sahin": "Şahin",
@@ -650,6 +667,27 @@
       "1. murat": "1. Murat",
       "1 murat": "1. Murat",
       "birinci murat": "1. Murat",
+      "sehsuvarbey": "Şehsuvarbey",
+      "yancikci sahin": "Yancıkçı Şahin",
+      // Kırklareli Mahalleler
+      "karakas": "Karakaş",
+      "yayla": "Yayla",
+      "demirtas": "Demirtaş",
+      "akalar": "Akalar",
+      "berber": "Berber",
+      "cumhuriyet": "Cumhuriyet",
+      "ismet pasha": "İsmet Paşa",
+      "ismet pasa": "İsmet Paşa",
+      "kocahidir": "Kocahıdır",
+      "durak": "Durak",
+      "8 kasim": "8 Kasım",
+      "genclik": "Gençlik",
+      "kurtulus mah": "Kurtuluş",
+      "yildirim mah": "Yıldırım",
+      "siteler": "Siteler",
+      "yenimahalle": "Yeni",
+      "yeni": "Yeni",
+      // Edirne & Kırklareli Köyler
       "tayakadin": "Tayakadın",
       "yenikadin": "Yenikadın",
       "kadin": "Yenikadın",
@@ -708,9 +746,7 @@
       "balabankoru": "Balabankoru",
       "camlica": "Çamlıca",
       "kizkapan": "Kızkapan",
-      "kocahidir": "Kocahıdır",
       "sihlar": "Şıhlar",
-      "yayla": "Yayla",
       "yenice": "Yenice",
       "saricali": "Sarıçalı",
       "sogutluk": "Söğütlük",
@@ -719,6 +755,113 @@
       "harmanli": "Harmanlı",
       "ciftlikkoy": "Çiftlikköy",
       "adasarhanli": "Adasarhanlı",
+      "akcesme": "Akçeşme",
+      "akpinar": "Akpınar",
+      "alpullu": "Alpullu",
+      "arpac": "Arpaç",
+      "aydinkoy": "Aydınköy",
+      "balikoy": "Balıköy",
+      "basagil": "Başağıl",
+      "biyikli": "Bıyıklı",
+      "caliskan": "Çalışkan",
+      "cavuslu": "Çavuşlu",
+      "dagyenice": "Dağyenice",
+      "danisment": "Danışment",
+      "degirmenci": "Değirmenci",
+      "dogankoy": "Doğanköy",
+      "doyran": "Doyran",
+      "emek": "Emek",
+      "emice": "Emice",
+      "eylice": "Eylice",
+      "gazibey": "Gazibey",
+      "goktepe": "Göktepe",
+      "guvenc": "Güvenç",
+      "haciomer": "Hacıömer",
+      "hamidiye": "Hamidiye",
+      "hasanaga": "Hasanağa",
+      "hasirciarnavut": "Hasırcıarnavut",
+      "haydar": "Haydar",
+      "hidir": "Hıdır",
+      "hidiraga": "Hıdırağa",
+      "ihsaniye": "İhsaniye",
+      "ikizler": "İkizler",
+      "incedere": "İncedere",
+      "incegiz": "İnceğiz",
+      "iskender": "İskender",
+      "karaburcek": "Karabürçek",
+      "karacahali": "Karacahalı",
+      "karahamza": "Karahamza",
+      "karakaya": "Karakaya",
+      "karakapi": "Karakapı",
+      "karamurat": "Karamurat",
+      "karapurcek": "Karapürçek",
+      "karsli": "Karslı",
+      "kartal": "Kartal",
+      "kavacik": "Kavacık",
+      "kayali": "Kayalı",
+      "kazanova": "Kazanova",
+      "kecili": "Keçili",
+      "kilickoy": "Kılıçköy",
+      "kizilcikdere": "Kızılcıkdere",
+      "kocakoy": "Kocaköy",
+      "kolsuz": "Kolsuz",
+      "koyunbaba": "Koyunbaba",
+      "koseomer": "Köseömer",
+      "kumciftlik": "Kumçiftlik",
+      "kurucesme": "Kuruçeşme",
+      "kucukaltiagac": "Küçükaltıağaç",
+      "buyukaltiagac": "Büyükaltıağaç",
+      "mahmutkoy": "Mahmutköy",
+      "maltepe": "Maltepe",
+      "malkoc": "Malkoç",
+      "mecidiye": "Mecidiye",
+      "muratcali": "Muratçalı",
+      "musellim": "Müsellim",
+      "ocakli": "Ocaklı",
+      "ogulpasa": "Oğulpaşa",
+      "ortakci": "Ortakçı",
+      "osmankoy": "Osmanköy",
+      "omeroba": "Ömeroba",
+      "saatli": "Saatlı",
+      "saglik": "Sağlık",
+      "sahil": "Sahil",
+      "saridanisment": "Sarıdanişment",
+      "sarikavak": "Sarıkavak",
+      "sazli": "Sazlı",
+      "seydiye": "Seydiye",
+      "sirasogut": "Sırasöğüt",
+      "sinankoy": "Sinanköy",
+      "sogucak": "Soğucak",
+      "sogutlu": "Söğütlü",
+      "sabanmera": "Şabanmera",
+      "sahmelek": "Şahmelek",
+      "sehitler": "Şehitler",
+      "tasli": "Taşlı",
+      "tepecik": "Tepecik",
+      "tokatli": "Tokatlı",
+      "topac": "Topaç",
+      "tunca": "Tunca",
+      "turkmen": "Türkmen",
+      "ugurlu": "Uğurlu",
+      "uzunhaci": "Uzunhacı",
+      "ulku": "Ülkü",
+      "vakif": "Vakıf",
+      "yagmurca": "Yağmurca",
+      "yahsibey": "Yahşibey",
+      "yavasca": "Yavaşça",
+      "yaylacik": "Yaylacık",
+      "yenikoy": "Yeniköy",
+      "yesilova": "Yeşilova",
+      "zarif": "Zarif",
+      "ahmetbey": "Ahmetbey",
+      "evrensekiz": "Evrensekiz",
+      "kavakkoy": "Kavakköy",
+      "kaynarca": "Kaynarca",
+      "kiyikoy": "Kıyıköy",
+      "igneadа": "İğneada",
+      "igneada": "İğneada",
+      "buyukkaristiran": "Büyükkarıştıran",
+      // Beldeler
       "yenimuhacir": "Yenimuhacır",
       "begendik": "Beğendik",
       "kuplu": "Küplü",
@@ -729,19 +872,10 @@
       "copkoy": "Çöpköy"
     };
 
-    const MERKEZ_MAHALLE_KEYS = new Set([
-      "sukrupasa", "saricapasa", "sahin", "sinan", "sabuni", "nisancipasa",
-      "mithatpasa", "kocasinan", "abdullahpasa", "fatih", "abdurrahman",
-      "talatpasa", "dilaverbey", "babademirtas", "barutluk", "menzilahir",
-      "yildirim beyazit", "yildirim haci sarraf", "sarraf", "yildirim",
-      "karaagac", "istasyon", "yeniimaret", "medrese alibey", "cavusbey",
-      "kaleici", "meydan", "umurbey", "kurtulus", "ataturk", "1. murat",
-      "1 murat", "birinci murat", "sehsuvarbey", "sehzade", "yancikci sahin"
-    ]);
-
     const BELDE_KEYS = new Set([
       "yenimuhacir", "begendik", "kuplu", "subasi", "kircasalih",
-      "abalar", "buyukdoganca", "copkoy"
+      "abalar", "buyukdoganca", "copkoy", "ahmetbey", "evrensekiz",
+      "kavakkoy", "kaynarca", "kiyikoy", "igneada", "buyukkaristiran"
     ]);
 
     const KOY_KEYS = new Set([
@@ -756,8 +890,8 @@
       "cukurkoy", "buyukevren", "kucukevren", "akardere", "beykoy",
       "altinyazi", "candir", "balaban", "kurtbey", "pasayigit",
       "sultankoy", "karahisar", "alacaoglu", "balabankoru", "camlica",
-      "kizkapan", "kocahidir", "sihlar", "yayla", "yenice", "saricali",
-      "sogutluk", "buyukismailce", "kucukismailce", "harmanli", "ciftlikkoy",
+      "kizkapan", "sihlar", "yenice", "saricali", "sogutluk",
+      "buyukismailce", "kucukismailce", "harmanli", "ciftlikkoy",
       "adasarhanli", "akcesme", "akpinar", "alpullu", "arpac", "aydinkoy",
       "balikoy", "basagil", "biyikli", "caliskan", "cavuslu", "dagyenice",
       "danisment", "degirmenci", "dogankoy", "doyran", "emek", "emice",
@@ -777,18 +911,6 @@
       "turkmen", "ugurlu", "uzunhaci", "ulku", "vakif", "yagmurca",
       "yahsibey", "yavasca", "yaylacik", "yenikoy", "yesilova", "zarif"
     ]);
-
-    const DISTRICT_COORDS = {
-      "Merkez": [41.6771, 26.5557],
-      "Keşan": [40.8559, 26.6305],
-      "Uzunköprü": [41.2706, 26.6889],
-      "İpsala": [40.9197, 26.3797],
-      "Havsa": [41.5517, 26.8211],
-      "Meriç": [41.1917, 26.4183],
-      "Enez": [40.7253, 26.0822],
-      "Süloğlu": [41.7667, 26.9069],
-      "Lalapaşa": [41.8389, 26.7375]
-    };
 
     const PLACE_COORDS = {
       "sukrupasa": [41.6678, 26.5765],
@@ -843,7 +965,17 @@
       "begendik": [40.8225, 26.2589],
       "kuplu": [41.1586, 26.3519],
       "subasi": [41.3667, 26.8056],
-      "kircasalih": [41.3575, 26.8833]
+      "kircasalih": [41.3575, 26.8833],
+      "karakas": [41.7375, 27.2240],
+      "yayla": [41.7315, 27.2180],
+      "demirtas": [41.7410, 27.2290],
+      "akalar": [41.7330, 27.2320],
+      "kocahidir": [41.7440, 27.2150],
+      "igneada": [41.8747, 27.9919],
+      "kiyikoy": [41.6358, 28.0819],
+      "ahmetbey": [41.4342, 27.4958],
+      "evrensekiz": [41.4008, 27.2564],
+      "buyukkaristiran": [41.3753, 27.5150]
     };
 
     const app = initializeApp(firebaseConfig);
@@ -967,7 +1099,7 @@
           continue;
         }
 
-        if (norm === "merkez" || norm === "edirne" || norm === "edirne merkez") {
+        if (["merkez", "edirne", "edirne merkez", "kirklareli", "kirklareli merkez"].includes(norm)) {
           continue;
         }
 
@@ -982,7 +1114,7 @@
       cleanStreet = cleanStreet
         .replace(/\bKÖYÜN\s+KENDİSİ\s+(MAH\.?|MAHALLESİ)\s*/gi, "")
         .replace(/\bKÖYÜN\s+KENDİSİ\b/gi, "Köy İçi")
-        .replace(/\bMERKEZ\s*\/?\s*$/gi, "")
+        .replace(/\b(MERKEZ|EDİRNE|KIRKLARELİ)\s*\/?\s*$/gi, "")
         .replace(/\bDISKAPINO\s*:/gi, "No:")
         .replace(/\bDAIRENO\s*:/gi, "Daire:")
         .replace(/\s+/g, " ")
@@ -997,19 +1129,22 @@
       };
     }
 
-    function detectDistrict(rawText) {
+    function detectDistrictKey(rawText) {
       const n = asciiKey(rawText);
-      for (const d of EDIRNE_DISTRICTS) {
-        if (d === "Merkez") continue;
-        const dn = asciiKey(d);
+      const isKirklareli = n.includes("kirklareli");
+
+      for (const [key, meta] of Object.entries(DISTRICT_META)) {
+        if (meta.districtName === "Merkez") continue;
+        const dn = asciiKey(meta.districtName);
         if (new RegExp(`(^|[^a-z0-9])${dn}([^a-z0-9]|$)`).test(n)) {
-          return d;
+          return key;
         }
       }
-      return "Merkez";
+
+      return isKirklareli ? "Kırklareli Merkez" : "Edirne Merkez";
     }
 
-    function resolveSettlement(rawSettlement, rawAddress, district) {
+    function resolveSettlement(rawSettlement, rawAddress, districtKey) {
       const source = `${rawSettlement || ""} ${rawAddress || ""}`.trim();
       const normAll = asciiKey(source);
 
@@ -1035,7 +1170,7 @@
           category = "BELDE";
         } else if (KOY_KEYS.has(matchedKey)) {
           category = "KOY";
-        } else if (MERKEZ_MAHALLE_KEYS.has(matchedKey)) {
+        } else {
           category = "MAHALLE";
         }
       } else {
@@ -1053,7 +1188,7 @@
         else if (/\bkoyu\b|\bkoy\b/i.test(normAll) && !/\bmah\b|\bmahallesi\b/i.test(normAll)) category = "KOY";
 
         candidate = candidate
-          .replace(/\b(mahallesi|mah\.?|mh\.?|köyü|koyu|köy|koy|beldesi|belde|belediyesi|belediye|edirne|merkez|genel|köyün kendisi)\b/gi, " ")
+          .replace(/\b(mahallesi|mah\.?|mh\.?|köyü|koyu|köy|koy|beldesi|belde|belediyesi|belediye|edirne|kırklareli|kirklareli|merkez|genel|köyün kendisi)\b/gi, " ")
           .replace(/[|/\\\-–—]+/g, " ")
           .replace(/\s+/g, " ")
           .trim();
@@ -1065,7 +1200,8 @@
           if (BELDE_KEYS.has(cKey)) category = "BELDE";
           else if (KOY_KEYS.has(cKey)) category = "KOY";
         } else {
-          displayBase = candidate ? properTr(candidate) : `${district} Merkez`;
+          const meta = DISTRICT_META[districtKey] || DISTRICT_META["Edirne Merkez"];
+          displayBase = candidate ? properTr(candidate) : `${meta.districtName} Merkez`;
           matchedKey = asciiKey(displayBase);
         }
       }
@@ -1079,9 +1215,10 @@
       return { category: "MAHALLE", settlement: `${displayBase} Mah.`, baseKey: matchedKey };
     }
 
-    function buildCleanAddress(cleanStreet, district, settlement) {
+    function buildCleanAddress(cleanStreet, districtKey, settlement) {
+      const meta = DISTRICT_META[districtKey] || DISTRICT_META["Edirne Merkez"];
       let street = (cleanStreet || "")
-        .replace(/^(edirne\s*\/?\s*merkez|merkez\s*\/?\s*edirne)\s*[-–—,/]?\s*/i, "")
+        .replace(/^(edirne|kırklareli|kirklareli|merkez)\s*([\/\-–—,]|\s)+(merkez|edirne|kırklareli|kirklareli)?\s*[-–—,/]?\s*/i, "")
         .replace(/\s+/g, " ")
         .trim();
 
@@ -1091,11 +1228,15 @@
         street = street.replace(dupRx, "").trim();
       }
 
-      if (!street || asciiKey(street) === "genel" || asciiKey(street) === "merkez") {
-        return `${settlement}, ${district} / Edirne`;
+      const locLabel = meta.districtName === "Merkez"
+        ? `${meta.province} Merkez`
+        : `${meta.districtName} / ${meta.province}`;
+
+      if (!street || ["genel", "merkez", "koy ici", "koyun kendisi"].includes(asciiKey(street))) {
+        return `${settlement}, ${locLabel}`;
       }
 
-      return `${settlement}, ${properTr(street)} (${district} / Edirne)`;
+      return `${settlement}, ${properTr(street)} (${locLabel})`;
     }
 
     function resolveCoordinates(job) {
@@ -1104,7 +1245,8 @@
       }
 
       const key = job.baseKey || asciiKey(job.settlement);
-      const baseCoord = PLACE_COORDS[key] || DISTRICT_COORDS[job.district] || DISTRICT_COORDS["Merkez"];
+      const distMeta = DISTRICT_META[job.district] || DISTRICT_META["Edirne Merkez"];
+      const baseCoord = PLACE_COORDS[key] || distMeta.coords;
 
       const seedStr = `${job.tesisatNo || job.id}_${job.streetOnly || ""}`;
       let hash = 0;
@@ -1137,7 +1279,7 @@
       const tesisatNo = String(raw.tesisatNo || raw.installationNo || parsed.extractedTesisat || "").trim();
       const seriNo = String(raw.seriNo || raw.serialNo || parsed.extractedSeri || "").trim();
 
-      const district = EDIRNE_DISTRICTS.includes(raw.district)
+      const district = DISTRICT_META[raw.district]
         ? raw.district
         : detectDistrict(`${raw.district || ""} ${parsed.extractedPlace} ${rawAddr}`);
 
@@ -1189,7 +1331,7 @@
 
       const districts = Array.from(new Set(catPool.map(j => j.district))).sort((a, b) => a.localeCompare(b, "tr"));
       el.districtSelect.innerHTML = `<option value="ALL">Tüm İlçeler (${districts.length})</option>` +
-        districts.map(d => `<option value="${d}">${d === "Merkez" ? "Edirne Merkez" : d}</option>`).join("");
+        districts.map(d => `<option value="${d}">${d}</option>`).join("");
 
       if (districts.includes(prevDistrict)) {
         el.districtSelect.value = prevDistrict;
@@ -1205,7 +1347,7 @@
         selectedCat === "KOY" ? "Tüm Köyler" :
         selectedCat === "MAHALLE" ? "Tüm Mahalleler" :
         selectedCat === "BELDE" ? "Tüm Beldeler" :
-        "Tüm Mahalle / Köy / Beldeler";
+        "Tüm Yerleşimler (Mahalle / Köy / Belde)";
 
       el.settlementSelect.innerHTML = `<option value="ALL">${settPlaceholder} (${settlements.length})</option>` +
         settlements.map(s => `<option value="${s}">${s}</option>`).join("");
@@ -1219,7 +1361,12 @@
     }
 
     function getReferencePoint() {
-      return userLatLng || { lat: 41.6771, lng: 26.5557 };
+      if (userLatLng) return userLatLng;
+      if (selectedDistrict !== "ALL" && DISTRICT_META[selectedDistrict]) {
+        const [lat, lng] = DISTRICT_META[selectedDistrict].coords;
+        return { lat, lng };
+      }
+      return { lat: 41.6771, lng: 26.5557 };
     }
 
     function applyFilters(resetPaging = true) {
@@ -1278,7 +1425,6 @@
       return `<span class="tag tag-mahalle">🏙️ Mahalle</span>`;
     }
 
-    // Genel "Merkez Merkez Mahallesi" yerine gerçek yerleşim / sokak + koordinat hedefi üretir
     function buildGoogleMapsUrl(job) {
       const [lat, lng] = resolveCoordinates(job);
       const cleanStreetNorm = asciiKey(job.streetOnly || "");
@@ -1287,10 +1433,14 @@
         !["genel", "merkez", "koy ici", "koyun kendisi"].includes(cleanStreetNorm) &&
         cleanStreetNorm.length > 3;
 
+      const meta = DISTRICT_META[job.district] || DISTRICT_META["Edirne Merkez"];
+      const locText = meta.districtName === "Merkez"
+        ? `${meta.province} Merkez`
+        : `${meta.districtName}, ${meta.province}`;
+
       if (hasSpecificStreet) {
         const placeFull = job.settlement.replace(/\bMah\./i, "Mahallesi");
-        const distLabel = job.district === "Merkez" ? "Edirne" : `${job.district}, Edirne`;
-        const query = encodeURIComponent(`${properTr(job.streetOnly)}, ${placeFull}, ${distLabel}`);
+        const query = encodeURIComponent(`${properTr(job.streetOnly)}, ${placeFull}, ${locText}`);
         return `https://www.google.com/maps/search/?api=1&query=${query}`;
       }
 
@@ -1398,7 +1548,7 @@
         return;
       }
       canvasRenderer = L.canvas({ padding: 0.4 });
-      mapInstance = L.map("map", { zoomControl: true, renderer: canvasRenderer }).setView([41.6771, 26.5557], 12);
+      mapInstance = L.map("map", { zoomControl: true, renderer: canvasRenderer }).setView([41.6771, 26.5557], 11);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap"
       }).addTo(mapInstance);
@@ -1412,7 +1562,6 @@
       const refPt = getReferencePoint();
       const bounds = [];
 
-      // Seçili filtredeki TÜM işler haritada nokta olarak gösterilir
       filteredJobs.forEach(j => {
         const [lat, lng] = resolveCoordinates(j);
         bounds.push([lat, lng]);
