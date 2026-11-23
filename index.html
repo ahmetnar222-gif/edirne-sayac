@@ -35,6 +35,13 @@
       flex-shrink: 0;
     }
     .header-title { font-size: 14px; font-weight: 700; line-height: 1.2; color: #f1f5f9; }
+    .autosave-pill {
+      display: inline-block;
+      margin-top: 2px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #34d399;
+    }
     .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .counter-pill {
       background-color: #1e293b;
@@ -129,6 +136,49 @@
     }
     .upload-box.excel-box .upload-title { color: #93c5fd; }
     .file-input { width: 100%; color: #e2e8f0; font-size: 11px; }
+
+    .backup-box {
+      background-color: #0b1120;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .backup-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6ee7b7;
+      margin-bottom: 8px;
+    }
+    .backup-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn-export {
+      width: 100%;
+      background-color: #065f46;
+      border: 1px solid #10b981;
+      color: #ecfdf5;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 9px;
+      border-radius: 9px;
+      cursor: pointer;
+    }
+    .import-label {
+      display: block;
+      background-color: #1e293b;
+      border: 1px dashed #60a5fa;
+      color: #bfdbfe;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 8px;
+      border-radius: 9px;
+      text-align: center;
+      cursor: pointer;
+    }
 
     .manual-box {
       background-color: #0b1120;
@@ -524,7 +574,10 @@
   <div class="header">
     <div class="header-left">
       <div class="badge-tredas">TREDAŞ</div>
-      <div class="header-title">Edirne Sayaç<br>Saha Rehberi</div>
+      <div>
+        <div class="header-title">Edirne Sayaç Saha Rehberi</div>
+        <div class="autosave-pill" id="autosaveBadge">● Otomatik Kaydedici Açık</div>
+      </div>
     </div>
     <div class="header-right">
       <div class="counter-pill">İşlenen: <span id="doneCount">0</span> / <span id="totalCount">0</span></div>
@@ -559,6 +612,17 @@
             accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
             onchange="handleExcelFileSelect(event)"
           />
+        </div>
+      </div>
+
+      <div class="backup-box">
+        <div class="backup-title">💾 Otomatik Kayıt Yedeği (Başka Kişiye / Cihaza Aktar)</div>
+        <div class="backup-row">
+          <button class="btn-export" type="button" onclick="downloadBackupJson()">⬇️ Yedek İndir</button>
+          <label class="import-label" for="backupFileInput">
+            ⬆️ Yedek Yükle
+            <input type="file" id="backupFileInput" accept=".json,application/json" style="display:none;" onchange="handleBackupImport(event)" />
+          </label>
         </div>
       </div>
 
@@ -640,7 +704,7 @@
   <div class="modal-backdrop" id="pinModal">
     <div class="modal-card">
       <div class="modal-title">🔐 Yetkili Girişi</div>
-      <div class="modal-sub">PDF/Excel yükleme, kayıt ekleme veya listeyi sıfırlama işlemleri için yetkili şifresini girin.</div>
+      <div class="modal-sub">PDF/Excel yükleme, kayıt ekleme, yedek alma veya sıfırlama için yetkili şifresini girin.</div>
       <input
         type="password"
         id="pinInput"
@@ -665,14 +729,19 @@
     }
 
     const ADMIN_PIN = "1923";
-    const STORAGE_PROCESSED = "tredas_edirne_v11_islenen";
-    const STORAGE_JOBS = "tredas_edirne_v11_isler";
-    const STORAGE_ADMIN_AUTH = "tredas_edirne_v11_admin";
-    const DB_NAME = "TredasEdirneSahaDB_v11";
+    const STORAGE_PROCESSED = "tredas_edirne_v12_islenen";
+    const STORAGE_JOBS = "tredas_edirne_v12_isler";
+    const STORAGE_ADMIN_AUTH = "tredas_edirne_v12_admin";
+    const DB_NAME = "TredasEdirneSahaDB_v12";
     const STORE_PROCESSED = "processedJobs";
     const STORE_JOBS = "jobs";
-    const CACHE_NAME = "tredas-edirne-vault-v11";
-    const CACHE_KEY = "/__tredas_edirne_state_v11.json";
+    const CACHE_NAME = "tredas-edirne-vault-v12";
+    const CACHE_KEY = "/__tredas_edirne_state_v12.json";
+
+    const LEGACY_KEYS = [
+      { jobs: "tredas_edirne_v11_isler", proc: "tredas_edirne_v11_islenen", ts: "tredas_edirne_v11_isler_ts" },
+      { jobs: "tredas_edirne_v10_isler", proc: "tredas_edirne_v10_islenen", ts: "tredas_edirne_v10_isler_ts" }
+    ];
 
     let processedMap = {};
     let jobsList = [];
@@ -1064,7 +1133,7 @@
         localStorage.removeItem(STORAGE_JOBS + "_ts");
       } catch (e) {}
       try {
-        window.name = JSON.stringify({ __tredas_v11: true, ts: lastSavedAt, jobsList: [], processedMap: {} });
+        window.name = JSON.stringify({ __tredas_v12: true, ts: lastSavedAt, jobsList: [], processedMap: {} });
       } catch (e) {}
       writeCacheVault({ ts: lastSavedAt, jobsList: [], processedMap: {} });
       if (window.indexedDB) {
@@ -1083,6 +1152,59 @@
       renderList();
       document.getElementById("scanStatus").textContent = "🗑️ Liste sıfırlandı.";
       showToast("🗑️ Tüm kayıtlar sıfırlandı");
+    }
+
+    function downloadBackupJson() {
+      if (!isAdminLoggedIn) {
+        openMenuOrAdmin();
+        return;
+      }
+      saveAllData();
+      const payload = {
+        app: "tredas-edirne-saha-rehberi",
+        exportedAt: new Date().toISOString(),
+        ts: lastSavedAt || Date.now(),
+        jobsList,
+        processedMap
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "edirne-sayac-yedek.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      document.getElementById("scanStatus").textContent = "💾 Yedek dosyası indirildi (başkasına gönderebilirsin).";
+      showToast("💾 Yedek indirildi");
+    }
+
+    async function handleBackupImport(event) {
+      if (!isAdminLoggedIn) {
+        event.target.value = "";
+        openMenuOrAdmin();
+        return;
+      }
+      const file = event.target.files && event.target.files[0];
+      const statusEl = document.getElementById("scanStatus");
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (!Array.isArray(data.jobsList)) throw new Error("Geçersiz yedek dosyası");
+        mergeStateIntoMemory(data.jobsList, data.processedMap || {}, Number(data.ts || Date.now()));
+        saveAllData();
+        populateIlceDropdown();
+        populateMahalleDropdown();
+        renderList();
+        statusEl.textContent = "✅ Yedek yüklendi ve otomatik kaydedildi (" + jobsList.length + " iş).";
+        showToast("✓ Yedek yüklendi");
+      } catch (e) {
+        statusEl.textContent = "❌ Yedek dosyası okunamadı.";
+      } finally {
+        event.target.value = "";
+      }
     }
 
     function mergeStateIntoMemory(incomingJobs, incomingProcessed, incomingTs = 0) {
@@ -1140,6 +1262,16 @@
       }
     }
 
+    function updateAutosaveBadge(timeMs) {
+      const badge = document.getElementById("autosaveBadge");
+      if (!badge) return;
+      const d = new Date(timeMs || Date.now());
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mm = String(d.getMinutes()).padStart(2, "0");
+      const ss = String(d.getSeconds()).padStart(2, "0");
+      badge.textContent = `● Oto-Kayıt (${hh}:${mm}:${ss})`;
+    }
+
     function saveAllData() {
       const now = Date.now();
       if (now > lastSavedAt) lastSavedAt = now;
@@ -1152,10 +1284,11 @@
       } catch (e) {}
 
       try {
-        window.name = JSON.stringify({ __tredas_v11: true, ...snapshot });
+        window.name = JSON.stringify({ __tredas_v12: true, ...snapshot });
       } catch (e) {}
 
       writeCacheVault(snapshot);
+      updateAutosaveBadge(lastSavedAt);
 
       if (window.indexedDB) {
         try {
@@ -1194,19 +1327,23 @@
       } catch (e) {}
 
       let anyChanged = false;
-      try {
-        const pRaw = localStorage.getItem(STORAGE_PROCESSED);
-        const jRaw = localStorage.getItem(STORAGE_JOBS);
-        const tRaw = Number(localStorage.getItem(STORAGE_JOBS + "_ts") || "0");
-        if (mergeStateIntoMemory(jRaw ? JSON.parse(jRaw) : [], pRaw ? JSON.parse(pRaw) : {}, tRaw)) {
-          anyChanged = true;
-        }
-      } catch (e) {}
+      const keySets = [{ jobs: STORAGE_JOBS, proc: STORAGE_PROCESSED, ts: STORAGE_JOBS + "_ts" }, ...LEGACY_KEYS];
+
+      for (const ks of keySets) {
+        try {
+          const pRaw = localStorage.getItem(ks.proc);
+          const jRaw = localStorage.getItem(ks.jobs);
+          const tRaw = Number(localStorage.getItem(ks.ts) || "0");
+          if (mergeStateIntoMemory(jRaw ? JSON.parse(jRaw) : [], pRaw ? JSON.parse(pRaw) : {}, tRaw)) {
+            anyChanged = true;
+          }
+        } catch (e) {}
+      }
 
       if (window.name) {
         try {
           const nameObj = JSON.parse(window.name);
-          if (nameObj && nameObj.__tredas_v11) {
+          if (nameObj && (nameObj.__tredas_v12 || nameObj.__tredas_v11 || nameObj.__tredas_v10)) {
             if (mergeStateIntoMemory(nameObj.jobsList, nameObj.processedMap, Number(nameObj.ts || 0))) {
               anyChanged = true;
             }
@@ -1363,11 +1500,9 @@
         raw = raw.replace(new RegExp("\\b" + tesisat + "\\b", "g"), " ");
       }
 
-      // Dış kapı / bina No çıkar
       const noMatch = raw.match(/\b(?:NO|NUMARA)\s*[:.#-]?\s*([A-Z0-9çğıöşü/-]{1,8})\b/i);
       const noPart = noMatch ? ("NO: " + trUpper(noMatch[1])) : "";
 
-      // Sokak veya Cadde bilgisini çıkar
       const sokCadMatch = raw.match(/([A-ZÇĞİÖŞÜ0-9._\- ]{2,35}?\b(?:SOK\.?|SOKAĞI|SOKAGI|CAD\.?|CADDESİ|CADDESI|BULVAR|BULVARI|MEVKİİ|MEVKII)\b)/i);
       let sokakPart = "";
       if (sokCadMatch && sokCadMatch[1]) {
@@ -1488,8 +1623,8 @@
       document.getElementById("manSeri").value = "";
       document.getElementById("manMahalle").value = "";
       document.getElementById("manAdres").value = "";
-      document.getElementById("scanStatus").textContent = "✅ Yeni kayıt eklendi (Toplam: " + jobsList.length + ").";
-      showToast("✓ Kayıt eklendi");
+      document.getElementById("scanStatus").textContent = "✅ Yeni kayıt eklendi ve otomatik kaydedildi (Toplam: " + jobsList.length + ").";
+      showToast("✓ Kaydedildi");
     }
 
     function addParsedChunks(chunks, sourcePrefix) {
@@ -1569,9 +1704,9 @@
         }
         const addedCount = addParsedChunks(chunks, "PDF");
         statusEl.textContent = addedCount > 0
-          ? "✅ PDF'den " + addedCount + " kayıt eklendi (Toplam: " + jobsList.length + ")."
+          ? "✅ PDF'den " + addedCount + " kayıt eklendi ve otomatik kaydedildi (Toplam: " + jobsList.length + ")."
           : "⚠️ PDF tarandı; eklenecek yeni kayıt bulunamadı.";
-        showToast(addedCount > 0 ? "✓ " + addedCount + " kayıt eklendi" : "Yeni kayıt bulunamadı");
+        showToast(addedCount > 0 ? "✓ " + addedCount + " kayıt kaydedildi" : "Yeni kayıt bulunamadı");
       } catch (err) {
         statusEl.textContent = "❌ PDF okunamadı.";
       } finally {
@@ -1606,9 +1741,9 @@
         });
         const addedCount = addParsedChunks(chunks, "XLS");
         statusEl.textContent = addedCount > 0
-          ? "✅ Excel'den " + addedCount + " kayıt eklendi (Toplam: " + jobsList.length + ")."
+          ? "✅ Excel'den " + addedCount + " kayıt eklendi ve otomatik kaydedildi (Toplam: " + jobsList.length + ")."
           : "⚠️ Excel tarandı; eklenecek yeni kayıt bulunamadı.";
-        showToast(addedCount > 0 ? "✓ " + addedCount + " kayıt eklendi" : "Yeni kayıt bulunamadı");
+        showToast(addedCount > 0 ? "✓ " + addedCount + " kayıt kaydedildi" : "Yeni kayıt bulunamadı");
       } catch (err) {
         statusEl.textContent = "❌ Excel dosyası okunamadı.";
       } finally {
@@ -1619,7 +1754,7 @@
     function markJobStatus(id, durum) {
       processedMap[id] = { durum, ts: Date.now() };
       saveAllData();
-      showToast("✓ Kaydedildi: " + durum);
+      showToast("✓ Otomatik Kaydedildi");
       renderList();
     }
 
