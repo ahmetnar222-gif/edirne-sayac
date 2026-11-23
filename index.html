@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Edirne Sayaç Saha Rehberi</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
@@ -20,7 +22,7 @@
       gap: 8px;
       position: sticky;
       top: 0;
-      z-index: 50;
+      z-index: 1000;
     }
     .header-left { display: flex; align-items: center; gap: 9px; min-width: 0; }
     .badge-tredas {
@@ -180,6 +182,132 @@
       min-height: 16px;
     }
 
+    .view-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background-color: #0b1120;
+      padding: 4px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border: 1px solid #1e293b;
+    }
+    .view-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 8px;
+      border-radius: 9px;
+      cursor: pointer;
+    }
+    .view-btn.active {
+      background-color: #1e293b;
+      color: #ffffff;
+    }
+
+    .map-wrapper {
+      display: none;
+      margin-bottom: 12px;
+    }
+    .map-wrapper.open { display: block; }
+    .map-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-gps {
+      background-color: #1e293b;
+      border: 1px solid #475569;
+      color: #f8fafc;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .map-hint {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    #sahaMap {
+      width: 100%;
+      height: 320px;
+      border-radius: 14px;
+      border: 1px solid #263244;
+      background-color: #0f172a;
+      z-index: 1;
+    }
+
+    .distance-box {
+      margin-top: 10px;
+      border-top: 1px solid #1f2937;
+      padding-top: 10px;
+    }
+    .distance-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+    .distance-item {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 9px 10px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .distance-info { min-width: 0; }
+    .distance-loc { font-size: 12px; font-weight: 700; color: #f8fafc; }
+    .distance-addr { font-size: 11px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .distance-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .dist-badge {
+      background-color: #1e293b;
+      color: #e2e8f0;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 7px;
+    }
+    .btn-mini-gmap {
+      background-color: #10b981;
+      color: #052e16;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 5px 9px;
+      border-radius: 7px;
+    }
+
+    .leaflet-popup-content-wrapper {
+      background: #111827;
+      color: #f8fafc;
+      border: 1px solid #334155;
+      border-radius: 12px;
+    }
+    .leaflet-popup-tip { background: #111827; }
+    .popup-gmap-btn {
+      display: block;
+      margin-top: 8px;
+      background: #10b981;
+      color: #052e16 !important;
+      text-align: center;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+
     .region-tabs {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -321,7 +449,7 @@
       position: fixed;
       inset: 0;
       background: rgba(2, 6, 23, 0.78);
-      z-index: 120;
+      z-index: 1200;
       align-items: center;
       justify-content: center;
       padding: 16px;
@@ -385,7 +513,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.25s;
-      z-index: 140;
+      z-index: 1400;
       white-space: nowrap;
     }
     .toast.show { opacity: 1; }
@@ -455,6 +583,11 @@
       <div class="scan-status" id="scanStatus"></div>
     </div>
 
+    <div class="view-switch">
+      <button class="view-btn active" id="btnViewList" type="button" onclick="switchViewMode('LIST')">📋 İş Listesi</button>
+      <button class="view-btn" id="btnViewMap" type="button" onclick="switchViewMode('MAP')">🗺️ Harita & Mesafe</button>
+    </div>
+
     <div class="card">
       <div class="region-tabs">
         <button class="region-btn active" data-region="ALL" onclick="setRegion('ALL', this)">Tümü</button>
@@ -476,6 +609,18 @@
         <button class="chip-btn active" data-phase="ALL" onclick="setPhase('ALL', this)">Tüm Sayaçlar</button>
         <button class="chip-btn" data-phase="Monofaze" onclick="setPhase('Monofaze', this)">Monofaze</button>
         <button class="chip-btn" data-phase="Trifaze" onclick="setPhase('Trifaze', this)">Trifaze</button>
+      </div>
+    </div>
+
+    <div class="card map-wrapper" id="mapSection">
+      <div class="map-toolbar">
+        <button class="btn-gps" type="button" onclick="locateUserOnMap()">📍 Uzaklıkları Hesapla</button>
+        <span class="map-hint" id="gpsStatusText">Konumuna göre mesafeleri gösterir</span>
+      </div>
+      <div id="sahaMap"></div>
+      <div class="distance-box" id="distanceBox">
+        <div class="distance-title" id="distanceTitle">📏 İşlerin Uzaklık Sırası</div>
+        <div id="distanceList"></div>
       </div>
     </div>
 
@@ -520,21 +665,27 @@
     }
 
     const ADMIN_PIN = "1923";
-    const STORAGE_PROCESSED = "tredas_edirne_v7_islenen";
-    const STORAGE_JOBS = "tredas_edirne_v7_isler";
-    const STORAGE_ADMIN_AUTH = "tredas_edirne_v7_admin";
-    const DB_NAME = "TredasEdirneSahaDB_v7";
+    const STORAGE_PROCESSED = "tredas_edirne_v10_islenen";
+    const STORAGE_JOBS = "tredas_edirne_v10_isler";
+    const STORAGE_ADMIN_AUTH = "tredas_edirne_v10_admin";
+    const DB_NAME = "TredasEdirneSahaDB_v10";
     const STORE_PROCESSED = "processedJobs";
     const STORE_JOBS = "jobs";
-    const CACHE_NAME = "tredas-edirne-vault-v7";
-    const CACHE_KEY = "/__tredas_edirne_state_v7.json";
+    const CACHE_NAME = "tredas-edirne-vault-v10";
+    const CACHE_KEY = "/__tredas_edirne_state_v10.json";
 
     let processedMap = {};
     let jobsList = [];
     let currentRegion = "ALL";
     let currentPhase = "ALL";
+    let currentViewMode = "LIST";
     let isAdminLoggedIn = false;
     let lastSavedAt = 0;
+
+    let leafletMap = null;
+    let markersLayer = null;
+    let userMarker = null;
+    let userCoords = null;
 
     const LOCATION_ALIASES = {
       "KEMALKOY": "KEMERKÖY",
@@ -544,6 +695,42 @@
       "1 MURAT": "1.MURAT",
       "BIRINCI MURAT": "1.MURAT",
       "SUKRUPASA": "ŞÜKRÜPAŞA"
+    };
+
+    const EDIRNE_KNOWN_COORDS = {
+      "EDIRNE MERKEZ": [41.6771, 26.5557],
+      "SULOGLU": [41.7678, 26.9125],
+      "HAVSA": [41.5494, 26.8211],
+      "UZUNKOPRU": [41.2667, 26.6861],
+      "KESAN": [40.8558, 26.6303],
+      "IPSALA": [40.9225, 26.3822],
+      "ENEZ": [40.7247, 26.0825],
+      "LALAPASA": [41.8406, 26.7364],
+      "MERIC": [41.1908, 26.4186],
+      "CAVUSBEY": [41.6712, 26.5448],
+      "SUKRUPASA": [41.6815, 26.5785],
+      "1 MURAT": [41.6685, 26.5820],
+      "FATIH": [41.6650, 26.5920],
+      "KOCASINAN": [41.6725, 26.5695],
+      "ABDURRAHMAN": [41.6745, 26.5612],
+      "BABADEMIRTAS": [41.6798, 26.5515],
+      "SABUNI": [41.6758, 26.5542],
+      "TALATPASA": [41.6730, 26.5525],
+      "MEYDAN": [41.6812, 26.5568],
+      "MEDRESE ALI BEY": [41.6789, 26.5590],
+      "MITHATPASA": [41.6762, 26.5502],
+      "UMURBEY": [41.6708, 26.5588],
+      "YILDIRIM BEYAZIT": [41.6785, 26.5315],
+      "YILDIRIM HACISARRAF": [41.6752, 26.5345],
+      "YENICERILER": [41.6722, 26.5360],
+      "KARAAGAC": [41.6565, 26.5225],
+      "ISTASYON": [41.6615, 26.5765],
+      "BARUTLUK": [41.6845, 26.5642],
+      "NISANCIPASA": [41.6820, 26.5510],
+      "SARI CAPASA": [41.6780, 26.5480],
+      "DILAVERBEY": [41.6740, 26.5495],
+      "TASLISEKBAN": [41.7985, 26.8850],
+      "KEMERKOY": [41.6512, 26.6485]
     };
 
     if (navigator.storage && navigator.storage.persist) {
@@ -619,6 +806,203 @@
       return cleaned;
     }
 
+    function hashString(str) {
+      let h = 2166136261;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    }
+
+    function resolveItemCoordinates(item) {
+      const mahNorm = normalizeKey(item.mahalle || "");
+      const ilceNorm = normalizeKey(item.ilce || "");
+      let base = EDIRNE_KNOWN_COORDS[mahNorm] || EDIRNE_KNOWN_COORDS[mahNorm.replace(/\s+/g, "")];
+
+      if (!base) {
+        for (const [k, coords] of Object.entries(EDIRNE_KNOWN_COORDS)) {
+          if (mahNorm && (mahNorm.includes(k) || k.includes(mahNorm)) && mahNorm.length >= 4) {
+            base = coords;
+            break;
+          }
+        }
+      }
+
+      if (!base) {
+        base = EDIRNE_KNOWN_COORDS[ilceNorm] || EDIRNE_KNOWN_COORDS["EDIRNE MERKEZ"];
+        if (mahNorm && mahNorm !== "GENEL") {
+          const mahHash = hashString(ilceNorm + "_" + mahNorm);
+          const angle = ((mahHash % 360) * Math.PI) / 180;
+          const dist = 0.012 + ((mahHash % 100) / 100) * 0.025;
+          base = [
+            base[0] + Math.sin(angle) * dist,
+            base[1] + Math.cos(angle) * dist * 1.2
+          ];
+        }
+      }
+
+      const itemHash = hashString(String(item.tesisat || item.id || ""));
+      const jitterAngle = ((itemHash % 360) * Math.PI) / 180;
+      const jitterRadius = 0.0004 + (((itemHash >> 8) % 100) / 100) * 0.0018;
+      return [
+        base[0] + Math.sin(jitterAngle) * jitterRadius,
+        base[1] + Math.cos(jitterAngle) * jitterRadius * 1.15
+      ];
+    }
+
+    function haversineMeters(lat1, lon1, lat2, lon2) {
+      const R = 6371000;
+      const toRad = (d) => (d * Math.PI) / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function formatDistance(meters) {
+      if (meters < 1000) return Math.round(meters) + " m";
+      return (meters / 1000).toFixed(1) + " km";
+    }
+
+    function ensureLeafletMap() {
+      if (leafletMap || !window.L) return;
+      leafletMap = L.map("sahaMap", { zoomControl: true }).setView([41.6771, 26.5557], 11);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap © CARTO"
+      }).addTo(leafletMap);
+      markersLayer = L.layerGroup().addTo(leafletMap);
+    }
+
+    function switchViewMode(mode) {
+      currentViewMode = mode;
+      const mapSec = document.getElementById("mapSection");
+      const btnList = document.getElementById("btnViewList");
+      const btnMap = document.getElementById("btnViewMap");
+
+      if (mode === "MAP") {
+        mapSec.classList.add("open");
+        btnMap.classList.add("active");
+        btnList.classList.remove("active");
+        ensureLeafletMap();
+        setTimeout(() => {
+          if (leafletMap) leafletMap.invalidateSize();
+          renderList();
+        }, 60);
+      } else {
+        mapSec.classList.remove("open");
+        btnList.classList.add("active");
+        btnMap.classList.remove("active");
+      }
+    }
+
+    function locateUserOnMap() {
+      const statusEl = document.getElementById("gpsStatusText");
+      if (!navigator.geolocation) {
+        statusEl.textContent = "Konum servisi kullanılamıyor.";
+        return;
+      }
+      statusEl.textContent = "Konum alınıyor...";
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          userCoords = [pos.coords.latitude, pos.coords.longitude];
+          statusEl.textContent = "Konumuna göre uzaklıklar güncellendi";
+          ensureLeafletMap();
+          if (leafletMap) {
+            if (userMarker) leafletMap.removeLayer(userMarker);
+            userMarker = L.circleMarker(userCoords, {
+              radius: 8,
+              fillColor: "#10b981",
+              color: "#ffffff",
+              weight: 2,
+              fillOpacity: 0.95
+            }).addTo(leafletMap).bindPopup("Konumun");
+            leafletMap.setView(userCoords, 13);
+          }
+          renderList();
+        },
+        () => {
+          statusEl.textContent = "Konum izni verilmedi.";
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
+
+    function updateCalmMapAndDistances(visibleItems) {
+      const distTitle = document.getElementById("distanceTitle");
+      const distList = document.getElementById("distanceList");
+      const refPoint = userCoords || EDIRNE_KNOWN_COORDS["EDIRNE MERKEZ"];
+
+      const enriched = visibleItems.map(item => {
+        const coords = resolveItemCoordinates(item);
+        const meters = haversineMeters(refPoint[0], refPoint[1], coords[0], coords[1]);
+        return { item, coords, meters };
+      }).sort((a, b) => a.meters - b.meters);
+
+      distTitle.textContent = userCoords
+        ? "📏 Konumuna Göre Uzaklık (Yakından Uzağa)"
+        : "📏 Edirne Merkeze Göre Tahmini Uzaklık";
+
+      if (enriched.length === 0) {
+        distList.innerHTML = '<div style="font-size:12px;color:#94a3b8;">Gösterilecek bekleyen iş yok.</div>';
+      } else {
+        distList.innerHTML = enriched.slice(0, 8).map(({ item, meters }) => {
+          const cleanAdres = cleanAddressText(item.adres || "", item.tesisat || "", item.seri || "");
+          const mapQuery = buildGoogleMapsQuery({ ...item, adres: cleanAdres });
+          const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
+          return `
+            <div class="distance-item">
+              <div class="distance-info">
+                <div class="distance-loc">${item.mahalle} • Tesisat ${item.tesisat}</div>
+                <div class="distance-addr">${cleanAdres}</div>
+              </div>
+              <div class="distance-actions">
+                <span class="dist-badge">${formatDistance(meters)}</span>
+                <a class="btn-mini-gmap" href="${mapsUrl}" target="_blank" rel="noopener">Harita</a>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      if (!leafletMap || !markersLayer || currentViewMode !== "MAP") return;
+
+      markersLayer.clearLayers();
+      const bounds = [];
+
+      enriched.slice(0, 120).forEach(({ item, coords, meters }) => {
+        bounds.push(coords);
+        const cleanAdres = cleanAddressText(item.adres || "", item.tesisat || "", item.seri || "");
+        const mapQuery = buildGoogleMapsQuery({ ...item, adres: cleanAdres });
+        const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
+
+        const marker = L.circleMarker(coords, {
+          radius: 6,
+          fillColor: "#38bdf8",
+          color: "#0f172a",
+          weight: 1.5,
+          fillOpacity: 0.85
+        });
+
+        marker.bindPopup(`
+          <div style="font-size:12px;line-height:1.45;">
+            <strong>${item.mahalle}</strong> (${formatDistance(meters)})<br>
+            <span style="color:#94a3b8;">Tesisat: ${item.tesisat} • ${item.tip}</span><br>
+            <span>${cleanAdres}</span>
+            <a class="popup-gmap-btn" href="${mapsUrl}" target="_blank" rel="noopener">Google Haritalar'da Aç</a>
+          </div>
+        `);
+        marker.addTo(markersLayer);
+      });
+
+      if (bounds.length > 0 && !userCoords) {
+        leafletMap.fitBounds(bounds, { padding: [24, 24], maxZoom: 13 });
+      }
+    }
+
     function syncAdminUi() {
       const drawer = document.getElementById("adminDrawer");
       const btn = document.getElementById("menuBtn");
@@ -682,7 +1066,7 @@
         localStorage.removeItem(STORAGE_JOBS + "_ts");
       } catch (e) {}
       try {
-        window.name = JSON.stringify({ __tredas_v7: true, ts: lastSavedAt, jobsList: [], processedMap: {} });
+        window.name = JSON.stringify({ __tredas_v10: true, ts: lastSavedAt, jobsList: [], processedMap: {} });
       } catch (e) {}
       writeCacheVault({ ts: lastSavedAt, jobsList: [], processedMap: {} });
       if (window.indexedDB) {
@@ -709,9 +1093,13 @@
         const existingMap = new Map(jobsList.map(j => [j.id, j]));
         for (const job of incomingJobs) {
           if (!job || !job.id) continue;
-          if (!existingMap.has(job.id)) {
-            jobsList.push(job);
-            existingMap.set(job.id, job);
+          const sanitized = {
+            ...job,
+            adres: cleanAddressText(job.adres || "", job.tesisat || "", job.seri || "")
+          };
+          if (!existingMap.has(sanitized.id)) {
+            jobsList.push(sanitized);
+            existingMap.set(sanitized.id, sanitized);
             changed = true;
           }
         }
@@ -766,7 +1154,7 @@
       } catch (e) {}
 
       try {
-        window.name = JSON.stringify({ __tredas_v7: true, ...snapshot });
+        window.name = JSON.stringify({ __tredas_v10: true, ...snapshot });
       } catch (e) {}
 
       writeCacheVault(snapshot);
@@ -820,7 +1208,7 @@
       if (window.name) {
         try {
           const nameObj = JSON.parse(window.name);
-          if (nameObj && nameObj.__tredas_v7) {
+          if (nameObj && nameObj.__tredas_v10) {
             if (mergeStateIntoMemory(nameObj.jobsList, nameObj.processedMap, Number(nameObj.ts || 0))) {
               anyChanged = true;
             }
@@ -868,7 +1256,8 @@
 
       if (jobsList.length > 0 || anyChanged) {
         jobsList.forEach(j => {
-          j.bolge = detectBolge(j.adres + " " + j.mahalle + " " + j.ilce, j.mahalle);
+          j.bolge = detectBolge((j.adres || "") + " " + (j.mahalle || "") + " " + (j.ilce || ""), j.mahalle);
+          j.adres = cleanAddressText(j.adres || "", j.tesisat || "", j.seri || "");
         });
         saveAllData();
         populateIlceDropdown();
@@ -947,13 +1336,28 @@
       return /trifaze|3\s*faz|üç\s*faz|uc\s*faz/i.test(stripDiacritics(text)) ? "Trifaze" : "Monofaze";
     }
 
-    function cleanAddressText(rawChunk, tesisat, seri) {
-      let addr = rawChunk.replace(/\s*\|\s*/g, " ").replace(/\s+/g, " ").trim();
-      if (tesisat) addr = addr.replace(new RegExp("\\b" + tesisat + "\\b", "g"), " ");
+    function stripMeterSerials(text, seri) {
+      let out = String(text || "");
       if (seri && seri !== "BİLİNMİYOR") {
         const escSeri = seri.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&").replace(/-/g, "[-_ ]?");
-        addr = addr.replace(new RegExp("\\b" + escSeri + "\\b", "gi"), " ");
+        out = out.replace(new RegExp("\\b" + escSeri + "\\b", "gi"), " ");
       }
+      out = out.replace(/\b[A-ZÇĞİÖŞÜ]{2,6}[-_ ]?\d{5,13}\b/gi, " ");
+      return out;
+    }
+
+    function cleanAddressText(rawChunk, tesisat, seri) {
+      let addr = stripMeterSerials(rawChunk, seri)
+        .replace(/\s*\|\s*/g, " ")
+        .replace(/^\s*\d+\s*(?:sayaç|sayac|adet|no\.?|kayıt)\b[:\-\s]*/i, "")
+        .replace(/\b\d+\s*(?:sayaç|sayac)\b/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      if (tesisat) {
+        addr = addr.replace(new RegExp("\\b" + tesisat + "\\b", "g"), " ");
+      }
+
       addr = addr
         .replace(/\b(monofaze|trifaze|3\s*faz|üç\s*faz)\b/gi, " ")
         .replace(/\s+([,.;:/])/g, "$1")
@@ -961,12 +1365,14 @@
         .replace(/^\s*[,;:\-|/]+\s*|\s*[,;:\-|/]+\s*$/g, "")
         .replace(/\s+/g, " ")
         .trim();
+
       return addr || rawChunk.replace(/\s+/g, " ").trim();
     }
 
     function buildGoogleMapsQuery(item) {
-      let q = String(item.adres || "")
+      let q = stripMeterSerials(item.adres || "", item.seri || "")
         .replace(/^\s*\d+\s*(?:sayaç|sayac|adet|no\.?|kayıt)\b[:\-\s]*/i, "")
+        .replace(/\b\d+\s*(?:sayaç|sayac)\b/gi, " ")
         .replace(/\b(?:iç\s*kapı(?:\s*no)?|daire(?:\s*no)?|kat|blok(?:\s*no)?|asansör|bodrum|zemin)\s*[:.#-]?\s*[a-z0-9çğıöşü_-]+/gi, " ")
         .replace(/\b(koyun\s*kendisi|köyün\s*kendisi)\b/gi, " ")
         .replace(/\s+/g, " ")
@@ -1030,17 +1436,18 @@
       const seri = trUpper(document.getElementById("manSeri").value) || "BİLİNMİYOR";
       const ilce = trUpper(document.getElementById("manIlce").value) || "EDİRNE MERKEZ";
       const rawMah = document.getElementById("manMahalle").value.trim();
-      const adres = document.getElementById("manAdres").value.trim();
+      const rawAdres = document.getElementById("manAdres").value.trim();
       const tip = document.getElementById("manTip").value;
 
-      if (!tesisat || !adres) {
+      if (!tesisat || !rawAdres) {
         showToast("Tesisat No ve Adres gerekli");
         return;
       }
 
       const existingNames = [...new Set(jobsList.map(j => j.mahalle))];
-      const mahalle = rawMah ? unifyLocationName(rawMah, existingNames) : detectMahalle(adres, existingNames);
-      const bolge = detectBolge(adres + " " + rawMah, mahalle);
+      const mahalle = rawMah ? unifyLocationName(rawMah, existingNames) : detectMahalle(rawAdres, existingNames);
+      const bolge = detectBolge(rawAdres + " " + rawMah, mahalle);
+      const adres = cleanAddressText(rawAdres, tesisat, seri);
 
       const newItem = {
         id: "MAN-" + tesisat + "-" + Date.now().toString(36),
@@ -1287,6 +1694,8 @@
 
       document.getElementById("progressLabel").textContent = "Ekranda Kalan İş: " + visible.length;
 
+      updateCalmMapAndDistances(visible);
+
       const listEl = document.getElementById("jobList");
       if (visible.length === 0) {
         listEl.innerHTML = '<div class="empty-state">📂 Kayıt bulunamadı veya bu filtrede bekleyen iş kalmadı. Yetkili girişi (⋮) ile PDF/Excel yükleyebilirsin.</div>';
@@ -1294,7 +1703,8 @@
       }
 
       listEl.innerHTML = visible.map(item => {
-        const mapQuery = buildGoogleMapsQuery(item);
+        const cleanAdres = cleanAddressText(item.adres || "", item.tesisat || "", item.seri || "");
+        const mapQuery = buildGoogleMapsQuery({ ...item, adres: cleanAdres });
         const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
         const yerEtiketi = item.bolge === "KOY" ? (item.mahalle + " KÖYÜ") : item.mahalle;
         return `
@@ -1304,7 +1714,7 @@
               <span class="job-type">${item.tip}</span>
             </div>
             <div class="job-meta">Seri No: <strong>${item.seri}</strong> • ${item.ilce} / ${yerEtiketi}</div>
-            <div class="job-address">📍 ${item.adres}</div>
+            <div class="job-address">📍 ${cleanAdres}</div>
             <a class="btn-map" href="${mapsUrl}" target="_blank" rel="noopener">🗺️ Haritada Göster</a>
             <div class="action-stack">
               <button class="btn-action btn-done" onclick="markJobStatus('${item.id}', 'Tamamlandı')">✓ İşi Tamamla</button>
