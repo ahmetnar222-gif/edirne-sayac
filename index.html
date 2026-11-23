@@ -43,6 +43,8 @@
       font-weight: 700;
       color: #34d399;
     }
+    .autosave-pill.cloud-live { color: #38bdf8; }
+    .autosave-pill.cloud-warn { color: #fbbf24; }
     .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .counter-pill {
       background-color: #1e293b;
@@ -577,7 +579,7 @@
       <div class="badge-tredas">TREDAŞ</div>
       <div>
         <div class="header-title">Edirne Sayaç Saha Rehberi</div>
-        <div class="autosave-pill" id="autosaveBadge">● Otomatik Kaydedici Açık</div>
+        <div class="autosave-pill" id="autosaveBadge">● Bulut Bağlantısı Bekleniyor</div>
       </div>
     </div>
     <div class="header-right">
@@ -617,7 +619,7 @@
       </div>
 
       <div class="backup-box">
-        <div class="backup-title">💾 Otomatik Kayıt Yedeği (Başka Kişiye / Cihaza Aktar)</div>
+        <div class="backup-title">💾 Ortak Bulut + Yedek Dosyası (.json)</div>
         <div class="backup-row">
           <button class="btn-export" type="button" onclick="downloadBackupJson()">⬇️ Yedek İndir</button>
           <label class="import-label" for="backupFileInput">
@@ -722,6 +724,85 @@
   </div>
 
   <div class="toast" id="toast">✓ Kaydedildi</div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBKtYaeuAiY1Pb8NspS2eiD8PA6aTksw24",
+      authDomain: "edirne-sayac-saha.firebaseapp.com",
+      projectId: "edirne-sayac-saha",
+      storageBucket: "edirne-sayac-saha.firebasestorage.app",
+      messagingSenderId: "587813278589",
+      appId: "1:587813278589:web:0b800320e74013555e3214",
+      measurementId: "G-8NZ19TQY38"
+    };
+
+    const DB_PATH = "edirne_saha_v13/shared_state";
+    let dbRef = null;
+    let isApplyingRemote = false;
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+      dbRef = ref(db, DB_PATH);
+    } catch (e) {
+      dbRef = null;
+    }
+
+    window.__firebaseSync = {
+      pushSnapshot(snapshot) {
+        if (!dbRef || isApplyingRemote) return;
+        set(dbRef, {
+          ts: snapshot.ts || Date.now(),
+          jobsList: snapshot.jobsList || [],
+          processedMap: snapshot.processedMap || {}
+        }).then(() => {
+          if (typeof window.__setCloudStatus === "function") {
+            window.__setCloudStatus("live", snapshot.ts || Date.now());
+          }
+        }).catch(() => {
+          if (typeof window.__setCloudStatus === "function") {
+            window.__setCloudStatus("warn", snapshot.ts || Date.now());
+          }
+        });
+      },
+      subscribe(onRemoteData) {
+        if (!dbRef) {
+          if (typeof window.__setCloudStatus === "function") {
+            window.__setCloudStatus("warn", Date.now());
+          }
+          return;
+        }
+        onValue(dbRef, (snap) => {
+          const val = snap.val();
+          if (typeof window.__setCloudStatus === "function") {
+            window.__setCloudStatus("live", (val && val.ts) || Date.now());
+          }
+          if (!val) return;
+          isApplyingRemote = true;
+          try {
+            onRemoteData(
+              Array.isArray(val.jobsList) ? val.jobsList : [],
+              val.processedMap && typeof val.processedMap === "object" ? val.processedMap : {},
+              Number(val.ts || 0)
+            );
+          } finally {
+            isApplyingRemote = false;
+          }
+        }, () => {
+          if (typeof window.__setCloudStatus === "function") {
+            window.__setCloudStatus("warn", Date.now());
+          }
+        });
+      }
+    };
+
+    if (typeof window.__startFirebaseListener === "function") {
+      window.__startFirebaseListener();
+    }
+  </script>
 
   <script>
     if ("serviceWorker" in navigator) {
@@ -1131,777 +1212,10 @@
         openMenuOrAdmin();
         return;
       }
-      if (!confirm("Tüm iş emirleri ve işlenen kayıtlar kalıcı olarak sıfırlansın mı?")) return;
+      if (!confirm("Tüm iş emirleri ve işlenen kayıtlar ortak veritabanından kalıcı olarak sıfırlansın mı?")) return;
       jobsList = [];
       processedMap = {};
       lastSavedAt = Date.now();
       try {
         localStorage.removeItem(STORAGE_JOBS);
         localStorage.removeItem(STORAGE_PROCESSED);
-        localStorage.removeItem(STORAGE_JOBS + "_ts");
-      } catch (e) {}
-      try {
-        window.name = JSON.stringify({ __tredas_v13: true, ts: lastSavedAt, jobsList: [], processedMap: {} });
-      } catch (e) {}
-      writeCacheVault({ ts: lastSavedAt, jobsList: [], processedMap: {} });
-      if (window.indexedDB) {
-        try {
-          const req = indexedDB.open(DB_NAME, 1);
-          req.onsuccess = (e) => {
-            const db = e.target.result;
-            const tx = db.transaction([STORE_JOBS, STORE_PROCESSED], "readwrite");
-            tx.objectStore(STORE_JOBS).clear();
-            tx.objectStore(STORE_PROCESSED).clear();
-          };
-        } catch (e) {}
-      }
-      populateIlceDropdown();
-      populateMahalleDropdown();
-      renderList();
-      document.getElementById("scanStatus").textContent = "🗑️ Liste sıfırlandı.";
-      showToast("🗑️ Tüm kayıtlar sıfırlandı");
-    }
-
-    function downloadBackupJson() {
-      if (!isAdminLoggedIn) {
-        openMenuOrAdmin();
-        return;
-      }
-      saveAllData();
-      const payload = {
-        app: "tredas-edirne-saha-rehberi",
-        exportedAt: new Date().toISOString(),
-        ts: lastSavedAt || Date.now(),
-        jobsList,
-        processedMap
-      };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "edirne-sayac-yedek.json";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      document.getElementById("scanStatus").textContent = "💾 Yedek dosyası indirildi (başkasına gönderebilirsin).";
-      showToast("💾 Yedek indirildi");
-    }
-
-    async function handleBackupImport(event) {
-      if (!isAdminLoggedIn) {
-        event.target.value = "";
-        openMenuOrAdmin();
-        return;
-      }
-      const file = event.target.files && event.target.files[0];
-      const statusEl = document.getElementById("scanStatus");
-      if (!file) return;
-      try {
-        const text = await file.text();
-        const data = JSON.parse(text);
-        if (!Array.isArray(data.jobsList)) throw new Error("Geçersiz yedek dosyası");
-        mergeStateIntoMemory(data.jobsList, data.processedMap || {}, Number(data.ts || Date.now()));
-        saveAllData();
-        populateIlceDropdown();
-        populateMahalleDropdown();
-        renderList();
-        statusEl.textContent = "✅ Yedek yüklendi ve otomatik kaydedildi (" + jobsList.length + " iş).";
-        showToast("✓ Yedek yüklendi");
-      } catch (e) {
-        statusEl.textContent = "❌ Yedek dosyası okunamadı.";
-      } finally {
-        event.target.value = "";
-      }
-    }
-
-    function mergeStateIntoMemory(incomingJobs, incomingProcessed, incomingTs = 0) {
-      let changed = false;
-      if (Array.isArray(incomingJobs) && incomingJobs.length > 0) {
-        const existingMap = new Map(jobsList.map(j => [j.id, j]));
-        for (const job of incomingJobs) {
-          if (!job || !job.id) continue;
-          const sanitized = {
-            ...job,
-            adres: formatMahalleSokakNo(job)
-          };
-          if (!existingMap.has(sanitized.id)) {
-            jobsList.push(sanitized);
-            existingMap.set(sanitized.id, sanitized);
-            changed = true;
-          }
-        }
-      }
-      if (incomingProcessed && typeof incomingProcessed === "object") {
-        for (const [id, info] of Object.entries(incomingProcessed)) {
-          if (!info) continue;
-          const cur = processedMap[id];
-          const nextTs = Number(info.ts || incomingTs || 0);
-          const curTs = Number((cur && cur.ts) || 0);
-          if (!cur || nextTs >= curTs) {
-            processedMap[id] = { durum: info.durum, ts: nextTs };
-            changed = true;
-          }
-        }
-      }
-      if (incomingTs > lastSavedAt) lastSavedAt = incomingTs;
-      return changed;
-    }
-
-    async function writeCacheVault(snapshot) {
-      if (!("caches" in window)) return;
-      try {
-        const cache = await caches.open(CACHE_NAME);
-        await cache.put(CACHE_KEY, new Response(JSON.stringify(snapshot), {
-          headers: { "Content-Type": "application/json" }
-        }));
-      } catch (e) {}
-    }
-
-    async function readCacheVault() {
-      if (!("caches" in window)) return null;
-      try {
-        const cache = await caches.open(CACHE_NAME);
-        const match = await cache.match(CACHE_KEY);
-        if (!match) return null;
-        return await match.json();
-      } catch (e) {
-        return null;
-      }
-    }
-
-    function updateAutosaveBadge(timeMs) {
-      const badge = document.getElementById("autosaveBadge");
-      if (!badge) return;
-      const d = new Date(timeMs || Date.now());
-      const hh = String(d.getHours()).padStart(2, "0");
-      const mm = String(d.getMinutes()).padStart(2, "0");
-      const ss = String(d.getSeconds()).padStart(2, "0");
-      badge.textContent = `● Oto-Kayıt (${hh}:${mm}:${ss})`;
-    }
-
-    function saveAllData() {
-      const now = Date.now();
-      if (now > lastSavedAt) lastSavedAt = now;
-      const snapshot = { ts: lastSavedAt, jobsList, processedMap };
-
-      try {
-        localStorage.setItem(STORAGE_PROCESSED, JSON.stringify(processedMap));
-        localStorage.setItem(STORAGE_JOBS, JSON.stringify(jobsList));
-        localStorage.setItem(STORAGE_JOBS + "_ts", String(lastSavedAt));
-      } catch (e) {}
-
-      try {
-        window.name = JSON.stringify({ __tredas_v13: true, ...snapshot });
-      } catch (e) {}
-
-      writeCacheVault(snapshot);
-      updateAutosaveBadge(lastSavedAt);
-
-      if (window.indexedDB) {
-        try {
-          const req = indexedDB.open(DB_NAME, 1);
-          req.onupgradeneeded = (e) => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains(STORE_PROCESSED)) {
-              db.createObjectStore(STORE_PROCESSED, { keyPath: "id" });
-            }
-            if (!db.objectStoreNames.contains(STORE_JOBS)) {
-              db.createObjectStore(STORE_JOBS, { keyPath: "id" });
-            }
-          };
-          req.onsuccess = (e) => {
-            const db = e.target.result;
-            const tx1 = db.transaction(STORE_PROCESSED, "readwrite");
-            const s1 = tx1.objectStore(STORE_PROCESSED);
-            s1.clear();
-            Object.entries(processedMap).forEach(([id, info]) => s1.put({ id, ...info }));
-
-            const tx2 = db.transaction(STORE_JOBS, "readwrite");
-            const s2 = tx2.objectStore(STORE_JOBS);
-            s2.clear();
-            jobsList.forEach(j => s2.put(j));
-          };
-        } catch (e) {}
-      }
-    }
-
-    async function loadAllData() {
-      try {
-        if (sessionStorage.getItem(STORAGE_ADMIN_AUTH) === "1") {
-          isAdminLoggedIn = true;
-          syncAdminUi();
-        }
-      } catch (e) {}
-
-      let anyChanged = false;
-      const keySets = [{ jobs: STORAGE_JOBS, proc: STORAGE_PROCESSED, ts: STORAGE_JOBS + "_ts" }, ...LEGACY_KEYS];
-
-      for (const ks of keySets) {
-        try {
-          const pRaw = localStorage.getItem(ks.proc);
-          const jRaw = localStorage.getItem(ks.jobs);
-          const tRaw = Number(localStorage.getItem(ks.ts) || "0");
-          if (mergeStateIntoMemory(jRaw ? JSON.parse(jRaw) : [], pRaw ? JSON.parse(pRaw) : {}, tRaw)) {
-            anyChanged = true;
-          }
-        } catch (e) {}
-      }
-
-      if (window.name) {
-        try {
-          const nameObj = JSON.parse(window.name);
-          if (nameObj && (nameObj.__tredas_v13 || nameObj.__tredas_v12 || nameObj.__tredas_v11 || nameObj.__tredas_v10)) {
-            if (mergeStateIntoMemory(nameObj.jobsList, nameObj.processedMap, Number(nameObj.ts || 0))) {
-              anyChanged = true;
-            }
-          }
-        } catch (e) {}
-      }
-
-      const cachedSnap = await readCacheVault();
-      if (cachedSnap && mergeStateIntoMemory(cachedSnap.jobsList, cachedSnap.processedMap, Number(cachedSnap.ts || 0))) {
-        anyChanged = true;
-      }
-
-      if (window.indexedDB) {
-        try {
-          const db = await new Promise((resolve, reject) => {
-            const req = indexedDB.open(DB_NAME, 1);
-            req.onupgradeneeded = (e) => {
-              const d = e.target.result;
-              if (!d.objectStoreNames.contains(STORE_PROCESSED)) {
-                d.createObjectStore(STORE_PROCESSED, { keyPath: "id" });
-              }
-              if (!d.objectStoreNames.contains(STORE_JOBS)) {
-                d.createObjectStore(STORE_JOBS, { keyPath: "id" });
-              }
-            };
-            req.onsuccess = (e) => resolve(e.target.result);
-            req.onerror = reject;
-          });
-
-          const [idbProc, idbJobs] = await new Promise((resolve, reject) => {
-            const tx = db.transaction([STORE_PROCESSED, STORE_JOBS], "readonly");
-            const r1 = tx.objectStore(STORE_PROCESSED).getAll();
-            const r2 = tx.objectStore(STORE_JOBS).getAll();
-            tx.oncomplete = () => resolve([r1.result || [], r2.result || []]);
-            tx.onerror = reject;
-          });
-
-          const procDict = {};
-          idbProc.forEach(item => {
-            if (item && item.id) procDict[item.id] = { durum: item.durum, ts: item.ts || 0 };
-          });
-          if (mergeStateIntoMemory(idbJobs, procDict, lastSavedAt)) anyChanged = true;
-        } catch (e) {}
-      }
-
-      if (jobsList.length > 0 || anyChanged) {
-        jobsList.forEach(j => {
-          j.bolge = detectBolge((j.adres || "") + " " + (j.mahalle || "") + " " + (j.ilce || ""), j.mahalle);
-          j.adres = formatMahalleSokakNo(j);
-        });
-        saveAllData();
-        populateIlceDropdown();
-        populateMahalleDropdown();
-        renderList();
-      }
-    }
-
-    function showToast(msg) {
-      const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.classList.add("show");
-      clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
-    }
-
-    function detectIlce(text) {
-      const norm = normalizeKey(text);
-      const map = [
-        ["EDIRNE MERKEZ", "EDİRNE MERKEZ"],
-        ["KESAN", "KEŞAN"],
-        ["UZUNKOPRU", "UZUNKÖPRÜ"],
-        ["IPSALA", "İPSALA"],
-        ["HAVSA", "HAVSA"],
-        ["ENEZ", "ENEZ"],
-        ["LALAPASA", "LALAPAŞA"],
-        ["MERIC", "MERİÇ"],
-        ["SULOGLU", "SÜLOĞLU"]
-      ];
-      for (const [k, label] of map) {
-        if (norm.includes(k)) return label;
-      }
-      return "EDİRNE MERKEZ";
-    }
-
-    function detectBolge(text, mahalleName) {
-      const norm = normalizeKey((text || "") + " " + (mahalleName || ""));
-      if (/\bKOYU?\b|\bKOY\b|\bKOYUN\s+KENDISI\b|\bBELDESI?\b|\bBELDE\b|\bBUCAK\b|\bMEVKII\b|\bYAYLA\b/.test(norm)) {
-        return "KOY";
-      }
-      return "MERKEZ";
-    }
-
-    function detectMahalle(text, existingNames) {
-      const upper = trUpper(text);
-
-      const koyKendisiMatch = upper.match(/([A-ZÇĞİÖŞÜ0-9.\-]{2,25}(?:\s+[A-ZÇĞİÖŞÜ0-9.\-]{2,20})?)\s+(?:KÖYÜN\s+KENDİSİ|KOYUN\s+KENDISI)/);
-      if (koyKendisiMatch && koyKendisiMatch[1]) {
-        const raw = koyKendisiMatch[1].replace(/^(?:MERKEZ|EDİRNE|KEŞAN|UZUNKÖPRÜ|İPSALA|HAVSA|ENEZ|LALAPAŞA|MERİÇ|SÜLOĞLU|\s|[,;:\-|/])+/, "");
-        return unifyLocationName(raw || koyKendisiMatch[1], existingNames);
-      }
-
-      const koyMatch = upper.match(/([A-ZÇĞİÖŞÜ0-9.\-]{2,25}(?:\s+[A-ZÇĞİÖŞÜ0-9.\-]{2,20})?)\s*(?:\bKÖYÜ\b|\bKÖY\b|\bBELDESİ\b|\bBELDE\b)/);
-      if (koyMatch && koyMatch[1]) {
-        const raw = koyMatch[1].replace(/^(?:MERKEZ|EDİRNE|KEŞAN|UZUNKÖPRÜ|İPSALA|HAVSA|ENEZ|LALAPAŞA|MERİÇ|SÜLOĞLU|\s|[,;:\-|/])+/, "");
-        return unifyLocationName(raw || koyMatch[1], existingNames);
-      }
-
-      const mahMatch = upper.match(/([A-ZÇĞİÖŞÜ0-9.\-]{1,20}(?:\s+[A-ZÇĞİÖŞÜ0-9.\-]{1,20})?)\s*(?:\bMAH\.?\b|\bMAHALLESİ\b)/);
-      if (mahMatch && mahMatch[1]) {
-        const raw = mahMatch[1].replace(/^(?:MERKEZ|EDİRNE|KEŞAN|UZUNKÖPRÜ|İPSALA|HAVSA|ENEZ|LALAPAŞA|MERİÇ|SÜLOĞLU|\s|[,;:\-|/])+/, "");
-        return unifyLocationName(raw || mahMatch[1], existingNames);
-      }
-
-      const aliasKeys = Object.keys(LOCATION_ALIASES);
-      const normUpper = normalizeKey(upper);
-      for (const ak of aliasKeys) {
-        if (normUpper.includes(ak)) {
-          return unifyLocationName(LOCATION_ALIASES[ak], existingNames);
-        }
-      }
-      return "GENEL";
-    }
-
-    function detectTip(text) {
-      return /trifaze|3\s*faz|üç\s*faz|uc\s*faz/i.test(stripDiacritics(text)) ? "Trifaze" : "Monofaze";
-    }
-
-    function stripMeterSerials(text, seri) {
-      let out = String(text || "");
-      if (seri && seri !== "BİLİNMİYOR") {
-        const escSeri = seri.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&").replace(/-/g, "[-_ ]?");
-        out = out.replace(new RegExp("\\b" + escSeri + "\\b", "gi"), " ");
-      }
-      out = out.replace(/\b[A-ZÇĞİÖŞÜ]{2,6}[-_ ]?\d{5,13}\b/gi, " ");
-      return out;
-    }
-
-    function formatMahalleSokakNo(item) {
-      const tesisat = (item && item.tesisat) || "";
-      const seri = (item && item.seri) || "";
-      const mahalle = (item && item.mahalle) || "";
-      const bolge = (item && item.bolge) || "MERKEZ";
-
-      let raw = stripMeterSerials(item && item.adres ? item.adres : "", seri)
-        .replace(/\s*\|\s*/g, " ")
-        .replace(/^\s*\d+\s*(?:sayaç|sayac|adet|no\.?|kayıt)\b[:\-\s]*/i, "")
-        .replace(/\b\d+\s*(?:sayaç|sayac)\b/gi, " ")
-        .replace(/\b(?:iç\s*kapı(?:\s*no)?|daire(?:\s*no)?|kat|blok(?:\s*no)?|apartmanı|apt\.?|site(?:si)?|merkez\s*\/\s*edirne|merkez\/edirne)\b[^,;]*/gi, " ")
-        .replace(/\b(?:koyun\s*kendisi|köyün\s*kendisi)\b/gi, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      if (tesisat) {
-        raw = raw.replace(new RegExp("\\b" + tesisat + "\\b", "g"), " ");
-      }
-
-      const noMatch = raw.match(/\b(?:NO|NUMARA)\s*[:.#-]?\s*([A-Z0-9çğıöşü/-]{1,8})\b/i);
-      const noPart = noMatch ? ("NO: " + trUpper(noMatch[1])) : "";
-
-      const sokCadMatch = raw.match(/([A-ZÇĞİÖŞÜ0-9._\- ]{2,35}?\b(?:SOK\.?|SOKAĞI|SOKAGI|CAD\.?|CADDESİ|CADDESI|BULVAR|BULVARI|MEVKİİ|MEVKII)\b)/i);
-      let sokakPart = "";
-      if (sokCadMatch && sokCadMatch[1]) {
-        sokakPart = trUpper(sokCadMatch[1])
-          .replace(new RegExp("^\\b" + normalizeKey(mahalle).replace(/\s+/g, "\\s+") + "\\b", "i"), "")
-          .replace(/\b(?:MAH\.?|MAHALLESİ|KÖYÜ|KÖY|MERKEZ)\b/gi, " ")
-          .replace(/\s+/g, " ")
-          .trim();
-      }
-
-      let mahPart = "";
-      if (mahalle && mahalle !== "GENEL") {
-        mahPart = bolge === "KOY" ? (mahalle + " KÖYÜ") : (mahalle + " MAH.");
-      }
-
-      const pieces = [];
-      if (mahPart) pieces.push(mahPart);
-      if (sokakPart) pieces.push(sokakPart);
-      if (noPart) pieces.push(noPart);
-
-      if (pieces.length > 0) {
-        return pieces.join(", ").replace(/\s*,\s*,+/g, ", ").trim();
-      }
-
-      return raw
-        .replace(/\b(monofaze|trifaze|3\s*faz|üç\s*faz)\b/gi, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
-
-    function buildGoogleMapsQuery(item) {
-      const baseAddr = formatMahalleSokakNo(item);
-      const normQ = normalizeKey(baseAddr);
-      const normIlce = item.ilce ? normalizeKey(item.ilce) : "";
-
-      const parts = [];
-      if (baseAddr) parts.push(baseAddr);
-      if (normIlce && !normQ.includes(normIlce)) {
-        parts.push(item.ilce);
-      }
-      if (!normQ.includes("EDIRNE")) {
-        parts.push("Edirne");
-      }
-      parts.push("Türkiye");
-
-      return parts.join(", ").replace(/\s*,\s*,+/g, ", ").trim();
-    }
-
-    function parseSingleChunk(chunk, sourcePrefix, existingNames) {
-      const cleaned = chunk.replace(/\s+/g, " ").trim();
-      if (!cleaned) return null;
-
-      const tesisatMatch = cleaned.match(/\b(\d{6,16})\b/);
-      if (!tesisatMatch) return null;
-      const tesisat = tesisatMatch[1];
-
-      const seriMatch = cleaned.match(/\b([A-ZÇĞİÖŞÜ]{2,6}[-_ ]?\d{4,12})\b/i);
-      const seri = seriMatch ? seriMatch[1].toLocaleUpperCase("tr").replace(/\s+/g, "-") : "BİLİNMİYOR";
-
-      const mahalle = detectMahalle(cleaned, existingNames);
-      const ilce = detectIlce(cleaned);
-      const bolge = detectBolge(cleaned, mahalle);
-      const tip = detectTip(cleaned);
-      const adres = formatMahalleSokakNo({ adres: cleaned, tesisat, seri, mahalle, bolge });
-
-      return {
-        id: sourcePrefix + "-" + tesisat + "-" + seri,
-        ilce,
-        bolge,
-        mahalle,
-        tesisat,
-        tip,
-        seri,
-        adres
-      };
-    }
-
-    function addManualJob() {
-      if (!isAdminLoggedIn) {
-        openMenuOrAdmin();
-        return;
-      }
-      const tesisat = document.getElementById("manTesisat").value.trim();
-      const seri = trUpper(document.getElementById("manSeri").value) || "BİLİNMİYOR";
-      const ilce = trUpper(document.getElementById("manIlce").value) || "EDİRNE MERKEZ";
-      const rawMah = document.getElementById("manMahalle").value.trim();
-      const rawAdres = document.getElementById("manAdres").value.trim();
-      const tip = document.getElementById("manTip").value;
-
-      if (!tesisat || !rawAdres) {
-        showToast("Tesisat No ve Sokak/No gerekli");
-        return;
-      }
-
-      const existingNames = [...new Set(jobsList.map(j => j.mahalle))];
-      const mahalle = rawMah ? unifyLocationName(rawMah, existingNames) : detectMahalle(rawAdres, existingNames);
-      const bolge = detectBolge(rawAdres + " " + rawMah, mahalle);
-      const adres = formatMahalleSokakNo({ adres: rawAdres, tesisat, seri, mahalle, bolge });
-
-      const newItem = {
-        id: "MAN-" + tesisat + "-" + Date.now().toString(36),
-        ilce,
-        bolge,
-        mahalle,
-        tesisat,
-        tip,
-        seri,
-        adres
-      };
-
-      jobsList.unshift(newItem);
-      saveAllData();
-      populateIlceDropdown();
-      populateMahalleDropdown();
-      renderList();
-
-      document.getElementById("manTesisat").value = "";
-      document.getElementById("manSeri").value = "";
-      document.getElementById("manMahalle").value = "";
-      document.getElementById("manAdres").value = "";
-      document.getElementById("scanStatus").textContent = "✅ Yeni kayıt eklendi ve otomatik kaydedildi (Toplam: " + jobsList.length + ").";
-      showToast("✓ Kaydedildi");
-    }
-
-    function addParsedChunks(chunks, sourcePrefix) {
-      const existingNames = [...new Set(jobsList.map(j => j.mahalle))];
-      const existingKeys = new Set(jobsList.map(j => j.tesisat + "|" + j.seri));
-      let addedCount = 0;
-
-      for (const chunk of chunks) {
-        const parsed = parseSingleChunk(chunk, sourcePrefix, existingNames);
-        if (!parsed) continue;
-        if (!existingNames.includes(parsed.mahalle)) existingNames.push(parsed.mahalle);
-        const dedupKey = parsed.tesisat + "|" + parsed.seri;
-        if (existingKeys.has(dedupKey)) continue;
-        existingKeys.add(dedupKey);
-        jobsList.push(parsed);
-        addedCount++;
-      }
-
-      saveAllData();
-      populateIlceDropdown();
-      populateMahalleDropdown();
-      renderList();
-      return addedCount;
-    }
-
-    async function extractTextFromPdfFile(file) {
-      if (!window.pdfjsLib) throw new Error("PDF okuyucu yüklenemedi.");
-      const buffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-      let fullText = "";
-
-      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        const page = await pdf.getPage(pageNum);
-        const content = await page.getTextContent();
-        let lastY = null;
-        let lineText = "";
-
-        const sortedItems = [...content.items].filter(it => "str" in it && it.str.trim() !== "");
-        for (const item of sortedItems) {
-          const y = item.transform ? Math.round(item.transform[5]) : null;
-          if (lastY !== null && y !== null && Math.abs(y - lastY) > 4) {
-            fullText += lineText.trim() + "\n";
-            lineText = "";
-          }
-          lineText += item.str + " ";
-          lastY = y;
-        }
-        if (lineText.trim()) fullText += lineText.trim() + "\n";
-      }
-      return fullText;
-    }
-
-    async function handlePdfFileSelect(event) {
-      if (!isAdminLoggedIn) {
-        event.target.value = "";
-        openMenuOrAdmin();
-        return;
-      }
-      const file = event.target.files && event.target.files[0];
-      const statusEl = document.getElementById("scanStatus");
-      if (!file) return;
-
-      statusEl.textContent = "⏳ PDF taranıyor...";
-      try {
-        const rawText = await extractTextFromPdfFile(file);
-        const lines = rawText.split(/\r?\n/);
-        const chunks = [];
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed) continue;
-          const multiMatches = trimmed.match(/\b\d{6,16}\b/g);
-          if (multiMatches && multiMatches.length > 1) {
-            trimmed.split(/(?=\b\d{6,16}\b)/).forEach(p => { if (p.trim()) chunks.push(p.trim()); });
-          } else {
-            chunks.push(trimmed);
-          }
-        }
-        const addedCount = addParsedChunks(chunks, "PDF");
-        statusEl.textContent = addedCount > 0
-          ? "✅ PDF'den " + addedCount + " kayıt eklendi ve otomatik kaydedildi (Toplam: " + jobsList.length + ")."
-          : "⚠️ PDF tarandı; eklenecek yeni kayıt bulunamadı.";
-        showToast(addedCount > 0 ? "✓ " + addedCount + " kayıt kaydedildi" : "Yeni kayıt bulunamadı");
-      } catch (err) {
-        statusEl.textContent = "❌ PDF okunamadı.";
-      } finally {
-        event.target.value = "";
-      }
-    }
-
-    async function handleExcelFileSelect(event) {
-      if (!isAdminLoggedIn) {
-        event.target.value = "";
-        openMenuOrAdmin();
-        return;
-      }
-      const file = event.target.files && event.target.files[0];
-      const statusEl = document.getElementById("scanStatus");
-      if (!file) return;
-
-      statusEl.textContent = "⏳ Excel dosyası taranıyor...";
-      try {
-        if (!window.XLSX) throw new Error("Excel okuyucu yüklenemedi.");
-        const buffer = await file.arrayBuffer();
-        const workbook = XLSX.read(buffer, { type: "array" });
-        const chunks = [];
-        workbook.SheetNames.forEach(sheetName => {
-          const sheet = workbook.Sheets[sheetName];
-          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "" });
-          rows.forEach(row => {
-            if (!Array.isArray(row)) return;
-            const joined = row.map(cell => String(cell || "").trim()).filter(Boolean).join(" | ");
-            if (joined) chunks.push(joined);
-          });
-        });
-        const addedCount = addParsedChunks(chunks, "XLS");
-        statusEl.textContent = addedCount > 0
-          ? "✅ Excel'den " + addedCount + " kayıt eklendi ve otomatik kaydedildi (Toplam: " + jobsList.length + ")."
-          : "⚠️ Excel tarandı; eklenecek yeni kayıt bulunamadı.";
-        showToast(addedCount > 0 ? "✓ " + addedCount + " kayıt kaydedildi" : "Yeni kayıt bulunamadı");
-      } catch (err) {
-        statusEl.textContent = "❌ Excel dosyası okunamadı.";
-      } finally {
-        event.target.value = "";
-      }
-    }
-
-    function markJobStatus(id, durum) {
-      processedMap[id] = { durum, ts: Date.now() };
-      saveAllData();
-      showToast("✓ Otomatik Kaydedildi");
-      renderList();
-    }
-
-    function setRegion(region, btn) {
-      currentRegion = region;
-      document.querySelectorAll(".region-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      populateMahalleDropdown();
-      renderList();
-    }
-
-    function setPhase(phase, btn) {
-      currentPhase = phase;
-      document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      renderList();
-    }
-
-    function populateIlceDropdown() {
-      const sel = document.getElementById("ilceSelect");
-      const prev = sel.value;
-      const ilceler = [...new Set(jobsList.map(j => j.ilce))].sort((a, b) => a.localeCompare(b, "tr"));
-      sel.innerHTML = '<option value="ALL">Tüm İlçeler</option>';
-      ilceler.forEach(il => {
-        const opt = document.createElement("option");
-        opt.value = il;
-        opt.textContent = il;
-        sel.appendChild(opt);
-      });
-      if (ilceler.includes(prev)) sel.value = prev;
-    }
-
-    function onIlceChange() {
-      populateMahalleDropdown();
-      renderList();
-    }
-
-    function populateMahalleDropdown() {
-      const sel = document.getElementById("mahalleSelect");
-      const prev = sel.value;
-      const selectedIlce = document.getElementById("ilceSelect").value;
-      const filtered = jobsList.filter(j => {
-        if (selectedIlce !== "ALL" && j.ilce !== selectedIlce) return false;
-        if (currentRegion !== "ALL" && j.bolge !== currentRegion) return false;
-        return true;
-      });
-      const mahalleler = [...new Set(filtered.map(j => j.mahalle))].sort((a, b) => a.localeCompare(b, "tr"));
-      const defaultLabel = currentRegion === "KOY"
-        ? "Tüm Köyler / Beldeler"
-        : currentRegion === "MERKEZ"
-          ? "Tüm Merkez Mahalleler"
-          : "Tüm Mahalle / Köyler";
-      sel.innerHTML = `<option value="ALL">${defaultLabel}</option>`;
-      mahalleler.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m;
-        opt.textContent = currentRegion === "KOY" ? (m + " Köyü") : m;
-        sel.appendChild(opt);
-      });
-      if (mahalleler.includes(prev)) sel.value = prev;
-      else sel.value = "ALL";
-    }
-
-    function renderList() {
-      const selectedIlce = document.getElementById("ilceSelect").value;
-      const selectedMahalle = document.getElementById("mahalleSelect").value;
-      const query = document.getElementById("searchInput").value.trim().toLocaleLowerCase("tr");
-
-      const total = jobsList.length;
-      const done = jobsList.filter(j => Boolean(processedMap[j.id])).length;
-      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-
-      document.getElementById("doneCount").textContent = done;
-      document.getElementById("totalCount").textContent = total;
-      document.getElementById("progressPct").textContent = "%" + pct;
-      document.getElementById("progressFill").style.width = pct + "%";
-
-      const visible = jobsList.filter(item => {
-        if (processedMap[item.id]) return false;
-        if (selectedIlce !== "ALL" && item.ilce !== selectedIlce) return false;
-        if (currentRegion !== "ALL" && item.bolge !== currentRegion) return false;
-        if (selectedMahalle !== "ALL" && item.mahalle !== selectedMahalle) return false;
-        if (currentPhase !== "ALL" && item.tip !== currentPhase) return false;
-        if (query) {
-          const hay = (item.tesisat + " " + item.seri + " " + item.ilce + " " + item.mahalle + " " + item.adres).toLocaleLowerCase("tr");
-          if (!hay.includes(query)) return false;
-        }
-        return true;
-      });
-
-      document.getElementById("progressLabel").textContent = "Ekranda Kalan İş: " + visible.length;
-
-      updateCalmMapAndDistances(visible);
-
-      const listEl = document.getElementById("jobList");
-      if (visible.length === 0) {
-        listEl.innerHTML = '<div class="empty-state">📂 Kayıt bulunamadı veya bu filtrede bekleyen iş kalmadı. Yetkili girişi (⋮) ile PDF/Excel yükleyebilirsin.</div>';
-        return;
-      }
-
-      listEl.innerHTML = visible.map(item => {
-        const cleanAdres = formatMahalleSokakNo(item);
-        const mapQuery = buildGoogleMapsQuery({ ...item, adres: cleanAdres });
-        const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
-        const yerEtiketi = item.bolge === "KOY" ? (item.mahalle + " KÖYÜ") : item.mahalle;
-        return `
-          <div class="job-card">
-            <div class="job-top">
-              <span class="job-id">Tesisat: ${item.tesisat}</span>
-              <span class="job-type">${item.tip}</span>
-            </div>
-            <div class="job-meta">Seri No: <strong>${item.seri}</strong> • ${item.ilce} / ${yerEtiketi}</div>
-            <div class="job-address">📍 ${cleanAdres}</div>
-            <a class="btn-map" href="${mapsUrl}" target="_blank" rel="noopener">🗺️ Haritada Göster</a>
-            <div class="action-stack">
-              <button class="btn-action btn-done" onclick="markJobStatus('${item.id}', 'Tamamlandı')">✓ İşi Tamamla</button>
-              <button class="btn-action btn-abone-yok" onclick="markJobStatus('${item.id}', 'Abone Yok / Kapalı')">🚪 Abone Yok / Kapalı</button>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    window.addEventListener("pagehide", saveAllData);
-    window.addEventListener("beforeunload", saveAllData);
-    window.addEventListener("focus", () => { loadAllData(); });
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") saveAllData();
-      else if (document.visibilityState === "visible") loadAllData();
-    });
-
-    (async function boot() {
-      closePinModal();
-      syncAdminUi();
-      populateIlceDropdown();
-      populateMahalleDropdown();
-      renderList();
-      await loadAllData();
-    })();
-  </script>
-</body>
-</html>
