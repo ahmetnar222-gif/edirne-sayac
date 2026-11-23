@@ -661,4 +661,249 @@
 
         const dedupKey = parsed.tesisat + "|" + parsed.seri;
         if (existingKeys.has(dedupKey)) continue;
-        existingKeys.add(dedupKey
+        existingKeys.add(dedupKey);
+        jobsList.unshift(parsed);
+        addedCount++;
+      }
+
+      saveAllData();
+      populateIlceDropdown();
+      populateMahalleDropdown();
+      renderList();
+      return addedCount;
+    }
+
+    async function extractTextFromPdfFile(file) {
+      if (!window.pdfjsLib) {
+        throw new Error("PDF okuyucu yüklenemedi.");
+      }
+      const buffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+      let fullText = "";
+
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const content = await page.getTextContent();
+        let lastY = null;
+        let lineText = "";
+
+        const sortedItems = [...content.items].filter(it => "str" in it && it.str.trim() !== "");
+        for (const item of sortedItems) {
+          const y = item.transform ? Math.round(item.transform[5]) : null;
+          if (lastY !== null && y !== null && Math.abs(y - lastY) > 4) {
+            fullText += lineText.trim() + "\n";
+            lineText = "";
+          }
+          lineText += item.str + " ";
+          lastY = y;
+        }
+        if (lineText.trim()) {
+          fullText += lineText.trim() + "\n";
+        }
+      }
+      return fullText;
+    }
+
+    async function handlePdfFileSelect(event) {
+      const file = event.target.files && event.target.files[0];
+      const statusEl = document.getElementById("scanStatus");
+      if (!file) return;
+
+      statusEl.textContent = "⏳ PDF taranıyor...";
+
+      try {
+        const rawText = await extractTextFromPdfFile(file);
+        const lines = rawText.split(/\r?\n/);
+        const chunks = [];
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          const multiMatches = trimmed.match(/\b\d{6,16}\b/g);
+          if (multiMatches && multiMatches.length > 1) {
+            trimmed.split(/(?=\b\d{6,16}\b)/).forEach(p => {
+              if (p.trim()) chunks.push(p.trim());
+            });
+          } else {
+            chunks.push(trimmed);
+          }
+        }
+
+        const addedCount = addParsedChunks(chunks, "PDF");
+        if (addedCount > 0) {
+          statusEl.textContent = "✅ PDF'den " + addedCount + " kayıt eklendi.";
+          showToast("✓ " + addedCount + " kayıt eklendi");
+        } else {
+          statusEl.textContent = "⚠️ PDF tarandı; eklenecek yeni kayıt bulunamadı.";
+          showToast("Yeni kayıt bulunamadı");
+        }
+      } catch (err) {
+        statusEl.textContent = "❌ PDF okunamadı.";
+      } finally {
+        event.target.value = "";
+      }
+    }
+
+    async function handleExcelFileSelect(event) {
+      const file = event.target.files && event.target.files[0];
+      const statusEl = document.getElementById("scanStatus");
+      if (!file) return;
+
+      statusEl.textContent = "⏳ Excel dosyası taranıyor...";
+
+      try {
+        if (!window.XLSX) {
+          throw new Error("Excel okuyucu yüklenemedi.");
+        }
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: "array" });
+        const chunks = [];
+
+        workbook.SheetNames.forEach(sheetName => {
+          const sheet = workbook.Sheets[sheetName];
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "" });
+          rows.forEach(row => {
+            if (!Array.isArray(row)) return;
+            const joined = row.map(cell => String(cell || "").trim()).filter(Boolean).join(" | ");
+            if (joined) chunks.push(joined);
+          });
+        });
+
+        const addedCount = addParsedChunks(chunks, "XLS");
+        if (addedCount > 0) {
+          statusEl.textContent = "✅ Excel'den " + addedCount + " kayıt eklendi.";
+          showToast("✓ " + addedCount + " kayıt eklendi");
+        } else {
+          statusEl.textContent = "⚠️ Excel tarandı; eklenecek yeni kayıt bulunamadı.";
+          showToast("Yeni kayıt bulunamadı");
+        }
+      } catch (err) {
+        statusEl.textContent = "❌ Excel dosyası okunamadı.";
+      } finally {
+        event.target.value = "";
+      }
+    }
+
+    function markJobStatus(id, durum) {
+      processedMap[id] = { durum, ts: Date.now() };
+      saveAllData();
+      showToast("✓ Kaydedildi: " + durum);
+      renderList();
+    }
+
+    function setRegion(region, btn) {
+      currentRegion = region;
+      document.querySelectorAll(".region-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      populateMahalleDropdown();
+      renderList();
+    }
+
+    function setPhase(phase, btn) {
+      currentPhase = phase;
+      document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderList();
+    }
+
+    function populateIlceDropdown() {
+      const sel = document.getElementById("ilceSelect");
+      const prev = sel.value;
+      const ilceler = [...new Set(jobsList.map(j => j.ilce))].sort((a, b) => a.localeCompare(b, "tr"));
+      sel.innerHTML = '<option value="ALL">Tüm İlçeler</option>';
+      ilceler.forEach(il => {
+        const opt = document.createElement("option");
+        opt.value = il;
+        opt.textContent = il;
+        sel.appendChild(opt);
+      });
+      if (ilceler.includes(prev)) sel.value = prev;
+    }
+
+    function onIlceChange() {
+      populateMahalleDropdown();
+      renderList();
+    }
+
+    function populateMahalleDropdown() {
+      const sel = document.getElementById("mahalleSelect");
+      const prev = sel.value;
+      const selectedIlce = document.getElementById("ilceSelect").value;
+      const filtered = jobsList.filter(j => {
+        if (selectedIlce !== "ALL" && j.ilce !== selectedIlce) return false;
+        if (currentRegion !== "ALL" && j.bolge !== currentRegion) return false;
+        return true;
+      });
+      const mahalleler = [...new Set(filtered.map(j => j.mahalle))].sort((a, b) => a.localeCompare(b, "tr"));
+      sel.innerHTML = '<option value="ALL">Tüm Mahalle / Köyler</option>';
+      mahalleler.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        sel.appendChild(opt);
+      });
+      if (mahalleler.includes(prev)) sel.value = prev;
+    }
+
+    function renderList() {
+      const selectedIlce = document.getElementById("ilceSelect").value;
+      const selectedMahalle = document.getElementById("mahalleSelect").value;
+      const query = document.getElementById("searchInput").value.trim().toLocaleLowerCase("tr");
+
+      const total = jobsList.length;
+      const done = jobsList.filter(j => Boolean(processedMap[j.id])).length;
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+      document.getElementById("doneCount").textContent = done;
+      document.getElementById("totalCount").textContent = total;
+      document.getElementById("progressPct").textContent = "%" + pct;
+      document.getElementById("progressFill").style.width = pct + "%";
+
+      const visible = jobsList.filter(item => {
+        if (processedMap[item.id]) return false;
+        if (selectedIlce !== "ALL" && item.ilce !== selectedIlce) return false;
+        if (currentRegion !== "ALL" && item.bolge !== currentRegion) return false;
+        if (selectedMahalle !== "ALL" && item.mahalle !== selectedMahalle) return false;
+        if (currentPhase !== "ALL" && item.tip !== currentPhase) return false;
+        if (query) {
+          const hay = (item.tesisat + " " + item.seri + " " + item.ilce + " " + item.mahalle + " " + item.adres).toLocaleLowerCase("tr");
+          if (!hay.includes(query)) return false;
+        }
+        return true;
+      });
+
+      document.getElementById("progressLabel").textContent = "Ekranda Kalan İş: " + visible.length;
+
+      const listEl = document.getElementById("jobList");
+      if (visible.length === 0) {
+        listEl.innerHTML = '<div class="empty-state">📂 Henüz kayıt yok veya bu filtrede bekleyen iş kalmadı. Yukarıdan PDF veya Excel seçebilirsin.</div>';
+        return;
+      }
+
+      listEl.innerHTML = visible.map(item => {
+        const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(item.adres);
+        return `
+          <div class="job-card">
+            <div class="job-top">
+              <span class="job-id">Tesisat: ${item.tesisat}</span>
+              <span class="job-type">${item.tip}</span>
+            </div>
+            <div class="job-meta">Seri No: <strong>${item.seri}</strong> • ${item.ilce} / ${item.mahalle}</div>
+            <div class="job-address">📍 ${item.adres}</div>
+            <a class="btn-map" href="${mapsUrl}" target="_blank" rel="noopener">🗺️ Haritada Göster</a>
+            <div class="action-stack">
+              <button class="btn-action btn-done" onclick="markJobStatus('${item.id}', 'Tamamlandı')">✓ İşi Tamamla</button>
+              <button class="btn-action btn-abone-yok" onclick="markJobStatus('${item.id}', 'Abone Yok / Kapalı')">🚪 Abone Yok / Kapalı</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    loadAllData();
+    populateIlceDropdown();
+    populateMahalleDropdown();
+    renderList();
+  </script>
+</body>
+</html>
