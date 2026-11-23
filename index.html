@@ -354,9 +354,9 @@
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
     }
 
-    const STORAGE_PROCESSED = "tredas_edirne_sifir_islenen_v1";
-    const STORAGE_JOBS = "tredas_edirne_sifir_isler_v1";
-    const DB_NAME = "TredasEdirneSifirDB_v1";
+    const STORAGE_PROCESSED = "tredas_edirne_v4_islenen";
+    const STORAGE_JOBS = "tredas_edirne_v4_isler";
+    const DB_NAME = "TredasEdirneSahaDB_v4";
     const STORE_PROCESSED = "processedJobs";
     const STORE_JOBS = "jobs";
 
@@ -364,6 +364,88 @@
     let jobsList = [];
     let currentRegion = "ALL";
     let currentPhase = "ALL";
+
+    const LOCATION_ALIASES = {
+      "KEMALKOY": "KEMERKÖY",
+      "KEMERKOY": "KEMERKÖY",
+      "KEMER KOYU": "KEMERKÖY",
+      "KEMAL KOYU": "KEMERKÖY",
+      "1 MURAT": "1.MURAT",
+      "BIRINCI MURAT": "1.MURAT",
+      "SUKRUPASA": "ŞÜKRÜPAŞA",
+      "ABDURRAHMAN": "ABDURRAHMAN"
+    };
+
+    function trUpper(str) {
+      return String(str || "").toLocaleUpperCase("tr").trim();
+    }
+
+    function stripDiacritics(str) {
+      return trUpper(str)
+        .replace(/İ/g, "I")
+        .replace(/Ğ/g, "G")
+        .replace(/Ü/g, "U")
+        .replace(/Ş/g, "S")
+        .replace(/Ö/g, "O")
+        .replace(/Ç/g, "C");
+    }
+
+    function normalizeKey(str) {
+      return stripDiacritics(str)
+        .replace(/[^A-Z0-9]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function levenshteinDistance(a, b) {
+      if (a === b) return 0;
+      if (!a.length) return b.length;
+      if (!b.length) return a.length;
+      const dp = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+      for (let j = 1; j <= b.length; j++) dp[0][j] = j;
+      for (let i = 1; i <= a.length; i++) {
+        for (let j = 1; j <= b.length; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          dp[i][j] = Math.min(
+            dp[i - 1][j] + 1,
+            dp[i][j - 1] + 1,
+            dp[i - 1][j - 1] + cost
+          );
+        }
+      }
+      return dp[a.length][b.length];
+    }
+
+    function unifyLocationName(rawName, existingNames = []) {
+      const cleaned = trUpper(rawName)
+        .replace(/^[,;:\-|/.\s]+|[,;:\-|/.\s]+$/g, "")
+        .replace(/\s+/g, " ");
+
+      if (!cleaned || cleaned.length < 2) return "GENEL";
+
+      const norm = normalizeKey(cleaned);
+      if (LOCATION_ALIASES[norm]) {
+        return LOCATION_ALIASES[norm];
+      }
+
+      const compact = norm.replace(/\s+/g, "");
+      if (LOCATION_ALIASES[compact]) {
+        return LOCATION_ALIASES[compact];
+      }
+
+      for (const candidate of existingNames) {
+        const candNorm = normalizeKey(candidate);
+        if (candNorm === norm) return candidate;
+        const candCompact = candNorm.replace(/\s+/g, "");
+        if (candCompact === compact) return candidate;
+        if (Math.min(compact.length, candCompact.length) >= 5) {
+          const dist = levenshteinDistance(compact, candCompact);
+          if (dist <= 2) return candidate;
+        }
+      }
+
+      return cleaned;
+    }
 
     function saveAllData() {
       try {
@@ -456,43 +538,86 @@
     }
 
     function detectIlce(text) {
-      const upper = text.toLocaleUpperCase("tr");
-      const ilceler = [
-        "EDİRNE MERKEZ", "KEŞAN", "UZUNKÖPRÜ", "İPSALA",
-        "HAVSA", "ENEZ", "LALAPAŞA", "MERİÇ", "SÜLOĞLU"
+      const norm = normalizeKey(text);
+      const map = [
+        ["EDIRNE MERKEZ", "EDİRNE MERKEZ"],
+        ["KESAN", "KEŞAN"],
+        ["UZUNKOPRU", "UZUNKÖPRÜ"],
+        ["IPSALA", "İPSALA"],
+        ["HAVSA", "HAVSA"],
+        ["ENEZ", "ENEZ"],
+        ["LALAPASA", "LALAPAŞA"],
+        ["MERIC", "MERİÇ"],
+        ["SULOGLU", "SÜLOĞLU"]
       ];
-      for (const il of ilceler) {
-        if (upper.includes(il)) return il;
+      for (const [k, label] of map) {
+        if (norm.includes(k)) return label;
       }
       return "EDİRNE MERKEZ";
     }
 
-    function detectBolge(text) {
-      const upper = text.toLocaleUpperCase("tr");
-      if (/\bKÖYÜ?\b|\bBELDESİ?\b|\bKOY\b/.test(upper)) return "KOY";
+    function detectBolge(text, mahalleName) {
+      const norm = normalizeKey(text + " " + mahalleName);
+      if (/\bKOYU?\b|\bKOY\b|\bBELDESI?\b/.test(norm)) return "KOY";
       return "MERKEZ";
     }
 
-    function detectMahalle(text) {
-      const upper = text.toLocaleUpperCase("tr");
-      const mahMatch = upper.match(/([A-ZÇĞİÖŞÜ0-9.\-\s]{2,35}?)\s*(?:\bMAH\.?\b|\bMAHALLESİ\b)/);
-      if (mahMatch && mahMatch[1]) {
-        const cleaned = mahMatch[1].replace(/^\s*[,;:\-|/]+\s*/, "").trim();
-        if (cleaned.length >= 2) return cleaned;
-      }
-      const koyMatch = upper.match(/([A-ZÇĞİÖŞÜ0-9.\-\s]{2,35}?)\s*(?:\bKÖYÜ?\b|\bBELDESİ?\b)/);
+    function detectMahalle(text, existingNames) {
+      const upper = trUpper(text);
+
+      const koyMatch = upper.match(/([A-ZÇĞİÖŞÜ0-9.\-]{2,25}(?:\s+[A-ZÇĞİÖŞÜ0-9.\-]{2,20})?)\s*(?:\bKÖYÜ\b|\bKÖY\b|\bBELDESİ\b)/);
       if (koyMatch && koyMatch[1]) {
-        const cleaned = koyMatch[1].replace(/^\s*[,;:\-|/]+\s*/, "").trim();
-        if (cleaned.length >= 2) return cleaned;
+        const raw = koyMatch[1].replace(/^(?:MERKEZ|EDİRNE|KEŞAN|UZUNKÖPRÜ|İPSALA|HAVSA|ENEZ|LALAPAŞA|MERİÇ|SÜLOĞLU|\s|[,;:\-|/])+/, "");
+        return unifyLocationName(raw || koyMatch[1], existingNames);
       }
+
+      const mahMatch = upper.match(/([A-ZÇĞİÖŞÜ0-9.\-]{1,20}(?:\s+[A-ZÇĞİÖŞÜ0-9.\-]{1,20})?)\s*(?:\bMAH\.?\b|\bMAHALLESİ\b)/);
+      if (mahMatch && mahMatch[1]) {
+        const raw = mahMatch[1].replace(/^(?:MERKEZ|EDİRNE|KEŞAN|UZUNKÖPRÜ|İPSALA|HAVSA|ENEZ|LALAPAŞA|MERİÇ|SÜLOĞLU|\s|[,;:\-|/])+/, "");
+        return unifyLocationName(raw || mahMatch[1], existingNames);
+      }
+
+      const aliasKeys = Object.keys(LOCATION_ALIASES);
+      const normUpper = normalizeKey(upper);
+      for (const ak of aliasKeys) {
+        if (normUpper.includes(ak)) {
+          return unifyLocationName(LOCATION_ALIASES[ak], existingNames);
+        }
+      }
+
       return "GENEL";
     }
 
     function detectTip(text) {
-      return /trifaze|3\s*faz|üç\s*faz/i.test(text) ? "Trifaze" : "Monofaze";
+      return /trifaze|3\s*faz|üç\s*faz|uc\s*faz/i.test(stripDiacritics(text)) ? "Trifaze" : "Monofaze";
     }
 
-    function parseSingleChunk(chunk, sourcePrefix) {
+    function cleanAddressText(rawChunk, tesisat, seri) {
+      let addr = rawChunk
+        .replace(/\s*\|\s*/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      if (tesisat) {
+        addr = addr.replace(new RegExp("\\b" + tesisat + "\\b", "g"), " ");
+      }
+      if (seri && seri !== "BİLİNMİYOR") {
+        const escSeri = seri.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&").replace(/-/g, "[-_ ]?");
+        addr = addr.replace(new RegExp("\\b" + escSeri + "\\b", "gi"), " ");
+      }
+
+      addr = addr
+        .replace(/\b(monofaze|trifaze|3\s*faz|üç\s*faz)\b/gi, " ")
+        .replace(/\s+([,.;:/])/g, "$1")
+        .replace(/([,.;:/])\s*([,.;:/])+/g, "$1")
+        .replace(/^\s*[,;:\-|/]+\s*|\s*[,;:\-|/]+\s*$/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      return addr || rawChunk.replace(/\s+/g, " ").trim();
+    }
+
+    function parseSingleChunk(chunk, sourcePrefix, existingNames) {
       const cleaned = chunk.replace(/\s+/g, " ").trim();
       if (!cleaned) return null;
 
@@ -503,270 +628,37 @@
       const seriMatch = cleaned.match(/\b([A-ZÇĞİÖŞÜ]{2,6}[-_ ]?\d{4,12})\b/i);
       const seri = seriMatch ? seriMatch[1].toLocaleUpperCase("tr").replace(/\s+/g, "-") : "BİLİNMİYOR";
 
+      const mahalle = detectMahalle(cleaned, existingNames);
+      const ilce = detectIlce(cleaned);
+      const bolge = detectBolge(cleaned, mahalle);
+      const tip = detectTip(cleaned);
+      const adres = cleanAddressText(cleaned, tesisat, seri);
+
       return {
         id: sourcePrefix + "-" + Date.now() + "-" + tesisat + "-" + Math.random().toString(36).slice(2, 6),
-        ilce: detectIlce(cleaned),
-        bolge: detectBolge(cleaned),
-        mahalle: detectMahalle(cleaned),
+        ilce,
+        bolge,
+        mahalle,
         tesisat,
-        tip: detectTip(cleaned),
+        tip,
         seri,
-        adres: cleaned
+        adres
       };
     }
 
     function addParsedChunks(chunks, sourcePrefix) {
+      const existingNames = [...new Set(jobsList.map(j => j.mahalle))];
       const existingKeys = new Set(jobsList.map(j => j.tesisat + "|" + j.seri));
       let addedCount = 0;
 
       for (const chunk of chunks) {
-        const parsed = parseSingleChunk(chunk, sourcePrefix);
+        const parsed = parseSingleChunk(chunk, sourcePrefix, existingNames);
         if (!parsed) continue;
+
+        if (!existingNames.includes(parsed.mahalle)) {
+          existingNames.push(parsed.mahalle);
+        }
+
         const dedupKey = parsed.tesisat + "|" + parsed.seri;
         if (existingKeys.has(dedupKey)) continue;
-        existingKeys.add(dedupKey);
-        jobsList.unshift(parsed);
-        addedCount++;
-      }
-
-      saveAllData();
-      populateIlceDropdown();
-      populateMahalleDropdown();
-      renderList();
-      return addedCount;
-    }
-
-    async function extractTextFromPdfFile(file) {
-      if (!window.pdfjsLib) {
-        throw new Error("PDF okuyucu yüklenemedi.");
-      }
-      const buffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-      let fullText = "";
-
-      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        const page = await pdf.getPage(pageNum);
-        const content = await page.getTextContent();
-        let lastY = null;
-        let lineText = "";
-
-        for (const item of content.items) {
-          if (!("str" in item)) continue;
-          const y = item.transform ? Math.round(item.transform[5]) : null;
-          if (lastY !== null && y !== null && Math.abs(y - lastY) > 4) {
-            fullText += lineText.trim() + "\n";
-            lineText = "";
-          }
-          lineText += item.str + " ";
-          lastY = y;
-        }
-        if (lineText.trim()) {
-          fullText += lineText.trim() + "\n";
-        }
-      }
-      return fullText;
-    }
-
-    async function handlePdfFileSelect(event) {
-      const file = event.target.files && event.target.files[0];
-      const statusEl = document.getElementById("scanStatus");
-      if (!file) return;
-
-      statusEl.textContent = "⏳ PDF taranıyor...";
-
-      try {
-        const rawText = await extractTextFromPdfFile(file);
-        const lines = rawText.split(/\r?\n/);
-        const chunks = [];
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed) continue;
-          const multiMatches = trimmed.match(/\b\d{6,16}\b/g);
-          if (multiMatches && multiMatches.length > 1) {
-            trimmed.split(/(?=\b\d{6,16}\b)/).forEach(p => {
-              if (p.trim()) chunks.push(p.trim());
-            });
-          } else {
-            chunks.push(trimmed);
-          }
-        }
-
-        const addedCount = addParsedChunks(chunks, "PDF");
-        if (addedCount > 0) {
-          statusEl.textContent = "✅ PDF'den " + addedCount + " kayıt eklendi.";
-          showToast("✓ " + addedCount + " kayıt eklendi");
-        } else {
-          statusEl.textContent = "⚠️ PDF tarandı; eklenecek yeni kayıt bulunamadı.";
-          showToast("Yeni kayıt bulunamadı");
-        }
-      } catch (err) {
-        statusEl.textContent = "❌ PDF okunamadı.";
-      } finally {
-        event.target.value = "";
-      }
-    }
-
-    async function handleExcelFileSelect(event) {
-      const file = event.target.files && event.target.files[0];
-      const statusEl = document.getElementById("scanStatus");
-      if (!file) return;
-
-      statusEl.textContent = "⏳ Excel dosyası taranıyor...";
-
-      try {
-        if (!window.XLSX) {
-          throw new Error("Excel okuyucu yüklenemedi.");
-        }
-        const buffer = await file.arrayBuffer();
-        const workbook = XLSX.read(buffer, { type: "array" });
-        const chunks = [];
-
-        workbook.SheetNames.forEach(sheetName => {
-          const sheet = workbook.Sheets[sheetName];
-          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "" });
-          rows.forEach(row => {
-            if (!Array.isArray(row)) return;
-            const joined = row.map(cell => String(cell || "").trim()).filter(Boolean).join(" | ");
-            if (joined) chunks.push(joined);
-          });
-        });
-
-        const addedCount = addParsedChunks(chunks, "XLS");
-        if (addedCount > 0) {
-          statusEl.textContent = "✅ Excel'den " + addedCount + " kayıt eklendi.";
-          showToast("✓ " + addedCount + " kayıt eklendi");
-        } else {
-          statusEl.textContent = "⚠️ Excel tarandı; eklenecek yeni kayıt bulunamadı.";
-          showToast("Yeni kayıt bulunamadı");
-        }
-      } catch (err) {
-        statusEl.textContent = "❌ Excel dosyası okunamadı.";
-      } finally {
-        event.target.value = "";
-      }
-    }
-
-    function markJobStatus(id, durum) {
-      processedMap[id] = { durum, ts: Date.now() };
-      saveAllData();
-      showToast("✓ Kaydedildi: " + durum);
-      renderList();
-    }
-
-    function setRegion(region, btn) {
-      currentRegion = region;
-      document.querySelectorAll(".region-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      populateMahalleDropdown();
-      renderList();
-    }
-
-    function setPhase(phase, btn) {
-      currentPhase = phase;
-      document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      renderList();
-    }
-
-    function populateIlceDropdown() {
-      const sel = document.getElementById("ilceSelect");
-      const prev = sel.value;
-      const ilceler = [...new Set(jobsList.map(j => j.ilce))].sort((a, b) => a.localeCompare(b, "tr"));
-      sel.innerHTML = '<option value="ALL">Tüm İlçeler</option>';
-      ilceler.forEach(il => {
-        const opt = document.createElement("option");
-        opt.value = il;
-        opt.textContent = il;
-        sel.appendChild(opt);
-      });
-      if (ilceler.includes(prev)) sel.value = prev;
-    }
-
-    function onIlceChange() {
-      populateMahalleDropdown();
-      renderList();
-    }
-
-    function populateMahalleDropdown() {
-      const sel = document.getElementById("mahalleSelect");
-      const prev = sel.value;
-      const selectedIlce = document.getElementById("ilceSelect").value;
-      const filtered = jobsList.filter(j => {
-        if (selectedIlce !== "ALL" && j.ilce !== selectedIlce) return false;
-        if (currentRegion !== "ALL" && j.bolge !== currentRegion) return false;
-        return true;
-      });
-      const mahalleler = [...new Set(filtered.map(j => j.mahalle))].sort((a, b) => a.localeCompare(b, "tr"));
-      sel.innerHTML = '<option value="ALL">Tüm Mahalle / Köyler</option>';
-      mahalleler.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m;
-        opt.textContent = m;
-        sel.appendChild(opt);
-      });
-      if (mahalleler.includes(prev)) sel.value = prev;
-    }
-
-    function renderList() {
-      const selectedIlce = document.getElementById("ilceSelect").value;
-      const selectedMahalle = document.getElementById("mahalleSelect").value;
-      const query = document.getElementById("searchInput").value.trim().toLocaleLowerCase("tr");
-
-      const total = jobsList.length;
-      const done = jobsList.filter(j => Boolean(processedMap[j.id])).length;
-      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-
-      document.getElementById("doneCount").textContent = done;
-      document.getElementById("totalCount").textContent = total;
-      document.getElementById("progressPct").textContent = "%" + pct;
-      document.getElementById("progressFill").style.width = pct + "%";
-
-      const visible = jobsList.filter(item => {
-        if (processedMap[item.id]) return false;
-        if (selectedIlce !== "ALL" && item.ilce !== selectedIlce) return false;
-        if (currentRegion !== "ALL" && item.bolge !== currentRegion) return false;
-        if (selectedMahalle !== "ALL" && item.mahalle !== selectedMahalle) return false;
-        if (currentPhase !== "ALL" && item.tip !== currentPhase) return false;
-        if (query) {
-          const hay = (item.tesisat + " " + item.seri + " " + item.ilce + " " + item.mahalle + " " + item.adres).toLocaleLowerCase("tr");
-          if (!hay.includes(query)) return false;
-        }
-        return true;
-      });
-
-      document.getElementById("progressLabel").textContent = "Ekranda Kalan İş: " + visible.length;
-
-      const listEl = document.getElementById("jobList");
-      if (visible.length === 0) {
-        listEl.innerHTML = '<div class="empty-state">📂 Henüz kayıt yok veya bu filtrede bekleyen iş kalmadı. Yukarıdan PDF veya Excel seçebilirsin.</div>';
-        return;
-      }
-
-      listEl.innerHTML = visible.map(item => {
-        const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(item.adres);
-        return `
-          <div class="job-card">
-            <div class="job-top">
-              <span class="job-id">Tesisat: ${item.tesisat}</span>
-              <span class="job-type">${item.tip}</span>
-            </div>
-            <div class="job-meta">Seri No: <strong>${item.seri}</strong> • ${item.ilce} / ${item.mahalle}</div>
-            <div class="job-address">📍 ${item.adres}</div>
-            <a class="btn-map" href="${mapsUrl}" target="_blank" rel="noopener">🗺️ Haritada Göster</a>
-            <div class="action-stack">
-              <button class="btn-action btn-done" onclick="markJobStatus('${item.id}', 'Tamamlandı')">✓ İşi Tamamla</button>
-              <button class="btn-action btn-abone-yok" onclick="markJobStatus('${item.id}', 'Abone Yok / Kapalı')">🚪 Abone Yok / Kapalı</button>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    loadAllData();
-    populateIlceDropdown();
-    populateMahalleDropdown();
-    renderList();
-  </script>
-</body>
-</html>
+        existingKeys.add(dedupKey
