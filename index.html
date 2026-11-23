@@ -14,9 +14,9 @@
       --bg-card: #111827;
       --bg-soft: #1e293b;
       --bg-input: #0f172a;
-      --border: #334155;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --border: #475569;
+      --text-main: #ffffff;
+      --text-muted: #cbd5e1;
       --accent: #f59e0b;
       --accent-2: #3b82f6;
       --success: #10b981;
@@ -30,53 +30,54 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
       background: var(--bg-main);
       color: var(--text-main);
+      font-size: 14px;
       line-height: 1.45;
     }
 
     .container {
       max-width: 980px;
       margin: 0 auto;
-      padding: 12px 12px 56px;
+      padding: 10px 10px 64px;
     }
 
     .topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 12px;
-      margin-bottom: 12px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
       position: sticky;
-      top: 8px;
+      top: 6px;
       z-index: 900;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     }
 
     .brand-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       min-width: 0;
+      flex: 1;
     }
 
     .badge-tredas {
       background: var(--accent);
       color: #090d16;
       font-weight: 900;
-      font-size: 12px;
-      padding: 6px 8px;
+      font-size: 11px;
+      padding: 5px 7px;
       border-radius: 8px;
-      letter-spacing: 0.4px;
       flex-shrink: 0;
     }
 
     .title-group { min-width: 0; }
 
     .app-title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 800;
       margin: 0;
       white-space: nowrap;
@@ -85,36 +86,36 @@
     }
 
     .sync-status {
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
       margin-top: 2px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .sync-ok { color: var(--success); }
-    .sync-err { color: var(--danger); }
-    .sync-busy { color: var(--accent); }
+    .sync-ok { color: #34d399; }
+    .sync-err { color: #f87171; }
+    .sync-busy { color: #fbbf24; }
 
     .stats-pill {
       background: var(--bg-soft);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 6px 10px;
+      padding: 6px 9px;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
       white-space: nowrap;
       flex-shrink: 0;
     }
 
     .menu-btn {
       background: var(--bg-soft);
-      color: var(--text-main);
+      color: #ffffff;
       border: 1px solid var(--border);
       border-radius: 10px;
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       font-size: 18px;
       font-weight: 700;
       cursor: pointer;
@@ -125,7 +126,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .tab-btn {
@@ -133,15 +134,15 @@
       color: var(--text-muted);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 11px 12px;
-      font-size: 14px;
-      font-weight: 700;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 800;
       cursor: pointer;
     }
 
     .tab-btn.active {
       background: var(--bg-soft);
-      color: var(--text-main);
+      color: #ffffff;
       border-color: var(--accent-2);
     }
 
@@ -150,18 +151,14 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .cat-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    @media (max-width: 640px) {
-      .cat-grid { grid-template-columns: repeat(2, 1fr); }
+      margin-bottom: 8px;
     }
 
     .cat-btn {
@@ -169,16 +166,15 @@
       color: var(--text-muted);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 9px 8px;
+      padding: 9px 6px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
-      text-align: center;
     }
 
     .cat-btn.active {
-      background: rgba(59, 130, 246, 0.18);
-      color: #93c5fd;
+      background: rgba(59, 130, 246, 0.25);
+      color: #ffffff;
       border-color: var(--accent-2);
     }
 
@@ -191,15 +187,13 @@
     select, input[type="text"], input[type="password"] {
       width: 100%;
       background: var(--bg-input);
-      color: var(--text-main);
+      color: #ffffff;
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 11px 12px;
-      font-size: 14px;
+      padding: 10px 12px;
+      font-size: 13px;
       outline: none;
     }
-
-    select:focus, input:focus { border-color: var(--accent-2); }
 
     .controls-row {
       display: flex;
@@ -207,13 +201,13 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
 
     .meter-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
     }
 
     .chip-btn {
@@ -221,16 +215,46 @@
       color: var(--text-muted);
       border: 1px solid var(--border);
       border-radius: 999px;
-      padding: 6px 14px;
+      padding: 6px 12px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
     }
 
     .chip-btn.active {
-      background: rgba(59, 130, 246, 0.2);
-      color: #bfdbfe;
+      background: rgba(59, 130, 246, 0.28);
+      color: #ffffff;
       border-color: var(--accent-2);
+    }
+
+    .group-header-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fbbf24;
+      margin-bottom: 6px;
+    }
+
+    .district-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .d-pill {
+      background: var(--bg-input);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .d-pill.active {
+      background: rgba(16, 185, 129, 0.22);
+      color: #ffffff;
+      border-color: var(--success);
     }
 
     .progress-header {
@@ -238,8 +262,8 @@
       justify-content: space-between;
       align-items: center;
       font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 8px;
+      font-weight: 800;
+      margin-bottom: 6px;
     }
 
     .progress-bar {
@@ -257,19 +281,17 @@
       transition: width 0.25s ease;
     }
 
-    .job-card {
+    .job-card, .selected-job-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 13px;
+      padding: 12px;
       margin-bottom: 10px;
     }
 
     .selected-job-card {
       border: 2px solid var(--accent);
       background: #131d33;
-      border-radius: 14px;
-      padding: 13px;
       margin-top: 10px;
     }
 
@@ -282,7 +304,7 @@
     }
 
     .job-title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 800;
       color: #fbbf24;
     }
@@ -290,14 +312,13 @@
     .tag {
       font-size: 11px;
       font-weight: 800;
-      padding: 3px 9px;
+      padding: 3px 8px;
       border-radius: 999px;
       white-space: nowrap;
     }
 
-    .tag-mahalle { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
-    .tag-koy { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
-    .tag-belde { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+    .tag-mahalle { background: rgba(59, 130, 246, 0.25); color: #bfdbfe; }
+    .tag-koy { background: rgba(16, 185, 129, 0.25); color: #a7f3d0; }
 
     .job-meta {
       font-size: 12px;
@@ -307,11 +328,11 @@
 
     .job-addr {
       font-size: 13px;
-      color: #f1f5f9;
+      color: #ffffff;
       background: var(--bg-input);
-      border: 1px solid rgba(51, 65, 85, 0.8);
+      border: 1px solid var(--border);
       border-radius: 9px;
-      padding: 9px 10px;
+      padding: 8px 10px;
       margin-bottom: 10px;
       word-break: break-word;
     }
@@ -327,7 +348,7 @@
       border-radius: 10px;
       padding: 10px 12px;
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
       text-align: center;
       text-decoration: none;
@@ -337,41 +358,18 @@
       gap: 6px;
     }
 
-    .btn-primary {
-      background: var(--accent-2);
-      border-color: var(--accent-2);
-      color: #fff;
-    }
-
-    .btn-success {
-      background: var(--success);
-      border-color: var(--success);
-      color: #062118;
-    }
-
-    .btn-secondary {
-      background: var(--bg-soft);
-      color: var(--text-main);
-    }
-
-    .btn-warning {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #111827;
-    }
-
-    .btn-danger {
-      background: rgba(239, 68, 68, 0.16);
-      border-color: rgba(239, 68, 68, 0.45);
-      color: #fca5a5;
-    }
+    .btn-primary { background: var(--accent-2); border-color: var(--accent-2); color: #ffffff; }
+    .btn-success { background: var(--success); border-color: var(--success); color: #062118; }
+    .btn-secondary { background: var(--bg-soft); color: #ffffff; }
+    .btn-warning { background: var(--accent); border-color: var(--accent); color: #111827; }
+    .btn-danger { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.55); color: #fecaca; }
 
     #map {
       width: 100%;
-      height: 410px;
+      height: 390px;
       border-radius: 12px;
       border: 1px solid var(--border);
-      margin-top: 10px;
+      margin-top: 8px;
       z-index: 1;
     }
 
@@ -387,30 +385,31 @@
       font-size: 12px;
       color: var(--text-muted);
       margin-top: 8px;
+      word-break: break-word;
     }
 
     .nearby-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
       background: var(--bg-input);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 10px 12px;
+      padding: 10px;
       margin-top: 8px;
       cursor: pointer;
     }
 
     .nearby-info { min-width: 0; flex: 1; }
-    .nearby-title { font-size: 13px; font-weight: 800; color: #f8fafc; }
+    .nearby-title { font-size: 13px; font-weight: 800; color: #ffffff; }
     .nearby-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
     .km-badge {
       background: var(--bg-soft);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 5px 8px;
+      padding: 4px 8px;
       font-size: 12px;
       font-weight: 800;
       color: #93c5fd;
@@ -419,16 +418,16 @@
     }
 
     .admin-box {
-      border: 1px solid rgba(245, 158, 11, 0.45);
-      background: rgba(245, 158, 11, 0.06);
+      border: 1px solid rgba(245, 158, 11, 0.55);
+      background: rgba(245, 158, 11, 0.08);
       border-radius: 14px;
       padding: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .admin-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
       gap: 8px;
       margin-top: 10px;
     }
@@ -436,7 +435,7 @@
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.72);
+      background: rgba(0, 0, 0, 0.75);
       display: none;
       align-items: center;
       justify-content: center;
@@ -448,7 +447,7 @@
 
     .modal-card {
       width: 100%;
-      max-width: 440px;
+      max-width: 420px;
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 16px;
@@ -458,7 +457,7 @@
     .empty-box {
       border: 1px dashed var(--border);
       border-radius: 14px;
-      padding: 24px 16px;
+      padding: 22px 14px;
       text-align: center;
       color: var(--text-muted);
       font-size: 13px;
@@ -473,18 +472,18 @@
       <div class="brand-row">
         <span class="badge-tredas">TREDAŞ</span>
         <div class="title-group">
-          <h1 class="app-title">Edirne & Kırklareli Saha Rehberi</h1>
-          <div id="syncStatus" class="sync-status sync-busy">⏳ Sunucuya bağlanıyor...</div>
+          <h1 class="app-title">Edirne & Kırklareli Saha</h1>
+          <div id="syncStatus" class="sync-status sync-busy">⏳ Sunucu bekleniyor...</div>
         </div>
       </div>
-      <div id="doneCounter" class="stats-pill">İşlenen: 0 / 0</div>
+      <div id="doneCounter" class="stats-pill">0 / 0</div>
       <button id="menuBtn" class="menu-btn" title="Menü">⋮</button>
     </header>
 
     <div id="adminPanel" class="admin-box hidden">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-        <strong>🔐 YETKİLİ PANELİ (Sunucu Yönetimi)</strong>
-        <button id="logoutAdminBtn" class="btn btn-secondary" style="padding:6px 10px; font-size:12px;">Çıkış</button>
+        <strong>🔐 YETKİLİ PANELİ</strong>
+        <button id="logoutAdminBtn" class="btn btn-secondary" style="padding:5px 10px; font-size:12px;">Çıkış</button>
       </div>
       <div class="admin-grid">
         <label class="btn btn-primary" style="cursor:pointer;">
@@ -495,16 +494,16 @@
           📄 PDF Yükle
           <input type="file" id="pdfInput" accept=".pdf" hidden />
         </label>
-        <button id="repairDbBtn" class="btn btn-warning">🧹 Kayıtları Sunucuda Temizle</button>
-        <button id="showCompletedToggle" class="btn btn-secondary">✓ Tamamlananları Göster</button>
-        <button id="clearAllBtn" class="btn btn-danger">🗑️ Tüm Kayıtları Sil</button>
+        <button id="repairDbBtn" class="btn btn-warning">🧹 Sunucuyu Düzenle</button>
+        <button id="showCompletedToggle" class="btn btn-secondary">✓ Tamamlananlar</button>
+        <button id="clearAllBtn" class="btn btn-danger">🗑️ Tümünü Sil</button>
       </div>
       <div id="adminStatus" class="map-info"></div>
     </div>
 
     <div class="tabs">
       <button id="tabListBtn" class="tab-btn active">📋 İş Listesi</button>
-      <button id="tabMapBtn" class="tab-btn">🗺️ Harita & Mesafe</button>
+      <button id="tabMapBtn" class="tab-btn">🗺️ Harita & Konum</button>
     </div>
 
     <section class="card">
@@ -512,16 +511,15 @@
         <button class="cat-btn active" data-cat="ALL">Tümü</button>
         <button class="cat-btn" data-cat="MAHALLE">🏙️ Mahalleler</button>
         <button class="cat-btn" data-cat="KOY">🌾 Köyler</button>
-        <button class="cat-btn" data-cat="BELDE">🏘️ Beldeler</button>
       </div>
 
       <div class="filter-stack">
         <select id="districtSelect">
-          <option value="ALL">Tüm İlçeler (Edirne & Kırklareli)</option>
+          <option value="ALL">Tüm İlçeler</option>
         </select>
 
         <select id="settlementSelect">
-          <option value="ALL">Tüm Yerleşimler (Mahalle / Köy / Belde)</option>
+          <option value="ALL">Tüm Mahalle / Köyler</option>
         </select>
 
         <input id="searchInput" type="text" placeholder="Tesisat No, Seri No, Mahalle, Köy veya Sokak ara..." />
@@ -529,22 +527,27 @@
 
       <div class="controls-row">
         <div class="meter-row">
-          <button class="chip-btn active" data-meter="ALL">Tüm Sayaçlar</button>
+          <button class="chip-btn active" data-meter="ALL">Tümü</button>
           <button class="chip-btn" data-meter="MONO">Monofaze</button>
           <button class="chip-btn" data-meter="TRI">Trifaze</button>
         </div>
 
-        <select id="sortSelect" style="width:auto; min-width:195px; padding:7px 10px; font-size:12px;">
+        <select id="sortSelect" style="width:auto; min-width:175px; padding:7px 10px; font-size:12px;">
           <option value="DEFAULT">Sırala: Varsayılan</option>
-          <option value="SETTLEMENT">Sırala: Yerleşim (A-Z)</option>
-          <option value="NEAREST">Sırala: En Yakın Konum</option>
+          <option value="SETTLEMENT">Sırala: Mahalle / Köy (A-Z)</option>
+          <option value="NEAREST">Sırala: En Yakın</option>
         </select>
       </div>
     </section>
 
+    <section id="categorySubGroupCard" class="card">
+      <div id="subGroupTitle" class="group-header-title">🏙️ Mahalleler & 🌾 Köyler — İlçe Dağılımı</div>
+      <div id="districtBreakdownPills" class="district-pills"></div>
+    </section>
+
     <section class="card">
       <div class="progress-header">
-        <span id="filteredCountLabel">Ekranda Kalan İş: 0</span>
+        <span id="filteredCountLabel">Ekranda Kalan: 0</span>
         <span id="percentLabel">%0</span>
       </div>
       <div class="progress-bar">
@@ -554,39 +557,36 @@
 
     <div id="listView">
       <div id="jobsContainer"></div>
-      <div id="loadMoreWrap" class="hidden" style="margin-top:10px; text-align:center;">
-        <button id="loadMoreBtn" class="btn btn-secondary" style="width:100%;">Daha Fazla Kayıt Göster</button>
+      <div id="loadMoreWrap" class="hidden" style="margin-top:8px;">
+        <button id="loadMoreBtn" class="btn btn-secondary" style="width:100%;">Daha Fazla Göster</button>
       </div>
     </div>
 
     <div id="mapView" class="hidden">
       <section class="card">
         <div class="map-toolbar">
-          <button id="locateBtn" class="btn btn-warning">📍 Uzaklıkları Hesapla (GPS)</button>
-          <button id="fitMapBtn" class="btn btn-secondary">🧭 Tüm Noktaları Göster</button>
+          <button id="locateBtn" class="btn btn-warning">📍 Konumumu Bul</button>
+          <button id="fitMapBtn" class="btn btn-secondary">🧭 Tümünü Göster</button>
         </div>
-        <div id="mapStatus" class="map-info">Haritadaki herhangi bir noktaya basarak o işin tesisat, adres ve Git bilgisini açabilirsiniz.</div>
+        <div id="mapStatus" class="map-info">Noktaya tıklayarak tesisat, adres, tamamla ve Git seçeneklerini açın.</div>
         <div id="map"></div>
         <div id="selectedMapJobWrap" class="hidden"></div>
       </section>
 
       <section class="card">
-        <div style="font-size:14px; font-weight:800; margin-bottom:4px;">🏷️ Yakındaki İşler & Rotalar</div>
+        <div style="font-size:13px; font-weight:800;">🏷️ Yakındaki İşler</div>
         <div id="nearbyList"></div>
       </section>
     </div>
   </div>
 
-  <!-- Menü / PIN Modalı -->
   <div id="menuModal" class="modal-backdrop">
     <div class="modal-card">
-      <h3 style="margin-top:0;">Saha Menüsü & Yetkili Girişi</h3>
-      <p style="font-size:13px; color:var(--text-muted);">
-        Veri yükleme, kayıtları sunucuda temizleme veya tamamlanan işleri görme için PIN kodunu girin.
-      </p>
-      <input id="pinInput" type="password" inputmode="numeric" placeholder="Yetkili PIN (1923)" style="margin-bottom:10px;" />
+      <h3 style="margin-top:0;">Yetkili Girişi</h3>
+      <p style="font-size:13px; color:var(--text-muted);">Excel/PDF yükleme ve sunucu düzenleme için PIN kodunu girin.</p>
+      <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN (1923)" style="margin-bottom:10px;" />
       <div style="display:flex; gap:8px;">
-        <button id="pinSubmitBtn" class="btn btn-primary" style="flex:1;">Giriş Yap</button>
+        <button id="pinSubmitBtn" class="btn btn-primary" style="flex:1;">Giriş</button>
         <button id="pinCloseBtn" class="btn btn-secondary" style="flex:1;">Kapat</button>
       </div>
       <div id="pinError" style="color:var(--danger); font-size:12px; margin-top:8px;"></div>
@@ -611,370 +611,83 @@
     const ADMIN_PIN = "1923";
     const PAGE_SIZE = 40;
 
-    // Edirne + Kırklareli ilçe ve il eşleşmeleri
-    const DISTRICT_META = {
-      "Edirne Merkez": { province: "Edirne", districtName: "Merkez", coords: [41.6771, 26.5557] },
-      "Keşan": { province: "Edirne", districtName: "Keşan", coords: [40.8559, 26.6305] },
-      "Uzunköprü": { province: "Edirne", districtName: "Uzunköprü", coords: [41.2706, 26.6889] },
-      "İpsala": { province: "Edirne", districtName: "İpsala", coords: [40.9197, 26.3797] },
-      "Havsa": { province: "Edirne", districtName: "Havsa", coords: [41.5517, 26.8211] },
-      "Meriç": { province: "Edirne", districtName: "Meriç", coords: [41.1917, 26.4183] },
-      "Enez": { province: "Edirne", districtName: "Enez", coords: [40.7253, 26.0822] },
-      "Süloğlu": { province: "Edirne", districtName: "Süloğlu", coords: [41.7667, 26.9069] },
-      "Lalapaşa": { province: "Edirne", districtName: "Lalapaşa", coords: [41.8389, 26.7375] },
-      "Kırklareli Merkez": { province: "Kırklareli", districtName: "Merkez", coords: [41.7355, 27.2252] },
-      "Lüleburgaz": { province: "Kırklareli", districtName: "Lüleburgaz", coords: [41.4069, 27.3608] },
-      "Babaeski": { province: "Kırklareli", districtName: "Babaeski", coords: [41.4339, 27.0933] },
-      "Vize": { province: "Kırklareli", districtName: "Vize", coords: [41.5736, 27.7642] },
-      "Pınarhisar": { province: "Kırklareli", districtName: "Pınarhisar", coords: [41.6228, 27.5153] },
-      "Demirköy": { province: "Kırklareli", districtName: "Demirköy", coords: [41.8217, 27.7611] },
-      "Pehlivanköy": { province: "Kırklareli", districtName: "Pehlivanköy", coords: [41.3514, 26.9358] },
-      "Kofçaz": { province: "Kırklareli", districtName: "Kofçaz", coords: [41.9442, 27.1678] }
+    const DISTRICTS = {
+      "Edirne Merkez": { il: "Edirne", ilce: "Merkez", coords: [41.6771, 26.5557] },
+      "Keşan": { il: "Edirne", ilce: "Keşan", coords: [40.8559, 26.6305] },
+      "Uzunköprü": { il: "Edirne", ilce: "Uzunköprü", coords: [41.2706, 26.6889] },
+      "İpsala": { il: "Edirne", ilce: "İpsala", coords: [40.9197, 26.3797] },
+      "Havsa": { il: "Edirne", ilce: "Havsa", coords: [41.5517, 26.8211] },
+      "Meriç": { il: "Edirne", ilce: "Meriç", coords: [41.1917, 26.4183] },
+      "Enez": { il: "Edirne", ilce: "Enez", coords: [40.7253, 26.0822] },
+      "Süloğlu": { il: "Edirne", ilce: "Süloğlu", coords: [41.7667, 26.9069] },
+      "Lalapaşa": { il: "Edirne", ilce: "Lalapaşa", coords: [41.8389, 26.7375] },
+      "Kırklareli Merkez": { il: "Kırklareli", ilce: "Merkez", coords: [41.7355, 27.2252] },
+      "Lüleburgaz": { il: "Kırklareli", ilce: "Lüleburgaz", coords: [41.4069, 27.3608] },
+      "Babaeski": { il: "Kırklareli", ilce: "Babaeski", coords: [41.4339, 27.0933] },
+      "Vize": { il: "Kırklareli", ilce: "Vize", coords: [41.5736, 27.7642] },
+      "Pınarhisar": { il: "Kırklareli", ilce: "Pınarhisar", coords: [41.6228, 27.5153] },
+      "Demirköy": { il: "Kırklareli", ilce: "Demirköy", coords: [41.8217, 27.7611] },
+      "Pehlivanköy": { il: "Kırklareli", ilce: "Pehlivanköy", coords: [41.3514, 26.9358] },
+      "Kofçaz": { il: "Kırklareli", ilce: "Kofçaz", coords: [41.9442, 27.1678] }
     };
 
-    const CANONICAL_NAMES = {
-      // Edirne Merkez Mahalleler
-      "sukrupasa": "Şükrüpaşa",
-      "saricapasa": "Sarıcapaşa",
-      "sahin": "Şahin",
-      "sinan": "Sinan",
-      "sabuni": "Sabuni",
-      "nisancipasa": "Nişancıpaşa",
-      "mithatpasa": "Mithatpaşa",
-      "kocasinan": "Kocasinan",
-      "abdullahpasa": "Abdullahpaşa",
-      "fatih": "Fatih",
-      "abdurrahman": "Abdurrahman",
-      "talatpasa": "Talatpaşa",
-      "dilaverbey": "Dilaverbey",
-      "babademirtas": "Babademirtaş",
-      "barutluk": "Barutluk",
-      "menzilahir": "Menzilahır",
-      "yildirim beyazit": "Yıldırım Beyazıt",
-      "yildirim haci sarraf": "Yıldırım Hacı Sarraf",
-      "sarraf": "Yıldırım Hacı Sarraf",
-      "yildirim": "Yıldırım Beyazıt",
-      "karaagac": "Karaağaç",
-      "istasyon": "İstasyon",
-      "yeniimaret": "Yeniimaret",
-      "medrese alibey": "Medrese Alibey",
-      "cavusbey": "Çavuşbey",
-      "kaleici": "Kaleiçi",
-      "meydan": "Meydan",
-      "umurbey": "Umurbey",
-      "kurtulus": "Kurtuluş",
-      "ataturk": "Atatürk",
-      "1. murat": "1. Murat",
-      "1 murat": "1. Murat",
-      "birinci murat": "1. Murat",
-      "sehsuvarbey": "Şehsuvarbey",
-      "yancikci sahin": "Yancıkçı Şahin",
-      // Kırklareli Mahalleler
-      "karakas": "Karakaş",
-      "yayla": "Yayla",
-      "demirtas": "Demirtaş",
-      "akalar": "Akalar",
-      "berber": "Berber",
-      "cumhuriyet": "Cumhuriyet",
-      "ismet pasha": "İsmet Paşa",
-      "ismet pasa": "İsmet Paşa",
-      "kocahidir": "Kocahıdır",
-      "durak": "Durak",
-      "8 kasim": "8 Kasım",
-      "genclik": "Gençlik",
-      "kurtulus mah": "Kurtuluş",
-      "yildirim mah": "Yıldırım",
-      "siteler": "Siteler",
-      "yenimahalle": "Yeni",
-      "yeni": "Yeni",
-      // Edirne & Kırklareli Köyler
-      "tayakadin": "Tayakadın",
-      "yenikadin": "Yenikadın",
-      "kadin": "Yenikadın",
-      "eskikadin": "Eskikadın",
-      "sazlidere": "Sazlıdere",
-      "kopru": "Köprü",
-      "bosnakoy": "Bosnaköy",
-      "bosna": "Bosnaköy",
-      "demirkoy": "Demirköy",
-      "suakacagi": "Suakacağı",
-      "kayapa": "Kayapa",
-      "kemalkoy": "Kemalköy",
-      "buyukdolluk": "Büyükdöllük",
-      "kucukdolluk": "Küçükdöllük",
-      "orhaniye": "Orhaniye",
-      "uzgac": "Uzgaç",
-      "ahirkoy": "Ahırköy",
-      "karakasim": "Karakasım",
-      "haciumur": "Hacıumur",
-      "elcili": "Elçili",
-      "yakupbey": "Yakupbey",
-      "budakdoganca": "Budakdoğanca",
-      "hatipkoy": "Hatipköy",
-      "sarayakpinar": "Sarayakpınar",
-      "degirmenyeni": "Değirmenyeni",
-      "korucu": "Korucu",
-      "kosenciftligi": "Köşençiftliği",
-      "bademlik": "Bademlik",
-      "meneksesofular": "Menekşesofular",
-      "musabeyli": "Musabeyli",
-      "suyolu": "Suyolu",
-      "taslisekban": "Taşlısekban",
-      "yolagzi": "Yolağzı",
-      "ovacik": "Ovacık",
-      "comlekkoy": "Çömlekköy",
-      "karayusuf": "Karayusuf",
-      "suleymaniye": "Süleymaniye",
-      "yagcili": "Yağcılı",
-      "kadidondurma": "Kadıdondurma",
-      "sigircili": "Sığırcılı",
-      "hamzabeyli": "Hamzabeyli",
-      "donkoy": "Donköy",
-      "cukurkoy": "Çukurköy",
-      "buyukevren": "Büyükevren",
-      "kucukevren": "Küçükevren",
-      "akardere": "Akardere",
-      "beykoy": "Beyköy",
-      "altinyazi": "Altınyazı",
-      "candir": "Çandır",
-      "balaban": "Balaban",
-      "kurtbey": "Kurtbey",
-      "pasayigit": "Paşayiğit",
-      "sultankoy": "Sultanköy",
-      "karahisar": "Karahisar",
-      "alacaoglu": "Alacaoğlu",
-      "balabankoru": "Balabankoru",
-      "camlica": "Çamlıca",
-      "kizkapan": "Kızkapan",
-      "sihlar": "Şıhlar",
-      "yenice": "Yenice",
-      "saricali": "Sarıçalı",
-      "sogutluk": "Söğütlük",
-      "buyukismailce": "Büyükismailçe",
-      "kucukismailce": "Küçükismailçe",
-      "harmanli": "Harmanlı",
-      "ciftlikkoy": "Çiftlikköy",
-      "adasarhanli": "Adasarhanlı",
-      "akcesme": "Akçeşme",
-      "akpinar": "Akpınar",
-      "alpullu": "Alpullu",
-      "arpac": "Arpaç",
-      "aydinkoy": "Aydınköy",
-      "balikoy": "Balıköy",
-      "basagil": "Başağıl",
-      "biyikli": "Bıyıklı",
-      "caliskan": "Çalışkan",
-      "cavuslu": "Çavuşlu",
-      "dagyenice": "Dağyenice",
-      "danisment": "Danışment",
-      "degirmenci": "Değirmenci",
-      "dogankoy": "Doğanköy",
-      "doyran": "Doyran",
-      "emek": "Emek",
-      "emice": "Emice",
-      "eylice": "Eylice",
-      "gazibey": "Gazibey",
-      "goktepe": "Göktepe",
-      "guvenc": "Güvenç",
-      "haciomer": "Hacıömer",
-      "hamidiye": "Hamidiye",
-      "hasanaga": "Hasanağa",
-      "hasirciarnavut": "Hasırcıarnavut",
-      "haydar": "Haydar",
-      "hidir": "Hıdır",
-      "hidiraga": "Hıdırağa",
-      "ihsaniye": "İhsaniye",
-      "ikizler": "İkizler",
-      "incedere": "İncedere",
-      "incegiz": "İnceğiz",
-      "iskender": "İskender",
-      "karaburcek": "Karabürçek",
-      "karacahali": "Karacahalı",
-      "karahamza": "Karahamza",
-      "karakaya": "Karakaya",
-      "karakapi": "Karakapı",
-      "karamurat": "Karamurat",
-      "karapurcek": "Karapürçek",
-      "karsli": "Karslı",
-      "kartal": "Kartal",
-      "kavacik": "Kavacık",
-      "kayali": "Kayalı",
-      "kazanova": "Kazanova",
-      "kecili": "Keçili",
-      "kilickoy": "Kılıçköy",
-      "kizilcikdere": "Kızılcıkdere",
-      "kocakoy": "Kocaköy",
-      "kolsuz": "Kolsuz",
-      "koyunbaba": "Koyunbaba",
-      "koseomer": "Köseömer",
-      "kumciftlik": "Kumçiftlik",
-      "kurucesme": "Kuruçeşme",
-      "kucukaltiagac": "Küçükaltıağaç",
-      "buyukaltiagac": "Büyükaltıağaç",
-      "mahmutkoy": "Mahmutköy",
-      "maltepe": "Maltepe",
-      "malkoc": "Malkoç",
-      "mecidiye": "Mecidiye",
-      "muratcali": "Muratçalı",
-      "musellim": "Müsellim",
-      "ocakli": "Ocaklı",
-      "ogulpasa": "Oğulpaşa",
-      "ortakci": "Ortakçı",
-      "osmankoy": "Osmanköy",
-      "omeroba": "Ömeroba",
-      "saatli": "Saatlı",
-      "saglik": "Sağlık",
-      "sahil": "Sahil",
-      "saridanisment": "Sarıdanişment",
-      "sarikavak": "Sarıkavak",
-      "sazli": "Sazlı",
-      "seydiye": "Seydiye",
-      "sirasogut": "Sırasöğüt",
-      "sinankoy": "Sinanköy",
-      "sogucak": "Soğucak",
-      "sogutlu": "Söğütlü",
-      "sabanmera": "Şabanmera",
-      "sahmelek": "Şahmelek",
-      "sehitler": "Şehitler",
-      "tasli": "Taşlı",
-      "tepecik": "Tepecik",
-      "tokatli": "Tokatlı",
-      "topac": "Topaç",
-      "tunca": "Tunca",
-      "turkmen": "Türkmen",
-      "ugurlu": "Uğurlu",
-      "uzunhaci": "Uzunhacı",
-      "ulku": "Ülkü",
-      "vakif": "Vakıf",
-      "yagmurca": "Yağmurca",
-      "yahsibey": "Yahşibey",
-      "yavasca": "Yavaşça",
-      "yaylacik": "Yaylacık",
-      "yenikoy": "Yeniköy",
-      "yesilova": "Yeşilova",
-      "zarif": "Zarif",
-      "ahmetbey": "Ahmetbey",
-      "evrensekiz": "Evrensekiz",
-      "kavakkoy": "Kavakköy",
-      "kaynarca": "Kaynarca",
-      "kiyikoy": "Kıyıköy",
-      "igneadа": "İğneada",
-      "igneada": "İğneada",
-      "buyukkaristiran": "Büyükkarıştıran",
-      // Beldeler
-      "yenimuhacir": "Yenimuhacır",
-      "begendik": "Beğendik",
-      "kuplu": "Küplü",
-      "subasi": "Subaşı",
-      "kircasalih": "Kırcasalih",
-      "abalar": "Abalar",
-      "buyukdoganca": "Büyükdoğanca",
-      "copkoy": "Çöpköy"
+    const NAMES = {
+      "sukrupasa": "Şükrüpaşa", "saricapasa": "Sarıcapaşa", "sahin": "Şahin", "sinan": "Sinan",
+      "sabuni": "Sabuni", "nisancipasa": "Nişancıpaşa", "mithatpasa": "Mithatpaşa",
+      "kocasinan": "Kocasinan", "abdullahpasa": "Abdullahpaşa", "fatih": "Fatih",
+      "abdurrahman": "Abdurrahman", "talatpasa": "Talatpaşa", "dilaverbey": "Dilaverbey",
+      "babademirtas": "Babademirtaş", "barutluk": "Barutluk", "menzilahir": "Menzilahır",
+      "yildirim beyazit": "Yıldırım Beyazıt", "yildirim haci sarraf": "Yıldırım Hacı Sarraf",
+      "sarraf": "Yıldırım Hacı Sarraf", "yildirim": "Yıldırım Beyazıt", "karaagac": "Karaağaç",
+      "istasyon": "İstasyon", "yeniimaret": "Yeniimaret", "medrese alibey": "Medrese Alibey",
+      "cavusbey": "Çavuşbey", "kaleici": "Kaleiçi", "meydan": "Meydan", "umurbey": "Umurbey",
+      "kurtulus": "Kurtuluş", "ataturk": "Atatürk", "1. murat": "1. Murat", "1 murat": "1. Murat",
+      "sehsuvarbey": "Şehsuvarbey", "karakas": "Karakaş", "yayla": "Yayla", "demirtas": "Demirtaş",
+      "akalar": "Akalar", "berber": "Berber", "cumhuriyet": "Cumhuriyet", "kocahidir": "Kocahıdır",
+      "durak": "Durak", "8 kasim": "8 Kasım", "genclik": "Gençlik", "siteler": "Siteler",
+      "yenimahalle": "Yeni", "yeni": "Yeni", "tayakadin": "Tayakadın", "yenikadin": "Yenikadın",
+      "kadin": "Yenikadın", "eskikadin": "Eskikadın", "sazlidere": "Sazlıdere", "kopru": "Köprü",
+      "bosnakoy": "Bosnaköy", "bosna": "Bosnaköy", "demirkoy": "Demirköy", "suakacagi": "Suakacağı",
+      "kayapa": "Kayapa", "kemalkoy": "Kemalköy", "buyukdolluk": "Büyükdöllük",
+      "kucukdolluk": "Küçükdöllük", "orhaniye": "Orhaniye", "uzgac": "Uzgaç", "ahirkoy": "Ahırköy",
+      "karakasim": "Karakasım", "haciumur": "Hacıumur", "yenimuhacir": "Yenimuhacır",
+      "begendik": "Beğendik", "kuplu": "Küplü", "subasi": "Subaşı", "kircasalih": "Kırcasalih",
+      "igneada": "İğneada", "kiyikoy": "Kıyıköy", "ahmetbey": "Ahmetbey", "evrensekiz": "Evrensekiz",
+      "buyukkaristiran": "Büyükkarıştıran", "kavakkoy": "Kavakköy", "kaynarca": "Kaynarca",
+      "abalar": "Abalar", "buyukdoganca": "Büyükdoğanca", "copkoy": "Çöpköy"
     };
 
-    const BELDE_KEYS = new Set([
-      "yenimuhacir", "begendik", "kuplu", "subasi", "kircasalih",
-      "abalar", "buyukdoganca", "copkoy", "ahmetbey", "evrensekiz",
-      "kavakkoy", "kaynarca", "kiyikoy", "igneada", "buyukkaristiran"
+    const KOYLER = new Set([
+      "tayakadin", "yenikadin", "kadin", "eskikadin", "sazlidere", "kopru", "bosnakoy",
+      "bosna", "demirkoy", "suakacagi", "kayapa", "kemalkoy", "buyukdolluk", "kucukdolluk",
+      "orhaniye", "uzgac", "ahirkoy", "karakasim", "haciumur", "yenimuhacir",
+      "begendik", "kuplu", "subasi", "kircasalih", "igneada", "kiyikoy",
+      "ahmetbey", "evrensekiz", "buyukkaristiran", "kavakkoy", "kaynarca", "abalar",
+      "buyukdoganca", "copkoy"
     ]);
 
-    const KOY_KEYS = new Set([
-      "tayakadin", "yenikadin", "kadin", "eskikadin", "sazlidere", "kopru",
-      "bosnakoy", "bosna", "demirkoy", "suakacagi", "kayapa", "kemalkoy",
-      "buyukdolluk", "kucukdolluk", "orhaniye", "uzgac", "ahirkoy",
-      "karakasim", "haciumur", "elcili", "yakupbey", "budakdoganca",
-      "hatipkoy", "sarayakpinar", "degirmenyeni", "korucu", "kosenciftligi",
-      "bademlik", "meneksesofular", "musabeyli", "suyolu", "taslisekban",
-      "yolagzi", "ovacik", "comlekkoy", "karayusuf", "suleymaniye",
-      "yagcili", "kadidondurma", "sigircili", "hamzabeyli", "donkoy",
-      "cukurkoy", "buyukevren", "kucukevren", "akardere", "beykoy",
-      "altinyazi", "candir", "balaban", "kurtbey", "pasayigit",
-      "sultankoy", "karahisar", "alacaoglu", "balabankoru", "camlica",
-      "kizkapan", "sihlar", "yenice", "saricali", "sogutluk",
-      "buyukismailce", "kucukismailce", "harmanli", "ciftlikkoy",
-      "adasarhanli", "akcesme", "akpinar", "alpullu", "arpac", "aydinkoy",
-      "balikoy", "basagil", "biyikli", "caliskan", "cavuslu", "dagyenice",
-      "danisment", "degirmenci", "dogankoy", "doyran", "emek", "emice",
-      "eylice", "gazibey", "goktepe", "guvenc", "haciomer", "hamidiye",
-      "hasanaga", "hasirciarnavut", "haydar", "hidir", "hidiraga",
-      "ihsaniye", "ikizler", "incedere", "incegiz", "iskender",
-      "karaburcek", "karacahali", "karahamza", "karakaya", "karakapi",
-      "karamurat", "karapurcek", "karsli", "kartal", "kavacik", "kayali",
-      "kazanova", "kecili", "kilickoy", "kizilcikdere", "kocakoy",
-      "kolsuz", "koyunbaba", "koseomer", "kumciftlik", "kurucesme",
-      "kucukaltiagac", "buyukaltiagac", "mahmutkoy", "maltepe", "malkoc",
-      "mecidiye", "muratcali", "musellim", "ocakli", "ogulpasa",
-      "ortakci", "osmankoy", "omeroba", "saatli", "saglik", "sahil",
-      "saridanisment", "sarikavak", "sazli", "seydiye", "sirasogut",
-      "sinankoy", "sogucak", "sogutlu", "sabanmera", "sahmelek",
-      "sehitler", "tasli", "tepecik", "tokatli", "topac", "tunca",
-      "turkmen", "ugurlu", "uzunhaci", "ulku", "vakif", "yagmurca",
-      "yahsibey", "yavasca", "yaylacik", "yenikoy", "yesilova", "zarif"
-    ]);
-
-    const PLACE_COORDS = {
-      "sukrupasa": [41.6678, 26.5765],
-      "kocasinan": [41.6655, 26.5655],
-      "fatih": [41.6632, 26.5835],
-      "1. murat": [41.6610, 26.5715],
-      "abdurrahman": [41.6712, 26.5612],
-      "talatpasa": [41.6738, 26.5535],
-      "dilaverbey": [41.6752, 26.5482],
-      "babademirtas": [41.6815, 26.5510],
-      "barutluk": [41.6798, 26.5618],
-      "menzilahir": [41.6835, 26.5585],
-      "sabuni": [41.6768, 26.5555],
-      "nisancipasa": [41.6758, 26.5615],
-      "mithatpasa": [41.6782, 26.5532],
-      "yildirim beyazit": [41.6865, 26.5390],
-      "yildirim haci sarraf": [41.6890, 26.5440],
-      "sarraf": [41.6890, 26.5440],
-      "karaagac": [41.6565, 26.5210],
-      "istasyon": [41.6620, 26.5465],
-      "yeniimaret": [41.6845, 26.5315],
-      "medrese alibey": [41.6788, 26.5578],
-      "cavusbey": [41.6795, 26.5485],
-      "kaleici": [41.6762, 26.5505],
-      "meydan": [41.6775, 26.5580],
-      "umurbey": [41.6735, 26.5665],
-      "kurtulus": [41.6880, 26.5710],
-      "ataturk": [41.6745, 26.5740],
-      "saricapasa": [41.6742, 26.5572],
-      "sahin": [41.6725, 26.5645],
-      "sinan": [41.6730, 26.5595],
-      "sehsuvarbey": [41.6770, 26.5470],
-      "tayakadin": [41.6138, 26.5065],
-      "yenikadin": [41.5948, 26.4892],
-      "kadin": [41.5948, 26.4892],
-      "eskikadin": [41.5882, 26.5125],
-      "sazlidere": [41.6155, 26.6420],
-      "kopru": [41.6350, 26.5280],
-      "bosnakoy": [41.6395, 26.5365],
-      "demirkoy": [41.6425, 26.4725],
-      "suakacagi": [41.6085, 26.4625],
-      "kayapa": [41.5755, 26.5455],
-      "kemalkoy": [41.6285, 26.4385],
-      "buyukdolluk": [41.7380, 26.6120],
-      "kucukdolluk": [41.7240, 26.5980],
-      "orhaniye": [41.5680, 26.4750],
-      "uzgac": [41.6950, 26.6520],
-      "ahirkoy": [41.6620, 26.6850],
-      "karakasim": [41.5520, 26.5680],
-      "haciumur": [41.6480, 26.6620],
-      "yenimuhacir": [40.7975, 26.5356],
-      "begendik": [40.8225, 26.2589],
-      "kuplu": [41.1586, 26.3519],
-      "subasi": [41.3667, 26.8056],
-      "kircasalih": [41.3575, 26.8833],
-      "karakas": [41.7375, 27.2240],
-      "yayla": [41.7315, 27.2180],
-      "demirtas": [41.7410, 27.2290],
-      "akalar": [41.7330, 27.2320],
-      "kocahidir": [41.7440, 27.2150],
-      "igneada": [41.8747, 27.9919],
-      "kiyikoy": [41.6358, 28.0819],
-      "ahmetbey": [41.4342, 27.4958],
-      "evrensekiz": [41.4008, 27.2564],
+    const COORDS = {
+      "sukrupasa": [41.6678, 26.5765], "kocasinan": [41.6655, 26.5655], "fatih": [41.6632, 26.5835],
+      "1. murat": [41.6610, 26.5715], "abdurrahman": [41.6712, 26.5612], "talatpasa": [41.6738, 26.5535],
+      "dilaverbey": [41.6752, 26.5482], "babademirtas": [41.6815, 26.5510], "barutluk": [41.6798, 26.5618],
+      "menzilahir": [41.6835, 26.5585], "sabuni": [41.6768, 26.5555], "nisancipasa": [41.6758, 26.5615],
+      "mithatpasa": [41.6782, 26.5532], "yildirim beyazit": [41.6865, 26.5390],
+      "yildirim haci sarraf": [41.6890, 26.5440], "sarraf": [41.6890, 26.5440], "karaagac": [41.6565, 26.5210],
+      "istasyon": [41.6620, 26.5465], "yeniimaret": [41.6845, 26.5315], "medrese alibey": [41.6788, 26.5578],
+      "cavusbey": [41.6795, 26.5485], "kaleici": [41.6762, 26.5505], "meydan": [41.6775, 26.5580],
+      "umurbey": [41.6735, 26.5665], "kurtulus": [41.6880, 26.5710], "ataturk": [41.6745, 26.5740],
+      "saricapasa": [41.6742, 26.5572], "sahin": [41.6725, 26.5645], "sinan": [41.6730, 26.5595],
+      "sehsuvarbey": [41.6770, 26.5470], "tayakadin": [41.6138, 26.5065], "yenikadin": [41.5948, 26.4892],
+      "kadin": [41.5948, 26.4892], "eskikadin": [41.5882, 26.5125], "sazlidere": [41.6155, 26.6420],
+      "kopru": [41.6350, 26.5280], "bosnakoy": [41.6395, 26.5365], "demirkoy": [41.6425, 26.4725],
+      "suakacagi": [41.6085, 26.4625], "kayapa": [41.5755, 26.5455], "kemalkoy": [41.6285, 26.4385],
+      "buyukdolluk": [41.7380, 26.6120], "kucukdolluk": [41.7240, 26.5980], "orhaniye": [41.5680, 26.4750],
+      "uzgac": [41.6950, 26.6520], "ahirkoy": [41.6620, 26.6850], "karakasim": [41.5520, 26.5680],
+      "haciumur": [41.6480, 26.6620], "yenimuhacir": [40.7975, 26.5356], "begendik": [40.8225, 26.2589],
+      "kuplu": [41.1586, 26.3519], "subasi": [41.3667, 26.8056], "kircasalih": [41.3575, 26.8833],
+      "karakas": [41.7375, 27.2240], "yayla": [41.7315, 27.2180], "demirtas": [41.7410, 27.2290],
+      "akalar": [41.7330, 27.2320], "kocahidir": [41.7440, 27.2150], "igneada": [41.8747, 27.9919],
+      "kiyikoy": [41.6358, 28.0819], "ahmetbey": [41.4342, 27.4958], "evrensekiz": [41.4008, 27.2564],
       "buyukkaristiran": [41.3753, 27.5150]
     };
 
@@ -984,7 +697,6 @@
     let allJobs = [];
     let filteredJobs = [];
     let visibleLimit = PAGE_SIZE;
-
     let selectedCat = "ALL";
     let selectedDistrict = "ALL";
     let selectedSettlement = "ALL";
@@ -995,7 +707,6 @@
     let isAdmin = false;
     let activeTab = "list";
     let selectedMapJobId = null;
-
     let mapInstance = null;
     let canvasRenderer = null;
     let markerLayer = null;
@@ -1027,6 +738,8 @@
       settlementSelect: document.getElementById("settlementSelect"),
       searchInput: document.getElementById("searchInput"),
       sortSelect: document.getElementById("sortSelect"),
+      subGroupTitle: document.getElementById("subGroupTitle"),
+      districtBreakdownPills: document.getElementById("districtBreakdownPills"),
       filteredCountLabel: document.getElementById("filteredCountLabel"),
       percentLabel: document.getElementById("percentLabel"),
       progressFill: document.getElementById("progressFill"),
@@ -1040,340 +753,261 @@
       nearbyList: document.getElementById("nearbyList")
     };
 
-    function trLower(str) {
-      return (str || "").toString().toLocaleLowerCase("tr-TR").trim();
-    }
+    const trLower = s => (s || "").toString().toLocaleLowerCase("tr-TR").trim();
+    const asciiKey = s => trLower(s)
+      .replace(/ı/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u")
+      .replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c")
+      .replace(/[^a-z0-9.\s]/g, " ").replace(/\s+/g, " ").trim();
 
-    function asciiKey(str) {
-      return trLower(str)
-        .replace(/ı/g, "i")
-        .replace(/ğ/g, "g")
-        .replace(/ü/g, "u")
-        .replace(/ş/g, "s")
-        .replace(/ö/g, "o")
-        .replace(/ç/g, "c")
-        .replace(/[^a-z0-9.\s]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
+    const properTr = s => trLower(s).replace(/\s+/g, " ").split(" ").filter(Boolean)
+      .map(w => w.charAt(0).toLocaleUpperCase("tr-TR") + w.slice(1)).join(" ");
 
-    function properTr(str) {
-      return trLower(str)
-        .replace(/\s+/g, " ")
-        .split(" ")
-        .filter(Boolean)
-        .map(w => w.charAt(0).toLocaleUpperCase("tr-TR") + w.slice(1))
-        .join(" ");
-    }
-
-    function parsePipePayload(rawText) {
+    function parsePipe(rawText) {
       const text = String(rawText || "").trim();
       if (!text.includes("|")) {
-        return { cleanStreet: text, extractedTesisat: "", extractedSeri: "", extractedPlace: "", extractedMeter: "" };
+        return { street: text, tesisat: "", seri: "", place: "", meter: "" };
       }
-
       const parts = text.split("|").map(p => p.trim()).filter(Boolean);
-      let extractedTesisat = "";
-      let extractedSeri = "";
-      let extractedMeter = "";
-      let placeCandidates = [];
-      let streetCandidates = [];
-
-      for (const part of parts) {
-        const norm = asciiKey(part);
-
-        if (/^\d{1,5}$/.test(part)) continue;
-
-        if (/^\d{7,12}$/.test(part)) {
-          if (!extractedTesisat) extractedTesisat = part;
-          continue;
-        }
-
-        if (norm.includes("sayac") || norm === "trifaze" || norm === "monofaze") {
-          extractedMeter = part;
-          continue;
-        }
-
-        if (/^[A-Z]{2,5}[-_ ]?\d{5,12}$/i.test(part)) {
-          if (!extractedSeri) extractedSeri = part.toUpperCase();
-          continue;
-        }
-
-        if (["merkez", "edirne", "edirne merkez", "kirklareli", "kirklareli merkez"].includes(norm)) {
-          continue;
-        }
-
-        if (/\b(sok\.?|sokak|cad\.?|caddesi|bulv\.?|bulvari|no:|diskapino|daire|blok|kapi|mevkii|kume)\b/i.test(part)) {
-          streetCandidates.push(part);
+      let tesisat = "", seri = "", meter = "";
+      const places = [], streets = [];
+      for (const p of parts) {
+        const n = asciiKey(p);
+        if (/^\d{1,5}$/.test(p)) continue;
+        if (/^\d{7,12}$/.test(p)) { if (!tesisat) tesisat = p; continue; }
+        if (n.includes("sayac") || n === "trifaze" || n === "monofaze") { meter = p; continue; }
+        if (/^[A-Z]{2,5}[-_ ]?\d{5,12}$/i.test(p)) { if (!seri) seri = p.toUpperCase(); continue; }
+        if (["merkez", "edirne", "edirne merkez", "kirklareli", "kirklareli merkez"].includes(n)) continue;
+        if (/\b(sok\.?|sokak|cad\.?|caddesi|bulv\.?|bulvari|no:|diskapino|daire|blok|kapi|mevkii|kume)\b/i.test(p)) {
+          streets.push(p);
         } else {
-          placeCandidates.push(part);
+          places.push(p);
         }
       }
-
-      let cleanStreet = streetCandidates.join(", ") || placeCandidates[placeCandidates.length - 1] || "";
-      cleanStreet = cleanStreet
+      const street = (streets.join(", ") || places[places.length - 1] || "")
         .replace(/\bKÖYÜN\s+KENDİSİ\s+(MAH\.?|MAHALLESİ)\s*/gi, "")
         .replace(/\bKÖYÜN\s+KENDİSİ\b/gi, "Köy İçi")
         .replace(/\b(MERKEZ|EDİRNE|KIRKLARELİ)\s*\/?\s*$/gi, "")
         .replace(/\bDISKAPINO\s*:/gi, "No:")
         .replace(/\bDAIRENO\s*:/gi, "Daire:")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      return {
-        cleanStreet,
-        extractedTesisat,
-        extractedSeri,
-        extractedPlace: placeCandidates.join(" "),
-        extractedMeter
-      };
+        .replace(/\s+/g, " ").trim();
+      return { street, tesisat, seri, place: places.join(" "), meter };
     }
 
-    function detectDistrictKey(rawText) {
-      const n = asciiKey(rawText);
-      const isKirklareli = n.includes("kirklareli");
-
-      for (const [key, meta] of Object.entries(DISTRICT_META)) {
-        if (meta.districtName === "Merkez") continue;
-        const dn = asciiKey(meta.districtName);
-        if (new RegExp(`(^|[^a-z0-9])${dn}([^a-z0-9]|$)`).test(n)) {
-          return key;
-        }
+    function detectDistrict(text) {
+      const n = asciiKey(text);
+      const isK = n.includes("kirklareli");
+      for (const [k, meta] of Object.entries(DISTRICTS)) {
+        if (meta.ilce === "Merkez") continue;
+        const dn = asciiKey(meta.ilce);
+        if (new RegExp(`(^|[^a-z0-9])${dn}([^a-z0-9]|$)`).test(n)) return k;
       }
-
-      return isKirklareli ? "Kırklareli Merkez" : "Edirne Merkez";
+      return isK ? "Kırklareli Merkez" : "Edirne Merkez";
     }
 
-    function resolveSettlement(rawSettlement, rawAddress, districtKey) {
-      const source = `${rawSettlement || ""} ${rawAddress || ""}`.trim();
-      const normAll = asciiKey(source);
-
+    function resolveSettlement(rawSett, rawAddr, districtKey) {
+      const src = `${rawSett || ""} ${rawAddr || ""}`.trim();
+      const norm = asciiKey(src);
       let matchedKey = null;
-      const sortedKeys = Object.keys(CANONICAL_NAMES).sort((a, b) => b.length - a.length);
-      for (const k of sortedKeys) {
-        if (k === "kadin" && (normAll.includes("yenikadin") || normAll.includes("eskikadin") || normAll.includes("tayakadin"))) {
-          continue;
-        }
-        const rx = new RegExp(`(^|[^a-z0-9])${k.replace(/\./g, "\\.")}([^a-z0-9]|$)`);
-        if (rx.test(normAll)) {
+
+      for (const k of Object.keys(NAMES).sort((a, b) => b.length - a.length)) {
+        if (k === "kadin" && (norm.includes("yenikadin") || norm.includes("eskikadin") || norm.includes("tayakadin"))) continue;
+        if (new RegExp(`(^|[^a-z0-9])${k.replace(/\./g, "\\.")}([^a-z0-9]|$)`).test(norm)) {
           matchedKey = k;
           break;
         }
       }
 
-      let category = "MAHALLE";
-      let displayBase = "";
+      let cat = "MAHALLE";
+      let base = "";
 
       if (matchedKey) {
-        displayBase = CANONICAL_NAMES[matchedKey];
-        if (BELDE_KEYS.has(matchedKey)) {
-          category = "BELDE";
-        } else if (KOY_KEYS.has(matchedKey)) {
-          category = "KOY";
-        } else {
-          category = "MAHALLE";
-        }
+        base = NAMES[matchedKey];
+        cat = KOYLER.has(matchedKey) ? "KOY" : "MAHALLE";
       } else {
-        let candidate = (rawSettlement || "").trim();
-        if (!candidate) {
-          const beldeM = source.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]+?)\s*(?:Beldesi|Belde|Belediyesi)/i);
-          const koyM = source.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]+?)\s*(?:Köyü|Köy)/i);
-          const mahM = source.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]+?)\s*(?:Mahallesi|Mah\.?|Mh\.?)/i);
-          if (beldeM) { category = "BELDE"; candidate = beldeM[1]; }
-          else if (koyM) { category = "KOY"; candidate = koyM[1]; }
-          else if (mahM) { category = "MAHALLE"; candidate = mahM[1]; }
+        let cand = (rawSett || "").trim();
+        if (!cand) {
+          const kM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]+?)\s*(?:Köyü|Köy|Beldesi|Belde|Belediyesi)/i);
+          const mM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]+?)\s*(?:Mahallesi|Mah\.?|Mh\.?)/i);
+          if (kM) { cat = "KOY"; cand = kM[1]; }
+          else if (mM) { cat = "MAHALLE"; cand = mM[1]; }
         }
+        if ((/\bkoyu\b|\bkoy\b|\bbeldesi\b|\bbelediyesi\b/i.test(norm)) && !/\bmah\b|\bmahallesi\b/i.test(norm)) cat = "KOY";
 
-        if (/\bbeldesi\b|\bbelediyesi\b/i.test(source)) category = "BELDE";
-        else if (/\bkoyu\b|\bkoy\b/i.test(normAll) && !/\bmah\b|\bmahallesi\b/i.test(normAll)) category = "KOY";
-
-        candidate = candidate
+        cand = cand
           .replace(/\b(mahallesi|mah\.?|mh\.?|köyü|koyu|köy|koy|beldesi|belde|belediyesi|belediye|edirne|kırklareli|kirklareli|merkez|genel|köyün kendisi)\b/gi, " ")
-          .replace(/[|/\\\-–—]+/g, " ")
-          .replace(/\s+/g, " ")
-          .trim();
+          .replace(/[|/\\\-–—]+/g, " ").replace(/\s+/g, " ").trim();
 
-        const cKey = asciiKey(candidate);
-        if (CANONICAL_NAMES[cKey]) {
+        const cKey = asciiKey(cand);
+        if (NAMES[cKey]) {
           matchedKey = cKey;
-          displayBase = CANONICAL_NAMES[cKey];
-          if (BELDE_KEYS.has(cKey)) category = "BELDE";
-          else if (KOY_KEYS.has(cKey)) category = "KOY";
+          base = NAMES[cKey];
+          cat = KOYLER.has(cKey) ? "KOY" : "MAHALLE";
         } else {
-          const meta = DISTRICT_META[districtKey] || DISTRICT_META["Edirne Merkez"];
-          displayBase = candidate ? properTr(candidate) : `${meta.districtName} Merkez`;
-          matchedKey = asciiKey(displayBase);
+          const meta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
+          base = cand ? properTr(cand) : `${meta.ilce} Merkez`;
+          matchedKey = asciiKey(base);
         }
       }
 
-      if (category === "KOY") {
-        return { category: "KOY", settlement: `${displayBase} Köyü`, baseKey: matchedKey };
-      }
-      if (category === "BELDE") {
-        return { category: "BELDE", settlement: `${displayBase} Beldesi`, baseKey: matchedKey };
-      }
-      return { category: "MAHALLE", settlement: `${displayBase} Mah.`, baseKey: matchedKey };
+      if (cat === "KOY") return { category: "KOY", settlement: `${base} Köyü`, baseKey: matchedKey };
+      return { category: "MAHALLE", settlement: `${base} Mah.`, baseKey: matchedKey };
     }
 
-    function buildCleanAddress(cleanStreet, districtKey, settlement) {
-      const meta = DISTRICT_META[districtKey] || DISTRICT_META["Edirne Merkez"];
-      let street = (cleanStreet || "")
+    function cleanAddress(street, districtKey, settlement) {
+      const meta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
+      let s = (street || "")
         .replace(/^(edirne|kırklareli|kirklareli|merkez)\s*([\/\-–—,]|\s)+(merkez|edirne|kırklareli|kirklareli)?\s*[-–—,/]?\s*/i, "")
-        .replace(/\s+/g, " ")
-        .trim();
+        .replace(/\s+/g, " ").trim();
 
-      const baseOnly = settlement.replace(/\s+(Mah\.|Köyü|Beldesi)$/i, "").trim();
+      const baseOnly = settlement.replace(/\s+(Mah\.|Köyü)$/i, "").trim();
       if (baseOnly) {
-        const dupRx = new RegExp(`^${baseOnly}\\s*(Mahallesi|Mah\\.?|Köyü|Beldesi)?\\s*[,\\-–—]?\\s*`, "i");
-        street = street.replace(dupRx, "").trim();
+        s = s.replace(new RegExp(`^${baseOnly}\\s*(Mahallesi|Mah\\.?|Köyü|Beldesi|Belediyesi)?\\s*[,\\-–—]?\\s*`, "i"), "").trim();
       }
 
-      const locLabel = meta.districtName === "Merkez"
-        ? `${meta.province} Merkez`
-        : `${meta.districtName} / ${meta.province}`;
-
-      if (!street || ["genel", "merkez", "koy ici", "koyun kendisi"].includes(asciiKey(street))) {
-        return `${settlement}, ${locLabel}`;
+      const loc = meta.ilce === "Merkez" ? `${meta.il} Merkez` : `${meta.ilce} / ${meta.il}`;
+      if (!s || ["genel", "merkez", "koy ici", "koyun kendisi"].includes(asciiKey(s))) {
+        return `${settlement}, ${loc}`;
       }
-
-      return `${settlement}, ${properTr(street)} (${locLabel})`;
-    }
-
-    function resolveCoordinates(job) {
-      if (typeof job.lat === "number" && typeof job.lng === "number" && !Number.isNaN(job.lat) && !Number.isNaN(job.lng)) {
-        return [job.lat, job.lng];
-      }
-
-      const key = job.baseKey || asciiKey(job.settlement);
-      const distMeta = DISTRICT_META[job.district] || DISTRICT_META["Edirne Merkez"];
-      const baseCoord = PLACE_COORDS[key] || distMeta.coords;
-
-      const seedStr = `${job.tesisatNo || job.id}_${job.streetOnly || ""}`;
-      let hash = 0;
-      for (let i = 0; i < seedStr.length; i++) {
-        hash = ((hash << 5) - hash) + seedStr.charCodeAt(i);
-        hash |= 0;
-      }
-      const dLat = (((Math.abs(hash) % 100) - 50) / 100) * 0.0022;
-      const dLng = (((Math.abs(hash >> 5) % 100) - 50) / 100) * 0.0022;
-      return [baseCoord[0] + dLat, baseCoord[1] + dLng];
-    }
-
-    function haversineKm(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const dLat = ((lat2 - lat1) * Math.PI) / 180;
-      const dLon = ((lon2 - lon1) * Math.PI) / 180;
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos((lat1 * Math.PI) / 180) *
-          Math.cos((lat2 * Math.PI) / 180) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return `${settlement}, ${properTr(s)} (${loc})`;
     }
 
     function normalizeRecord(raw, key) {
-      const rawAddr = String(raw.address || raw.rawAddress || "").trim();
-      const parsed = parsePipePayload(rawAddr);
-
-      const tesisatNo = String(raw.tesisatNo || raw.installationNo || parsed.extractedTesisat || "").trim();
-      const seriNo = String(raw.seriNo || raw.serialNo || parsed.extractedSeri || "").trim();
-
-      const district = DISTRICT_META[raw.district]
-        ? raw.district
-        : detectDistrict(`${raw.district || ""} ${parsed.extractedPlace} ${rawAddr}`);
-
-      const settInfo = resolveSettlement(
-        `${raw.settlement || raw.neighborhood || ""} ${parsed.extractedPlace}`,
-        `${parsed.cleanStreet} ${rawAddr}`,
-        district
-      );
-
-      const meterSource = asciiKey(`${raw.meterType || ""} ${parsed.extractedMeter} ${rawAddr}`);
-      const meterType = meterSource.includes("tri") || meterSource.includes("3 faz") ? "TRI" : "MONO";
-
-      const cleanAddress = buildCleanAddress(parsed.cleanStreet, district, settInfo.settlement);
-      const streetOnly = parsed.cleanStreet || "";
-
-      const rawTitle = String(raw.aboneAdi || raw.customerName || "").trim();
-      const displayTitle = tesisatNo
-        ? `Tesisat: ${tesisatNo}`
-        : (rawTitle && !rawTitle.includes("|") ? properTr(rawTitle) : `${settInfo.settlement} Kaydı`);
+      const rawAddr = String(raw.address || raw.rawAddress || raw.adres || raw.ADRES || "").trim();
+      const p = parsePipe(rawAddr);
+      const tesisatNo = String(raw.tesisatNo || raw.installationNo || raw["Tesisat No"] || p.tesisat || "").trim();
+      const seriNo = String(raw.seriNo || raw.serialNo || raw["Seri No"] || p.seri || "").trim();
+      const district = DISTRICTS[raw.district] ? raw.district : detectDistrict(`${raw.district || raw["İlçe"] || ""} ${p.place} ${rawAddr}`);
+      const sett = resolveSettlement(`${raw.settlement || raw.neighborhood || raw["Mahalle"] || raw["Köy"] || ""} ${p.place}`, `${p.street} ${rawAddr}`, district);
+      const mNorm = asciiKey(`${raw.meterType || raw["Sayaç Tipi"] || ""} ${p.meter} ${rawAddr}`);
+      const meterType = mNorm.includes("tri") || mNorm.includes("3 faz") ? "TRI" : "MONO";
+      const address = cleanAddress(p.street, district, sett.settlement);
+      const rawTitle = String(raw.aboneAdi || raw.customerName || raw["Abone Adı"] || "").trim();
+      const displayTitle = tesisatNo ? `Tesisat: ${tesisatNo}` : (rawTitle && !rawTitle.includes("|") ? properTr(rawTitle) : `${sett.settlement} Kaydı`);
 
       return {
         id: String(raw.id || key),
-        tesisatNo,
-        seriNo,
-        displayTitle,
-        district,
-        category: settInfo.category,
-        settlement: settInfo.settlement,
-        baseKey: settInfo.baseKey,
-        address: cleanAddress,
-        streetOnly,
-        meterType,
-        completed: Boolean(raw.completed),
-        completedAt: raw.completedAt || null,
+        tesisatNo, seriNo, displayTitle, district,
+        category: sett.category, settlement: sett.settlement, baseKey: sett.baseKey,
+        address, streetOnly: p.street || "", meterType,
+        completed: Boolean(raw.completed), completedAt: raw.completedAt || null,
         lat: typeof raw.lat === "number" ? raw.lat : null,
         lng: typeof raw.lng === "number" ? raw.lng : null
       };
     }
 
-    function populateFilters() {
-      const prevDistrict = selectedDistrict;
-      const prevSettlement = selectedSettlement;
-
-      const catPool = allJobs.filter(j => {
-        if (!showCompleted && j.completed) return false;
-        if (selectedCat !== "ALL" && j.category !== selectedCat) return false;
-        return true;
-      });
-
-      const districts = Array.from(new Set(catPool.map(j => j.district))).sort((a, b) => a.localeCompare(b, "tr"));
-      el.districtSelect.innerHTML = `<option value="ALL">Tüm İlçeler (${districts.length})</option>` +
-        districts.map(d => `<option value="${d}">${d}</option>`).join("");
-
-      if (districts.includes(prevDistrict)) {
-        el.districtSelect.value = prevDistrict;
-      } else {
-        selectedDistrict = "ALL";
-        el.districtSelect.value = "ALL";
+    function extractJobs(snapVal) {
+      if (!snapVal) return [];
+      const cand = snapVal.jobs || snapVal[DB_PATH]?.jobs || snapVal;
+      if (Array.isArray(cand)) {
+        return cand.map((item, idx) => (item && typeof item === "object" ? normalizeRecord(item, idx) : null)).filter(Boolean);
       }
-
-      const settPool = catPool.filter(j => selectedDistrict === "ALL" || j.district === selectedDistrict);
-      const settlements = Array.from(new Set(settPool.map(j => j.settlement))).sort((a, b) => a.localeCompare(b, "tr"));
-
-      const settPlaceholder =
-        selectedCat === "KOY" ? "Tüm Köyler" :
-        selectedCat === "MAHALLE" ? "Tüm Mahalleler" :
-        selectedCat === "BELDE" ? "Tüm Beldeler" :
-        "Tüm Yerleşimler (Mahalle / Köy / Belde)";
-
-      el.settlementSelect.innerHTML = `<option value="ALL">${settPlaceholder} (${settlements.length})</option>` +
-        settlements.map(s => `<option value="${s}">${s}</option>`).join("");
-
-      if (settlements.includes(prevSettlement)) {
-        el.settlementSelect.value = prevSettlement;
-      } else {
-        selectedSettlement = "ALL";
-        el.settlementSelect.value = "ALL";
+      if (cand && typeof cand === "object") {
+        const entries = Object.entries(cand).filter(([k, v]) => v && typeof v === "object" && k !== "jobs");
+        const jobEntries = entries.filter(([, v]) =>
+          "address" in v || "rawAddress" in v || "tesisatNo" in v || "seriNo" in v || "settlement" in v || "adres" in v
+        );
+        if (jobEntries.length) return jobEntries.map(([k, v]) => normalizeRecord(v, k));
       }
+      return [];
     }
 
-    function getReferencePoint() {
+    function getCoords(job) {
+      if (typeof job.lat === "number" && typeof job.lng === "number" && !Number.isNaN(job.lat) && !Number.isNaN(job.lng)) {
+        return [job.lat, job.lng];
+      }
+      const key = job.baseKey || asciiKey(job.settlement);
+      const base = COORDS[key] || (DISTRICTS[job.district] || DISTRICTS["Edirne Merkez"]).coords;
+      const seed = `${job.tesisatNo || job.id}_${job.streetOnly || ""}`;
+      let h = 0;
+      for (let i = 0; i < seed.length; i++) { h = ((h << 5) - h) + seed.charCodeAt(i); h |= 0; }
+      return [base[0] + (((Math.abs(h) % 100) - 50) / 100) * 0.0022, base[1] + (((Math.abs(h >> 5) % 100) - 50) / 100) * 0.0022];
+    }
+
+    function distKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = ((lat2 - lat1) * Math.PI) / 180;
+      const dLon = ((lon2 - lon1) * Math.PI) / 180;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function getRefPoint() {
       if (userLatLng) return userLatLng;
-      if (selectedDistrict !== "ALL" && DISTRICT_META[selectedDistrict]) {
-        const [lat, lng] = DISTRICT_META[selectedDistrict].coords;
+      if (selectedDistrict !== "ALL" && DISTRICTS[selectedDistrict]) {
+        const [lat, lng] = DISTRICTS[selectedDistrict].coords;
         return { lat, lng };
       }
       return { lat: 41.6771, lng: 26.5557 };
     }
 
+    function renderDistrictBreakdown() {
+      const pool = allJobs.filter(j => {
+        if (!showCompleted && j.completed) return false;
+        if (selectedCat !== "ALL" && j.category !== selectedCat) return false;
+        if (selectedMeter !== "ALL" && j.meterType !== selectedMeter) return false;
+        return true;
+      });
+
+      const counts = new Map();
+      pool.forEach(j => counts.set(j.district, (counts.get(j.district) || 0) + 1));
+      const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "tr"));
+
+      const catLabel = selectedCat === "MAHALLE" ? "🏙️ Mahalleler" : selectedCat === "KOY" ? "🌾 Köyler" : "🏙️ Mahalleler & 🌾 Köyler";
+      el.subGroupTitle.textContent = `${catLabel} — İlçe Bazlı İşler (${pool.length})`;
+
+      if (!sorted.length) {
+        el.districtBreakdownPills.innerHTML = `<span class="map-info" style="margin:0;">Kayıt bulunamadı.</span>`;
+        return;
+      }
+
+      const allPill = `<button class="d-pill ${selectedDistrict === "ALL" ? "active" : ""}" onclick="window.__quickDistrict('ALL')">Tümü (${pool.length})</button>`;
+      const pills = sorted.map(([d, cnt]) =>
+        `<button class="d-pill ${selectedDistrict === d ? "active" : ""}" onclick="window.__quickDistrict('${d.replace(/'/g, "\\'")}')">${d} (${cnt})</button>`
+      ).join("");
+      el.districtBreakdownPills.innerHTML = allPill + pills;
+    }
+
+    window.__quickDistrict = (d) => {
+      selectedDistrict = d;
+      selectedSettlement = "ALL";
+      populateFilters();
+      applyFilters(true);
+      if (activeTab === "map") {
+        if (d !== "ALL" && DISTRICTS[d] && mapInstance) {
+          mapInstance.setView(DISTRICTS[d].coords, 12, { animate: true });
+        }
+        renderMap(true);
+      }
+    };
+
+    function populateFilters() {
+      const pool = allJobs.filter(j => {
+        if (!showCompleted && j.completed) return false;
+        if (selectedCat !== "ALL" && j.category !== selectedCat) return false;
+        return true;
+      });
+
+      const districts = Array.from(new Set(pool.map(j => j.district))).sort((a, b) => a.localeCompare(b, "tr"));
+      el.districtSelect.innerHTML = `<option value="ALL">Tüm İlçeler (${districts.length})</option>` +
+        districts.map(d => `<option value="${d}">${d}</option>`).join("");
+      if (!districts.includes(selectedDistrict)) selectedDistrict = "ALL";
+      el.districtSelect.value = selectedDistrict;
+
+      const sPool = pool.filter(j => selectedDistrict === "ALL" || j.district === selectedDistrict);
+      const settlements = Array.from(new Set(sPool.map(j => j.settlement))).sort((a, b) => a.localeCompare(b, "tr"));
+      const ph = selectedCat === "KOY" ? "Tüm Köyler" : selectedCat === "MAHALLE" ? "Tüm Mahalleler" : "Tüm Mahalle / Köyler";
+      el.settlementSelect.innerHTML = `<option value="ALL">${ph} (${settlements.length})</option>` +
+        settlements.map(s => `<option value="${s}">${s}</option>`).join("");
+      if (!settlements.includes(selectedSettlement)) selectedSettlement = "ALL";
+      el.settlementSelect.value = selectedSettlement;
+
+      renderDistrictBreakdown();
+    }
+
     function applyFilters(resetPaging = true) {
       if (resetPaging) visibleLimit = PAGE_SIZE;
-
       const q = asciiKey(searchQuery);
-      const refPt = getReferencePoint();
+      const refPt = getRefPoint();
 
       const list = allJobs.filter(j => {
         if (!showCompleted && j.completed) return false;
@@ -1381,11 +1015,7 @@
         if (selectedDistrict !== "ALL" && j.district !== selectedDistrict) return false;
         if (selectedSettlement !== "ALL" && j.settlement !== selectedSettlement) return false;
         if (selectedMeter !== "ALL" && j.meterType !== selectedMeter) return false;
-
-        if (q) {
-          const hay = asciiKey(`${j.tesisatNo} ${j.seriNo} ${j.district} ${j.settlement} ${j.address}`);
-          if (!hay.includes(q)) return false;
-        }
+        if (q && !asciiKey(`${j.tesisatNo} ${j.seriNo} ${j.district} ${j.settlement} ${j.address}`).includes(q)) return false;
         return true;
       });
 
@@ -1393,88 +1023,71 @@
         list.sort((a, b) => a.settlement.localeCompare(b.settlement, "tr") || a.address.localeCompare(b.address, "tr"));
       } else if (sortMode === "NEAREST") {
         list.sort((a, b) => {
-          const [latA, lngA] = resolveCoordinates(a);
-          const [latB, lngB] = resolveCoordinates(b);
-          return haversineKm(refPt.lat, refPt.lng, latA, lngA) - haversineKm(refPt.lat, refPt.lng, latB, lngB);
+          const [la, loA] = getCoords(a);
+          const [lb, loB] = getCoords(b);
+          return distKm(refPt.lat, refPt.lng, la, loA) - distKm(refPt.lat, refPt.lng, lb, loB);
         });
       }
 
       filteredJobs = list;
+      renderDistrictBreakdown();
       updateCounters();
       renderList();
-      if (activeTab === "map") {
-        renderMapAndNearby(false);
-      }
+      if (activeTab === "map") renderMap(false);
     }
 
     function updateCounters() {
       const total = allJobs.length;
       const done = allJobs.filter(j => j.completed).length;
-      const remaining = filteredJobs.length;
       const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-
-      el.doneCounter.textContent = `İşlenen: ${done} / ${total}`;
-      el.filteredCountLabel.textContent = `Ekranda Kalan İş: ${remaining}`;
+      el.doneCounter.textContent = `${done} / ${total}`;
+      el.filteredCountLabel.textContent = `Ekranda Kalan: ${filteredJobs.length}`;
       el.percentLabel.textContent = `%${pct}`;
       el.progressFill.style.width = `${pct}%`;
     }
 
-    function categoryBadge(cat) {
-      if (cat === "KOY") return `<span class="tag tag-koy">🌾 Köy</span>`;
-      if (cat === "BELDE") return `<span class="tag tag-belde">🏘️ Belde</span>`;
-      return `<span class="tag tag-mahalle">🏙️ Mahalle</span>`;
-    }
+    const catTag = c => c === "KOY"
+      ? `<span class="tag tag-koy">🌾 Köy</span>`
+      : `<span class="tag tag-mahalle">🏙️ Mahalle</span>`;
 
-    function buildGoogleMapsUrl(job) {
-      const [lat, lng] = resolveCoordinates(job);
-      const cleanStreetNorm = asciiKey(job.streetOnly || "");
-      const hasSpecificStreet =
-        cleanStreetNorm &&
-        !["genel", "merkez", "koy ici", "koyun kendisi"].includes(cleanStreetNorm) &&
-        cleanStreetNorm.length > 3;
-
-      const meta = DISTRICT_META[job.district] || DISTRICT_META["Edirne Merkez"];
-      const locText = meta.districtName === "Merkez"
-        ? `${meta.province} Merkez`
-        : `${meta.districtName}, ${meta.province}`;
-
-      if (hasSpecificStreet) {
-        const placeFull = job.settlement.replace(/\bMah\./i, "Mahallesi");
-        const query = encodeURIComponent(`${properTr(job.streetOnly)}, ${placeFull}, ${locText}`);
-        return `https://www.google.com/maps/search/?api=1&query=${query}`;
+    function mapsUrl(job) {
+      const [lat, lng] = getCoords(job);
+      const sn = asciiKey(job.streetOnly || "");
+      const hasStreet = sn && !["genel", "merkez", "koy ici", "koyun kendisi"].includes(sn) && sn.length > 3;
+      const meta = DISTRICTS[job.district] || DISTRICTS["Edirne Merkez"];
+      const loc = meta.ilce === "Merkez" ? `${meta.il} Merkez` : `${meta.ilce}, ${meta.il}`;
+      if (hasStreet) {
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${properTr(job.streetOnly)}, ${job.settlement.replace(/\bMah\./i, "Mahallesi")}, ${loc}`)}`;
       }
-
       return `https://www.google.com/maps/search/?api=1&query=${lat.toFixed(6)},${lng.toFixed(6)}`;
     }
 
-    function renderSelectedMapJobCard() {
+    function renderSelectedMapJob() {
       const job = filteredJobs.find(j => j.id === selectedMapJobId);
       if (!job) {
         el.selectedMapJobWrap.classList.add("hidden");
         el.selectedMapJobWrap.innerHTML = "";
         return;
       }
-
-      const refPt = getReferencePoint();
-      const [lat, lng] = resolveCoordinates(job);
-      const km = haversineKm(refPt.lat, refPt.lng, lat, lng);
-      const kmLabel = userLatLng ? `${km.toFixed(1)} km` : `Merkeze ~${km.toFixed(1)} km`;
-      const meterText = job.meterType === "TRI" ? "Trifaze" : "Monofaze";
+      const refPt = getRefPoint();
+      const [lat, lng] = getCoords(job);
+      const km = distKm(refPt.lat, refPt.lng, lat, lng);
+      const kmTxt = userLatLng ? `${km.toFixed(1)} km` : `~${km.toFixed(1)} km`;
 
       el.selectedMapJobWrap.classList.remove("hidden");
       el.selectedMapJobWrap.innerHTML = `
         <div class="selected-job-card">
           <div class="job-top">
             <div class="job-title">${job.displayTitle}</div>
-            ${categoryBadge(job.category)}
+            ${catTag(job.category)}
           </div>
           <div class="job-meta">
-            ${job.seriNo ? `Seri No: <strong>${job.seriNo}</strong> • ` : ""}
-            <strong>${job.settlement}</strong> • ${meterText} • <strong>${kmLabel}</strong>
+            ${job.seriNo ? `Seri: <strong>${job.seriNo}</strong> • ` : ""}
+            <strong>${job.settlement}</strong> (${job.district}) • ${job.meterType === "TRI" ? "Trifaze" : "Monofaze"} • <strong>${kmTxt}</strong>
           </div>
           <div class="job-addr">📍 ${job.address}</div>
           <div class="job-actions">
-            <a class="btn btn-primary" href="${buildGoogleMapsUrl(job)}" target="_blank" rel="noopener">🧭 Git</a>
+            <a class="btn btn-primary" href="${mapsUrl(job)}" target="_blank" rel="noopener">🧭 Git</a>
             <button class="btn ${job.completed ? "btn-secondary" : "btn-success"}" onclick="window.__toggleJob('${job.id}', ${!job.completed})">
               ${job.completed ? "↩️ Bekleyene Al" : "✓ İşi Tamamla"}
             </button>
@@ -1483,49 +1096,42 @@
       `;
     }
 
-    window.__selectMapJob = (id, focusMap = true) => {
+    window.__selectMapJob = (id, focus = true) => {
       selectedMapJobId = id;
-      renderSelectedMapJobCard();
+      renderSelectedMapJob();
       const job = filteredJobs.find(j => j.id === id);
-      if (job && focusMap && mapInstance) {
-        const [lat, lng] = resolveCoordinates(job);
+      if (job && focus && mapInstance) {
+        const [lat, lng] = getCoords(job);
         mapInstance.setView([lat, lng], 15, { animate: true });
       }
     };
 
     function renderList() {
       if (!filteredJobs.length) {
-        el.jobsContainer.innerHTML = `
-          <div class="empty-box">
-            Seçili kategori veya filtreye uygun iş bulunamadı.
-          </div>`;
+        el.jobsContainer.innerHTML = `<div class="empty-box">Seçili filtrelere uygun kayıt bulunamadı.</div>`;
         el.loadMoreWrap.classList.add("hidden");
         return;
       }
-
-      const refPt = getReferencePoint();
+      const refPt = getRefPoint();
       const slice = filteredJobs.slice(0, visibleLimit);
 
       el.jobsContainer.innerHTML = slice.map(j => {
-        const [lat, lng] = resolveCoordinates(j);
-        const km = haversineKm(refPt.lat, refPt.lng, lat, lng);
-        const kmLabel = userLatLng ? `${km.toFixed(1)} km` : `Merkeze ~${km.toFixed(1)} km`;
-        const navUrl = buildGoogleMapsUrl(j);
-        const meterText = j.meterType === "TRI" ? "Trifaze" : "Monofaze";
-
+        const [lat, lng] = getCoords(j);
+        const km = distKm(refPt.lat, refPt.lng, lat, lng);
+        const kmTxt = userLatLng ? `${km.toFixed(1)} km` : `~${km.toFixed(1)} km`;
         return `
           <article class="job-card">
             <div class="job-top">
               <div class="job-title">${j.displayTitle}</div>
-              ${categoryBadge(j.category)}
+              ${catTag(j.category)}
             </div>
             <div class="job-meta">
-              ${j.seriNo ? `Seri No: <strong>${j.seriNo}</strong> • ` : ""}
-              <strong>${j.settlement}</strong> • ${meterText} • <strong>${kmLabel}</strong>
+              ${j.seriNo ? `Seri: <strong>${j.seriNo}</strong> • ` : ""}
+              <strong>${j.settlement}</strong> (${j.district}) • ${j.meterType === "TRI" ? "Trifaze" : "Monofaze"} • <strong>${kmTxt}</strong>
             </div>
             <div class="job-addr">📍 ${j.address}</div>
             <div class="job-actions">
-              <a class="btn btn-primary" href="${navUrl}" target="_blank" rel="noopener">🧭 Git</a>
+              <a class="btn btn-primary" href="${mapsUrl(j)}" target="_blank" rel="noopener">🧭 Git</a>
               <button class="btn ${j.completed ? "btn-secondary" : "btn-success"}" onclick="window.__toggleJob('${j.id}', ${!j.completed})">
                 ${j.completed ? "↩️ Bekleyene Al" : "✓ İşi Tamamla"}
               </button>
@@ -1536,52 +1142,40 @@
 
       if (filteredJobs.length > visibleLimit) {
         el.loadMoreWrap.classList.remove("hidden");
-        el.loadMoreBtn.textContent = `Daha Fazla Kayıt Göster (${slice.length} / ${filteredJobs.length})`;
+        el.loadMoreBtn.textContent = `Daha Fazla Göster (${slice.length} / ${filteredJobs.length})`;
       } else {
         el.loadMoreWrap.classList.add("hidden");
       }
     }
 
     function ensureMap() {
-      if (mapInstance) {
-        setTimeout(() => mapInstance.invalidateSize(), 120);
-        return;
-      }
+      if (mapInstance) { setTimeout(() => mapInstance.invalidateSize(), 120); return; }
       canvasRenderer = L.canvas({ padding: 0.4 });
       mapInstance = L.map("map", { zoomControl: true, renderer: canvasRenderer }).setView([41.6771, 26.5557], 11);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap"
-      }).addTo(mapInstance);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap" }).addTo(mapInstance);
       markerLayer = L.layerGroup().addTo(mapInstance);
     }
 
-    function renderMapAndNearby(fitBounds = false) {
+    function renderMap(fit = false) {
       ensureMap();
       markerLayer.clearLayers();
-
-      const refPt = getReferencePoint();
+      const refPt = getRefPoint();
       const bounds = [];
 
       filteredJobs.forEach(j => {
-        const [lat, lng] = resolveCoordinates(j);
+        const [lat, lng] = getCoords(j);
         bounds.push([lat, lng]);
-
-        const isSelected = j.id === selectedMapJobId;
-        const color = j.category === "KOY" ? "#10b981" : j.category === "BELDE" ? "#f59e0b" : "#3b82f6";
-
+        const isSel = j.id === selectedMapJobId;
+        const color = j.category === "KOY" ? "#10b981" : "#3b82f6";
         const marker = L.circleMarker([lat, lng], {
           renderer: canvasRenderer,
-          radius: isSelected ? 10 : 6.5,
-          color: isSelected ? "#fde047" : "#ffffff",
-          weight: isSelected ? 2.5 : 1.3,
+          radius: isSel ? 10 : 6.5,
+          color: isSel ? "#fde047" : "#ffffff",
+          weight: isSel ? 2.5 : 1.3,
           fillColor: color,
           fillOpacity: 0.92
         });
-
-        marker.on("click", () => {
-          window.__selectMapJob(j.id, false);
-        });
-
+        marker.on("click", () => window.__selectMapJob(j.id, false));
         marker.addTo(markerLayer);
       });
 
@@ -1589,87 +1183,63 @@
         bounds.push([userLatLng.lat, userLatLng.lng]);
         if (!userMarker) {
           userMarker = L.circleMarker([userLatLng.lat, userLatLng.lng], {
-            radius: 9,
-            color: "#ffffff",
-            weight: 2,
-            fillColor: "#ef4444",
-            fillOpacity: 1
+            radius: 9, color: "#ffffff", weight: 2, fillColor: "#ef4444", fillOpacity: 1
           }).bindPopup("<b>Konumunuz</b>").addTo(mapInstance);
         } else {
           userMarker.setLatLng([userLatLng.lat, userLatLng.lng]);
         }
       }
 
-      el.mapStatus.textContent = `Haritada ${filteredJobs.length} işin tamamı nokta olarak gösteriliyor. Detay ve Git için bir noktaya basın.`;
+      el.mapStatus.textContent = `Haritada ${filteredJobs.length} kayıt gösteriliyor (Mavi: Mahalle, Yeşil: Köy).`;
+      if (fit && bounds.length) mapInstance.fitBounds(bounds, { padding: [24, 24], maxZoom: 14 });
+      renderSelectedMapJob();
 
-      if (fitBounds && bounds.length) {
-        mapInstance.fitBounds(bounds, { padding: [24, 24], maxZoom: 14 });
-      }
+      const near = [...filteredJobs]
+        .map(j => { const [lat, lng] = getCoords(j); return { ...j, _km: distKm(refPt.lat, refPt.lng, lat, lng) }; })
+        .sort((a, b) => a._km - b._km).slice(0, 25);
 
-      renderSelectedMapJobCard();
-
-      const sortedByDist = [...filteredJobs]
-        .map(j => {
-          const [lat, lng] = resolveCoordinates(j);
-          return { ...j, _km: haversineKm(refPt.lat, refPt.lng, lat, lng) };
-        })
-        .sort((a, b) => a._km - b._km)
-        .slice(0, 30);
-
-      el.nearbyList.innerHTML = sortedByDist.length
-        ? sortedByDist.map(j => `
-            <div class="nearby-item" onclick="window.__selectMapJob('${j.id}', true)">
-              <div class="nearby-info">
-                <div class="nearby-title">${j.displayTitle} • ${j.settlement}</div>
-                <div class="nearby-sub">${j.address}</div>
-              </div>
-              <span class="km-badge">${j._km.toFixed(1)} km</span>
-              <a class="btn btn-success" style="padding:7px 11px; font-size:12px;" href="${buildGoogleMapsUrl(j)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Git</a>
-            </div>
-          `).join("")
-        : `<div class="map-info">Listelenecek iş bulunamadı.</div>`;
+      el.nearbyList.innerHTML = near.length ? near.map(j => `
+        <div class="nearby-item" onclick="window.__selectMapJob('${j.id}', true)">
+          <div class="nearby-info">
+            <div class="nearby-title">${j.displayTitle} • ${j.settlement} (${j.district})</div>
+            <div class="nearby-sub">${j.address}</div>
+          </div>
+          <span class="km-badge">${j._km.toFixed(1)} km</span>
+          <a class="btn btn-success" style="padding:6px 10px; font-size:12px;" href="${mapsUrl(j)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Git</a>
+        </div>
+      `).join("") : `<div class="map-info">Yakın kayıt yok.</div>`;
 
       setTimeout(() => mapInstance.invalidateSize(), 120);
     }
 
     window.__toggleJob = async (id, nextState) => {
       try {
-        await update(ref(db, `${DB_PATH}/jobs/${id}`), {
-          completed: Boolean(nextState),
-          completedAt: nextState ? Date.now() : null
-        });
-      } catch (err) {
-        alert("Kayıt güncellenirken hata oluştu: " + err.message);
+        await update(ref(db, `${DB_PATH}/jobs/${id}`), { completed: Boolean(nextState), completedAt: nextState ? Date.now() : null });
+      } catch (e) {
+        alert("Güncelleme hatası: " + e.message);
       }
     };
 
     el.tabListBtn.addEventListener("click", () => {
       activeTab = "list";
-      el.tabListBtn.classList.add("active");
-      el.tabMapBtn.classList.remove("active");
-      el.listView.classList.remove("hidden");
-      el.mapView.classList.add("hidden");
+      el.tabListBtn.classList.add("active"); el.tabMapBtn.classList.remove("active");
+      el.listView.classList.remove("hidden"); el.mapView.classList.add("hidden");
     });
 
     el.tabMapBtn.addEventListener("click", () => {
       activeTab = "map";
-      el.tabMapBtn.classList.add("active");
-      el.tabListBtn.classList.remove("active");
-      el.mapView.classList.remove("hidden");
-      el.listView.classList.add("hidden");
-      renderMapAndNearby(true);
+      el.tabMapBtn.classList.add("active"); el.tabListBtn.classList.remove("active");
+      el.mapView.classList.remove("hidden"); el.listView.classList.add("hidden");
+      renderMap(true);
     });
 
     document.querySelectorAll(".cat-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-        selectedCat = btn.dataset.cat;
-        selectedSettlement = "ALL";
-        selectedMapJobId = null;
-        populateFilters();
-        applyFilters(true);
-        if (activeTab === "map") renderMapAndNearby(true);
+        selectedCat = btn.dataset.cat; selectedSettlement = "ALL"; selectedMapJobId = null;
+        populateFilters(); applyFilters(true);
+        if (activeTab === "map") renderMap(true);
       });
     });
 
@@ -1682,243 +1252,164 @@
       });
     });
 
-    el.sortSelect.addEventListener("change", () => {
-      sortMode = el.sortSelect.value;
-      applyFilters(true);
-    });
-
+    el.sortSelect.addEventListener("change", () => { sortMode = el.sortSelect.value; applyFilters(true); });
     el.districtSelect.addEventListener("change", () => {
-      selectedDistrict = el.districtSelect.value;
-      selectedSettlement = "ALL";
-      populateFilters();
-      applyFilters(true);
-      if (activeTab === "map") renderMapAndNearby(true);
+      selectedDistrict = el.districtSelect.value; selectedSettlement = "ALL";
+      populateFilters(); applyFilters(true);
+      if (activeTab === "map") renderMap(true);
     });
-
     el.settlementSelect.addEventListener("change", () => {
       selectedSettlement = el.settlementSelect.value;
       applyFilters(true);
-      if (activeTab === "map") renderMapAndNearby(true);
+      if (activeTab === "map") renderMap(true);
     });
 
-    let searchTimer = null;
+    let tmr = null;
     el.searchInput.addEventListener("input", () => {
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(() => {
-        searchQuery = el.searchInput.value;
-        applyFilters(true);
-      }, 180);
+      clearTimeout(tmr);
+      tmr = setTimeout(() => { searchQuery = el.searchInput.value; applyFilters(true); }, 180);
     });
 
-    el.loadMoreBtn.addEventListener("click", () => {
-      visibleLimit += PAGE_SIZE;
-      renderList();
-    });
+    el.loadMoreBtn.addEventListener("click", () => { visibleLimit += PAGE_SIZE; renderList(); });
 
     el.locateBtn.addEventListener("click", () => {
-      if (!navigator.geolocation) {
-        el.mapStatus.textContent = "Cihaz konum servisi desteklenmiyor.";
-        return;
-      }
-      el.mapStatus.textContent = "GPS konumunuz alınıyor...";
+      if (!navigator.geolocation) { el.mapStatus.textContent = "Konum desteklenmiyor."; return; }
+      el.mapStatus.textContent = "Konum alınıyor...";
       navigator.geolocation.getCurrentPosition(
         pos => {
           userLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          sortMode = "NEAREST";
-          el.sortSelect.value = "NEAREST";
-          applyFilters(true);
-          renderMapAndNearby(true);
+          sortMode = "NEAREST"; el.sortSelect.value = "NEAREST";
+          applyFilters(true); renderMap(true);
         },
-        err => {
-          el.mapStatus.textContent = "Konum alınamadı: " + err.message;
-        },
+        err => { el.mapStatus.textContent = "Konum alınamadı: " + err.message; },
         { enableHighAccuracy: true, timeout: 12000 }
       );
     });
 
-    el.fitMapBtn.addEventListener("click", () => {
-      renderMapAndNearby(true);
-    });
+    el.fitMapBtn.addEventListener("click", () => renderMap(true));
 
-    el.menuBtn.addEventListener("click", () => {
-      el.pinError.textContent = "";
-      el.pinInput.value = "";
-      el.menuModal.classList.add("open");
-      el.pinInput.focus();
-    });
-
-    el.pinCloseBtn.addEventListener("click", () => {
-      el.menuModal.classList.remove("open");
-    });
-
+    el.menuBtn.addEventListener("click", () => { el.pinError.textContent = ""; el.pinInput.value = ""; el.menuModal.classList.add("open"); el.pinInput.focus(); });
+    el.pinCloseBtn.addEventListener("click", () => el.menuModal.classList.remove("open"));
     el.pinSubmitBtn.addEventListener("click", () => {
-      if (el.pinInput.value.trim() === ADMIN_PIN) {
-        isAdmin = true;
-        el.adminPanel.classList.remove("hidden");
-        el.menuModal.classList.remove("open");
-      } else {
-        el.pinError.textContent = "PIN kodu hatalı.";
-      }
+      if (el.pinInput.value.trim() === ADMIN_PIN) { isAdmin = true; el.adminPanel.classList.remove("hidden"); el.menuModal.classList.remove("open"); }
+      else { el.pinError.textContent = "PIN hatalı."; }
     });
 
     el.logoutAdminBtn.addEventListener("click", () => {
-      isAdmin = false;
-      showCompleted = false;
-      el.showCompletedToggle.textContent = "✓ Tamamlananları Göster";
+      isAdmin = false; showCompleted = false;
+      el.showCompletedToggle.textContent = "✓ Tamamlananlar";
       el.adminPanel.classList.add("hidden");
-      populateFilters();
-      applyFilters(true);
+      populateFilters(); applyFilters(true);
     });
 
     el.repairDbBtn.addEventListener("click", async () => {
-      if (!allJobs.length) return;
-      el.adminStatus.textContent = "Kayıtlar temizlenip sunucuda güncelleniyor...";
-      const cleanedPayload = {};
-      allJobs.forEach(j => {
-        const cleanKey = String(j.id).replace(/[.#$/\[\]]/g, "_");
-        cleanedPayload[cleanKey] = {
-          id: cleanKey,
-          tesisatNo: j.tesisatNo,
-          seriNo: j.seriNo,
-          aboneAdi: j.displayTitle,
-          district: j.district,
-          category: j.category,
-          settlement: j.settlement,
-          address: j.address,
-          rawAddress: j.streetOnly,
-          meterType: j.meterType,
-          completed: j.completed,
-          completedAt: j.completedAt || null
-        };
-      });
-      await set(ref(db, `${DB_PATH}/jobs`), cleanedPayload);
-      el.adminStatus.textContent = `✅ ${allJobs.length} kayıt sunucuda kalıcı olarak temizlendi ve düzenlendi.`;
+      try {
+        if (!allJobs.length) { el.adminStatus.textContent = "Düzenlenecek kayıt yok."; return; }
+        el.adminStatus.textContent = "Sunucudaki kayıtlar düzenleniyor...";
+        const payload = {};
+        allJobs.forEach(j => {
+          const k = String(j.id).replace(/[.#$/\[\]]/g, "_");
+          payload[k] = {
+            id: k, tesisatNo: j.tesisatNo, seriNo: j.seriNo, aboneAdi: j.displayTitle,
+            district: j.district, category: j.category, settlement: j.settlement,
+            address: j.address, rawAddress: j.streetOnly, meterType: j.meterType,
+            completed: j.completed, completedAt: j.completedAt || null
+          };
+        });
+        await set(ref(db, `${DB_PATH}/jobs`), payload);
+        el.adminStatus.textContent = `✅ ${allJobs.length} kayıt sunucuda düzenlendi.`;
+      } catch (e) { el.adminStatus.textContent = "❌ Hata: " + e.message; }
     });
 
     el.showCompletedToggle.addEventListener("click", () => {
       showCompleted = !showCompleted;
-      el.showCompletedToggle.textContent = showCompleted
-        ? "⏳ Sadece Bekleyenleri Göster"
-        : "✓ Tamamlananları Göster";
-      populateFilters();
-      applyFilters(true);
+      el.showCompletedToggle.textContent = showCompleted ? "⏳ Bekleyenler" : "✓ Tamamlananlar";
+      populateFilters(); applyFilters(true);
     });
 
     el.clearAllBtn.addEventListener("click", async () => {
-      if (!confirm("Sunucudaki tüm iş kayıtları silinecek. Emin misiniz?")) return;
-      await remove(ref(db, `${DB_PATH}/jobs`));
-      el.adminStatus.textContent = "Tüm kayıtlar silindi.";
+      try {
+        if (!confirm("Tüm kayıtlar silinsin mi?")) return;
+        await remove(ref(db, `${DB_PATH}/jobs`));
+        el.adminStatus.textContent = "Tüm kayıtlar silindi.";
+      } catch (e) { el.adminStatus.textContent = "❌ Hata: " + e.message; }
     });
 
-    async function pushImportedRows(rows) {
-      if (!rows.length) {
-        el.adminStatus.textContent = "Dosyada işlenecek kayıt bulunamadı.";
-        return;
-      }
+    async function pushRows(rows) {
+      if (!rows.length) { el.adminStatus.textContent = "Dosyada kayıt bulunamadı."; return; }
       const payload = {};
-      rows.forEach((r, idx) => {
-        const cleanId = String(r.id || `job_${Date.now()}_${idx}`).replace(/[.#$/\[\]]/g, "_");
-        payload[cleanId] = {
-          id: cleanId,
-          tesisatNo: r.tesisatNo,
-          seriNo: r.seriNo,
-          aboneAdi: r.displayTitle,
-          district: r.district,
-          category: r.category,
-          settlement: r.settlement,
-          address: r.address,
-          rawAddress: r.streetOnly,
-          meterType: r.meterType,
-          completed: false
+      rows.forEach((r, i) => {
+        const id = String(r.id || `job_${Date.now()}_${i}`).replace(/[.#$/\[\]]/g, "_");
+        payload[id] = {
+          id, tesisatNo: r.tesisatNo, seriNo: r.seriNo, aboneAdi: r.displayTitle,
+          district: r.district, category: r.category, settlement: r.settlement,
+          address: r.address, rawAddress: r.streetOnly, meterType: r.meterType, completed: false
         };
       });
       await set(ref(db, `${DB_PATH}/jobs`), payload);
-      el.adminStatus.textContent = `${rows.length} kayıt temizlenerek sunucuya aktarıldı.`;
+      el.adminStatus.textContent = `✅ ${rows.length} kayıt sunucuya aktarıldı.`;
     }
 
     el.excelInput.addEventListener("change", async e => {
       const file = e.target.files[0];
       if (!file) return;
-      el.adminStatus.textContent = "Excel dosyası okunuyor...";
-      const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf, { type: "array" });
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-
-      const mapped = json.map((row, i) => {
-        const tesisatNo = row["Tesisat No"] || row["TESİSAT NO"] || row["Tesisat"] || row["tesisatNo"] || "";
-        const seriNo = row["Seri No"] || row["SERİ NO"] || row["Sayaç Seri"] || row["seriNo"] || "";
-        const aboneAdi = row["Abone Adı"] || row["Ünvan"] || row["Unvan"] || row["Ad Soyad"] || row["aboneAdi"] || "";
-        const address = row["Adres"] || row["ADRES"] || row["Açık Adres"] || row["address"] || "";
-        const settlement = row["Mahalle"] || row["Köy"] || row["Mahalle/Köy"] || row["Yerleşim"] || row["settlement"] || "";
-        const district = row["İlçe"] || row["İLÇE"] || row["district"] || "";
-        const meterType = row["Sayaç Tipi"] || row["Faz"] || row["meterType"] || "";
-
-        return normalizeRecord({
-          id: `xl_${i + 1}_${tesisatNo || seriNo || Date.now()}`,
-          tesisatNo, seriNo, aboneAdi, address, settlement, district, meterType, completed: false
-        }, `xl_${i + 1}`);
-      });
-
-      await pushImportedRows(mapped);
-      e.target.value = "";
+      try {
+        el.adminStatus.textContent = "Excel okunuyor...";
+        const buf = await file.arrayBuffer();
+        const wb = XLSX.read(buf, { type: "array" });
+        const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" });
+        const mapped = json.map((row, i) => normalizeRecord({
+          id: `xl_${i + 1}_${row["Tesisat No"] || row["Seri No"] || Date.now()}`,
+          tesisatNo: row["Tesisat No"] || row["TESİSAT NO"] || row["tesisatNo"] || "",
+          seriNo: row["Seri No"] || row["SERİ NO"] || row["seriNo"] || "",
+          aboneAdi: row["Abone Adı"] || row["Ünvan"] || row["aboneAdi"] || "",
+          address: row["Adres"] || row["ADRES"] || row["address"] || "",
+          settlement: row["Mahalle"] || row["Köy"] || row["settlement"] || "",
+          district: row["İlçe"] || row["İLÇE"] || row["district"] || "",
+          meterType: row["Sayaç Tipi"] || row["meterType"] || "",
+          completed: false
+        }, `xl_${i + 1}`));
+        await pushRows(mapped);
+      } catch (err) {
+        el.adminStatus.textContent = "❌ Excel hatası: " + err.message;
+      } finally { e.target.value = ""; }
     });
 
     el.pdfInput.addEventListener("change", async e => {
       const file = e.target.files[0];
       if (!file) return;
-      el.adminStatus.textContent = "PDF metni çıkarılıyor...";
-      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-      const buf = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-      const lines = [];
-
-      for (let p = 1; p <= pdf.numPages; p++) {
-        const page = await pdf.getPage(p);
-        const tc = await page.getTextContent();
-        const pageText = tc.items.map(item => item.str).join(" ");
-        pageText.split(/\n|\s{3,}/).forEach(chunk => {
-          const t = chunk.trim();
-          if (t.length > 12) lines.push(t);
-        });
-      }
-
-      const mapped = lines.slice(0, 2500).map((line, i) => {
-        return normalizeRecord({
-          id: `pdf_${i + 1}_${Date.now()}`,
-          address: line,
-          completed: false
-        }, `pdf_${i + 1}`);
-      });
-
-      await pushImportedRows(mapped);
-      e.target.value = "";
+      try {
+        el.adminStatus.textContent = "PDF okunuyor...";
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        const buf = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        const lines = [];
+        for (let p = 1; p <= pdf.numPages; p++) {
+          const page = await pdf.getPage(p);
+          const tc = await page.getTextContent();
+          tc.items.map(it => it.str).join(" ").split(/\n|\s{3,}/).forEach(ch => {
+            const t = ch.trim();
+            if (t.length > 12) lines.push(t);
+          });
+        }
+        const mapped = lines.slice(0, 2500).map((line, i) => normalizeRecord({ id: `pdf_${i + 1}_${Date.now()}`, address: line, completed: false }, `pdf_${i + 1}`));
+        await pushRows(mapped);
+      } catch (err) {
+        el.adminStatus.textContent = "❌ PDF hatası: " + err.message;
+      } finally { e.target.value = ""; }
     });
 
-    onValue(
-      ref(db, `${DB_PATH}/jobs`),
-      snap => {
-        el.syncStatus.className = "sync-status sync-ok";
-        el.syncStatus.textContent = "🟢 Sunucu Bağlı (Canlı Ortak)";
-
-        const val = snap.val();
-        if (!val) {
-          allJobs = [];
-        } else if (Array.isArray(val)) {
-          allJobs = val.map((item, idx) => item ? normalizeRecord(item, idx) : null).filter(Boolean);
-        } else {
-          allJobs = Object.entries(val).map(([k, item]) => normalizeRecord(item, k));
-        }
-
-        populateFilters();
-        applyFilters(false);
-      },
-      err => {
-        el.syncStatus.className = "sync-status sync-err";
-        el.syncStatus.textContent = "❌ Sunucu Okuma Hatası";
-        console.error(err);
-      }
-    );
+    onValue(ref(db, "/"), snap => {
+      el.syncStatus.className = "sync-status sync-ok";
+      el.syncStatus.textContent = "🟢 Sunucu Bağlı";
+      allJobs = extractJobs(snap.val());
+      populateFilters();
+      applyFilters(false);
+    }, err => {
+      el.syncStatus.className = "sync-status sync-err";
+      el.syncStatus.textContent = "❌ Bağlantı Hatası";
+      el.adminStatus.textContent = err.message;
+    });
   </script>
 </body>
 </html>
