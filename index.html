@@ -232,7 +232,7 @@
     .btn-warning { background: var(--accent); border-color: var(--accent); color: #111827; }
     .btn-danger { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.55); color: #fecaca; }
 
-    #map { width: 100%; height: 420px; border-radius: 12px; border: 1px solid var(--border); margin-top: 8px; z-index: 1; }
+    #map { width: 100%; height: 460px; border-radius: 12px; border: 1px solid var(--border); margin-top: 8px; z-index: 1; }
     .map-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
     .map-info { font-size: 12px; color: var(--text-muted); margin-top: 8px; word-break: break-word; }
 
@@ -413,7 +413,7 @@
             <button id="clusterModeBtn" class="btn btn-primary">🔵 Tekil Noktalar</button>
           </div>
         </div>
-        <div id="mapStatus" class="map-info">Noktaya tıklayarak tesisat, sade adres, tamamla ve Git seçeneklerini açın.</div>
+        <div id="mapStatus" class="map-info">Noktaya tıklayarak tesisat, net adres, tamamla ve Git seçeneklerini açın.</div>
         <div id="map"></div>
         <div id="selectedMapJobWrap" class="hidden"></div>
       </section>
@@ -456,18 +456,6 @@
     const LOCAL_CACHE_KEY = "tredas_saha_hafiza_v1";
     const ADMIN_PIN = "1923";
     const PAGE_SIZE = 40;
-
-    const AI_SHIELD = {
-      name: "TREDAŞ Zırhlı Saha AI v5",
-      maxPassPerRecord: 1,
-      strictSingleCategory: true,
-      stripNoiseTokens: true,
-      dedupePhrases: true,
-      singleParenthesisLoc: true,
-      dedupeRecords: true,
-      autoSaveCache: true,
-      autoSyncServer: true
-    };
 
     const DISTRICTS = {
       "Edirne Merkez": { il: "Edirne", ilce: "Merkez", coords: [41.6771, 26.5557] },
@@ -513,7 +501,9 @@
       "igneada": "İğneada", "kiyikoy": "Kıyıköy", "ahmetbey": "Ahmetbey", "evrensekiz": "Evrensekiz",
       "buyukkaristiran": "Büyükkarıştıran", "kavakkoy": "Kavakköy", "kaynarca": "Kaynarca",
       "abalar": "Abalar", "buyukdoganca": "Büyükdoğanca", "copkoy": "Çöpköy",
-      "avariz": "Avarız", "degirmenyeni": "Değirmenyeni", "kemal": "Kemal"
+      "avariz": "Avarız", "degirmenyeni": "Değirmenyeni", "kemal": "Kemal",
+      "haciisa": "Hacıisa", "varos": "Varoş", "balaban": "Balaban", "mescit": "Mescit",
+      "agacpazari": "Ağaçpazarı"
     };
 
     const KOYLER = new Set([
@@ -522,7 +512,7 @@
       "orhaniye", "uzgac", "ahirkoy", "karakasim", "haciumur", "yenimuhacir",
       "begendik", "kuplu", "subasi", "kircasalih", "igneada", "kiyikoy",
       "ahmetbey", "evrensekiz", "buyukkaristiran", "kavakkoy", "kaynarca", "abalar",
-      "buyukdoganca", "copkoy", "avariz", "degirmenyeni", "kemal"
+      "buyukdoganca", "copkoy", "avariz", "degirmenyeni", "kemal", "balaban"
     ]);
 
     const COORDS = {
@@ -548,7 +538,10 @@
       "akalar": [41.7330, 27.2320], "kocahidir": [41.7440, 27.2150], "igneada": [41.8747, 27.9919],
       "kiyikoy": [41.6358, 28.0819], "ahmetbey": [41.4342, 27.4958], "evrensekiz": [41.4008, 27.2564],
       "buyukkaristiran": [41.3753, 27.5150], "avariz": [41.6510, 26.6150],
-      "degirmenyeni": [41.6680, 26.4850], "kemal": [41.6285, 26.4385]
+      "degirmenyeni": [41.6680, 26.4850], "kemal": [41.6285, 26.4385],
+      "haciisa": [41.5535, 26.8235], "varos": [41.5495, 26.8185],
+      "balaban": [41.2290, 26.6450], "mescit": [41.2680, 26.6910],
+      "agacpazari": [41.6786, 26.5492]
     };
 
     const NOISE_SINGLE_CHARS = new Set([
@@ -562,75 +555,96 @@
       .replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c")
       .replace(/[^a-z0-9.\s]/g, " ").replace(/\s+/g, " ").trim();
 
-    const properTr = s => trLower(s).replace(/\s+/g, " ").split(" ").filter(Boolean)
-      .map(w => {
-        if (/^(no|daire|sok|cad|mah|mh|blok|apt)$/i.test(w)) {
-          if (w.toLowerCase() === "no") return "No:";
-          if (w.toLowerCase() === "daire") return "Daire:";
-          if (w.toLowerCase() === "sok") return "Sok.";
-          if (w.toLowerCase() === "cad") return "Cad.";
-          if (w.toLowerCase() === "mah" || w.toLowerCase() === "mh") return "Mah.";
-        }
-        return w.charAt(0).toLocaleUpperCase("tr-TR") + w.slice(1);
-      }).join(" ")
-      .replace(/No:\s*:/g, "No:")
-      .replace(/Daire:\s*:/g, "Daire:");
+    function properTr(s) {
+      return trLower(s)
+        .replace(/\s+/g, " ")
+        .split(" ")
+        .filter(Boolean)
+        .map(w => {
+          const wl = w.toLocaleLowerCase("tr-TR");
+          if (wl === "no" || wl === "no:") return "no";
+          if (wl === "daire" || wl === "daire:") return "daire";
+          if (wl === "sok" || wl === "sok." || wl === "sokak") return "sokak";
+          if (wl === "cad" || wl === "cad." || wl === "caddesi") return "caddesi";
+          if (wl === "mah" || wl === "mh" || wl === "mah." || wl === "mahallesi") return "mahallesi";
+          if (wl === "koy" || wl === "koyu" || wl === "köy" || wl === "köyü") return "köyü";
+          if (wl === "bulv" || wl === "bulv." || wl === "bulvarı" || wl === "bulvari") return "bulvarı";
+          return wl.charAt(0).toLocaleUpperCase("tr-TR") + wl.slice(1);
+        })
+        .join(" ")
+        .replace(/\bno\s*:\s*/gi, "no ")
+        .replace(/\bdaire\s*:\s*/gi, "daire ")
+        .replace(/\bdaire\s+([a-zçğıöşü0-9]+)\b/gi, (_, val) => `daire ${val.length === 1 ? val.toLocaleUpperCase("tr-TR") : val.charAt(0).toLocaleUpperCase("tr-TR") + val.slice(1)}`)
+        .trim();
+    }
 
     function sanitizeRepeatedText(input) {
       let s = String(input || "").replace(/\s+/g, " ").trim();
       if (!s) return "";
 
-      if (AI_SHIELD.stripNoiseTokens) {
-        const words = s.split(" ").filter(w => {
-          const core = w.replace(/[^a-zA-ZçğıöşüÇĞİÖŞÜ0-9.:/-]/g, "");
-          if (!core) return false;
-          const low = asciiKey(core);
-          if (core.length === 1 && NOISE_SINGLE_CHARS.has(low)) return false;
-          return true;
-        });
-        s = words.join(" ");
-      }
+      s = s
+        .replace(/\b(d\.?kapı\s*no|dış\s*kapı\s*no|diskapino|kapı\s*no|no)\s*:?\s*/gi, "no ")
+        .replace(/\b(d\.?daire\s*no|daire\s*no|daireno|daire)\s*:?\s*/gi, "daire ")
+        .replace(/\bKÖYÜN\s+KENDİSİ\s+(MAH\.?|MAHALLESİ)\s*/gi, "")
+        .replace(/\bKÖYÜN\s+KENDİSİ\b/gi, "köy içi");
 
-      if (AI_SHIELD.dedupePhrases) {
-        for (let gram = 4; gram >= 1; gram--) {
-          const parts = s.split(" ");
-          const out = [];
-          let i = 0;
-          while (i < parts.length) {
-            const cur = parts.slice(i, i + gram).join(" ");
-            const nxt = parts.slice(i + gram, i + gram * 2).join(" ");
-            if (cur && asciiKey(cur) === asciiKey(nxt)) {
-              out.push(...parts.slice(i, i + gram));
-              i += gram * 2;
-              while (i + gram <= parts.length && asciiKey(parts.slice(i, i + gram).join(" ")) === asciiKey(cur)) {
-                i += gram;
-              }
-            } else {
-              out.push(parts[i]);
-              i += 1;
+      const words = s.split(" ").filter(w => {
+        const core = w.replace(/[^a-zA-ZçğıöşüÇĞİÖŞÜ0-9.:/-]/g, "");
+        if (!core) return false;
+        const low = asciiKey(core);
+        if (core.length === 1 && NOISE_SINGLE_CHARS.has(low)) return false;
+        return true;
+      });
+      s = words.join(" ");
+
+      for (let gram = 5; gram >= 1; gram--) {
+        const parts = s.split(" ");
+        const out = [];
+        let i = 0;
+        while (i < parts.length) {
+          const cur = parts.slice(i, i + gram).join(" ");
+          const nxt = parts.slice(i + gram, i + gram * 2).join(" ");
+          if (cur && asciiKey(cur) === asciiKey(nxt)) {
+            out.push(...parts.slice(i, i + gram));
+            i += gram * 2;
+            while (i + gram <= parts.length && asciiKey(parts.slice(i, i + gram).join(" ")) === asciiKey(cur)) {
+              i += gram;
             }
+          } else {
+            out.push(parts[i]);
+            i += 1;
           }
-          s = out.join(" ");
         }
-
-        const segs = s.split(/\s*[,|]\s*/).filter(Boolean);
-        const uniq = [];
-        for (const seg of segs) {
-          const keySeg = asciiKey(seg.replace(/\b(mahallesi|mah\.?|koyu|köyü|koy|köy)\b/gi, ""));
-          if (!keySeg) continue;
-          const exists = uniq.some(prev => asciiKey(prev.replace(/\b(mahallesi|mah\.?|koyu|köyü|koy|köy)\b/gi, "")) === keySeg);
-          if (!exists) uniq.push(seg.trim());
-        }
-        s = uniq.join(", ");
+        s = out.join(" ");
       }
 
-      return s.replace(/\s+/g, " ").trim();
+      const segs = s.split(/\s*[,|]\s*/).filter(Boolean);
+      const uniq = [];
+      for (const seg of segs) {
+        const keySeg = asciiKey(seg.replace(/\b(mahallesi|mah\.?|koyu|köyü|koy|köy)\b/gi, ""));
+        if (!keySeg) continue;
+        const exists = uniq.some(prev => asciiKey(prev.replace(/\b(mahallesi|mah\.?|koyu|köyü|koy|köy)\b/gi, "")) === keySeg);
+        if (!exists) uniq.push(seg.trim());
+      }
+      return uniq.join(" ").replace(/\s+/g, " ").trim();
+    }
+
+    function stripMeterAndTechnicalNoise(raw) {
+      let t = String(raw || "");
+      t = t
+        .replace(/\b\d{1,5}\s+(?:Trifaze|Monofaze)\s+Sayaç\b/gi, " ")
+        .replace(/\b(?:Trifaze|Monofaze)\s+Sayaç\b/gi, " ")
+        .replace(/\b(?:Trifaze|Monofaze|3\s*Faz|1\s*Faz|Sayaç|Sayac|Tesisat|Seri)\b/gi, " ")
+        .replace(/\b[A-Z]{2,5}[-_ ]?\d{5,12}\b/gi, " ")
+        .replace(/\b\d{7,12}\b/g, " ");
+      return sanitizeRepeatedText(t);
     }
 
     function parsePipe(rawText) {
       const text = sanitizeRepeatedText(rawText);
       if (!text.includes("|")) {
-        return { street: text, tesisat: "", seri: "", place: "", meter: "" };
+        const cleaned = stripMeterAndTechnicalNoise(text);
+        return { street: cleaned, tesisat: "", seri: "", place: "", meter: "" };
       }
       const parts = text.split("|").map(p => sanitizeRepeatedText(p)).filter(Boolean);
       let tesisat = "", seri = "", meter = "";
@@ -642,18 +656,14 @@
         if (n.includes("sayac") || n === "trifaze" || n === "monofaze") { meter = p; continue; }
         if (/^[A-Z]{2,5}[-_ ]?\d{5,12}$/i.test(p)) { if (!seri) seri = p.toUpperCase(); continue; }
         if (["merkez", "edirne", "edirne merkez", "kirklareli", "kirklareli merkez"].includes(n)) continue;
-        if (/\b(sok\.?|sokak|cad\.?|caddesi|bulv\.?|bulvari|no:|diskapino|daire|blok|kapi|mevkii|kume)\b/i.test(p)) {
-          streets.push(p);
+        if (/\b(sok\.?|sokak|cad\.?|caddesi|bulv\.?|bulvari|no|diskapino|daire|blok|kapi|mevkii|kume)\b/i.test(p)) {
+          streets.push(stripMeterAndTechnicalNoise(p));
         } else {
-          places.push(p);
+          places.push(stripMeterAndTechnicalNoise(p));
         }
       }
-      const street = sanitizeRepeatedText(streets.join(", ") || places[places.length - 1] || "")
-        .replace(/\bKÖYÜN\s+KENDİSİ\s+(MAH\.?|MAHALLESİ)\s*/gi, "")
-        .replace(/\bKÖYÜN\s+KENDİSİ\b/gi, "Köy İçi")
+      const street = sanitizeRepeatedText(streets.join(" ") || places[places.length - 1] || "")
         .replace(/\b(MERKEZ|EDİRNE|KIRKLARELİ)\s*\/?\s*$/gi, "")
-        .replace(/\bDISKAPINO\s*:/gi, "No:")
-        .replace(/\bDAIRENO\s*:/gi, "Daire:")
         .replace(/\s+/g, " ").trim();
       return { street, tesisat, seri, place: sanitizeRepeatedText(places.join(" ")), meter };
     }
@@ -670,12 +680,19 @@
     }
 
     function resolveSettlement(rawSett, rawAddr, districtKey) {
-      const src = sanitizeRepeatedText(`${rawSett || ""} ${rawAddr || ""}`);
+      const cleanedAddr = stripMeterAndTechnicalNoise(rawAddr || "");
+      const src = sanitizeRepeatedText(`${rawSett || ""} ${cleanedAddr}`);
       const norm = asciiKey(src);
+      const districtMeta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
+      const districtNorm = asciiKey(districtMeta.ilce);
+
       let matchedKey = null;
 
       for (const k of Object.keys(NAMES).sort((a, b) => b.length - a.length)) {
         if (k === "kadin" && (norm.includes("yenikadin") || norm.includes("eskikadin") || norm.includes("tayakadin"))) continue;
+        if (districtNorm && districtNorm !== "merkez" && k === districtNorm && !new RegExp(`\\b${k}\\s+(mah|mahallesi|koy|koyu|koyü)\\b`).test(norm)) {
+          continue;
+        }
         if (new RegExp(`(^|[^a-z0-9])${k.replace(/\./g, "\\.")}([^a-z0-9]|$)`).test(norm)) {
           matchedKey = k;
           break;
@@ -689,14 +706,19 @@
         base = sanitizeRepeatedText(NAMES[matchedKey] || "");
         cat = KOYLER.has(matchedKey) ? "KOY" : "MAHALLE";
       } else {
-        let cand = sanitizeRepeatedText(rawSett || "");
-        if (!cand) {
-          const kM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]+?)\s*(?:Köyü|Köy|Beldesi|Belde|Belediyesi)/i);
-          const mM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]+?)\s*(?:Mahallesi|Mah\.?|Mh\.?)/i);
-          if (kM) { cat = "KOY"; cand = kM[1]; }
-          else if (mM) { cat = "MAHALLE"; cand = mM[1]; }
+        let cand = sanitizeRepeatedText(stripMeterAndTechnicalNoise(rawSett || ""));
+        const kM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]+?)\s*(?:Köyü|Köy|Beldesi|Belde|Belediyesi)/i);
+        const mM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]+?)\s*(?:Mahallesi|Mah\.?|Mh\.?)/i);
+
+        if (kM && asciiKey(kM[1]) !== districtNorm) {
+          cat = "KOY";
+          cand = kM[1];
+        } else if (mM && asciiKey(mM[1]) !== districtNorm) {
+          cat = "MAHALLE";
+          cand = mM[1];
         }
-        if ((/\bkoyu\b|\bkoy\b|\bbeldesi\b|\bbelediyesi\b/i.test(norm)) && !/\bmah\b|\bmahallesi\b/i.test(norm)) {
+
+        if ((/\bkoyu\b|\bkoy\b|\bköyü\b|\bbeldesi\b|\bbelediyesi\b/i.test(norm)) && !/\bmah\b|\bmahallesi\b/i.test(norm)) {
           cat = "KOY";
         }
 
@@ -711,25 +733,22 @@
           matchedKey = cKey;
           base = sanitizeRepeatedText(NAMES[cKey] || "");
           cat = KOYLER.has(cKey) ? "KOY" : "MAHALLE";
-        } else if (cand.length >= 2 && !/^\d+$/.test(cand) && !NOISE_SINGLE_CHARS.has(cKey)) {
+        } else if (cand.length >= 2 && !/^\d+$/.test(cand) && !NOISE_SINGLE_CHARS.has(cKey) && cKey !== districtNorm) {
           base = sanitizeRepeatedText(properTr(cand));
           matchedKey = cKey;
         } else {
-          const meta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
-          base = `${meta.ilce} Merkez`;
+          base = `${districtMeta.ilce} Merkez`;
           matchedKey = asciiKey(base);
         }
       }
 
       if (!base || base === "." || NOISE_SINGLE_CHARS.has(asciiKey(base))) {
-        const meta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
-        base = `${meta.ilce} Merkez`;
+        base = `${districtMeta.ilce} Merkez`;
       }
 
       base = sanitizeRepeatedText(base.replace(/\s+(Mah\.?|Mahallesi|Köyü|Koyu|Köy)$/i, ""));
       if (!base) {
-        const meta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
-        base = `${meta.ilce} Merkez`;
+        base = `${districtMeta.ilce} Merkez`;
       }
 
       if (cat === "KOY") {
@@ -738,59 +757,88 @@
       return { category: "MAHALLE", settlement: `${base} Mah.`, baseKey: matchedKey };
     }
 
-    function cleanAddress(street, districtKey, settlement) {
+    function formatNetSettlementLabel(settlement, districtKey) {
       const meta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
-      const loc = meta.ilce === "Merkez" ? `${meta.il} Merkez` : `${meta.ilce} / ${meta.il}`;
+      const base = sanitizeRepeatedText(settlement || "")
+        .replace(/\s+(Mah\.?|Mahallesi|Köyü|Koyu|Köy)$/i, "")
+        .trim();
+      const isKoy = (settlement || "").toLowerCase().includes("köy") || (settlement || "").toLowerCase().includes("koy");
+      const suffix = isKoy ? "köyü" : "mahallesi";
+      if (!base) return `${meta.ilce} merkez ${suffix}`;
+      return `${properTr(base)} ${suffix}`;
+    }
 
-      let s = String(street || "")
+    function formatNetRegionPrefix(districtKey) {
+      const meta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
+      if (meta.ilce === "Merkez") {
+        return `${meta.il} merkez`;
+      }
+      return `${meta.ilce} ${meta.il}`;
+    }
+
+    function formatNetStreetPart(street, settlement, districtKey) {
+      const meta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
+      let s = stripMeterAndTechnicalNoise(street || "")
         .replace(/(\s*\([^)]*\)\s*)+$/g, " ")
-        .replace(/^(edirne|kırklareli|kirklareli|merkez)\s*([\/\-–—,]|\s)+(merkez|edirne|kırklareli|kirklareli)?\s*[-–—,/]?\s*/i, "");
+        .replace(/\b(edirne|kırklareli|kirklareli|merkez)\b/gi, " ");
 
       s = sanitizeRepeatedText(s);
 
-      const cleanSett = sanitizeRepeatedText(settlement);
-      const baseOnly = cleanSett.replace(/\s+(Mah\.|Köyü)$/i, "").trim();
+      const settBase = sanitizeRepeatedText(settlement || "")
+        .replace(/\s+(Mah\.?|Mahallesi|Köyü|Koyu|Köy)$/i, "")
+        .trim();
 
-      if (baseOnly) {
-        const esc = baseOnly.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        s = s.replace(new RegExp(`(?:^|,\\s*)${esc}(?:\\s+(?:Mahallesi|Mah\\.?|Köyü|Koyu|Beldesi|Belediyesi))?(?:\\s*,\\s*|$)`, "gi"), " ");
+      if (settBase) {
+        const esc = settBase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        s = s.replace(
+          new RegExp(`\\b${esc}(?:\\s+(?:mahallesi|mah\\.?|köyü|koyu|köy|beldesi|belediyesi))?\\b`, "gi"),
+          " "
+        );
       }
 
-      s = sanitizeRepeatedText(s.replace(/^[,;\-\s]+|[,;\-\s]+$/g, ""));
-
-      if (!s || ["genel", "merkez", "koy ici", "koyun kendisi"].includes(asciiKey(s))) {
-        return `${cleanSett}, ${loc}`;
+      if (meta.ilce && meta.ilce !== "Merkez") {
+        const escIlce = meta.ilce.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        s = s.replace(new RegExp(`\\b${escIlce}\\b`, "gi"), " ");
       }
-      return `${cleanSett}, ${properTr(s)} (${loc})`;
+
+      s = properTr(
+        sanitizeRepeatedText(
+          s
+            .replace(/\bdaire\s*$/i, "")
+            .replace(/\bno\s*$/i, "")
+            .replace(/[|/\\\-–—.,]+/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+        )
+      );
+
+      if (!s || ["genel", "merkez", "koy ici", "köy içi", "koyun kendisi"].includes(asciiKey(s))) {
+        return "";
+      }
+      return s;
+    }
+
+    function cleanAddress(street, districtKey, settlement) {
+      const prefix = formatNetRegionPrefix(districtKey);
+      const settLabel = formatNetSettlementLabel(settlement, districtKey);
+      const streetPart = formatNetStreetPart(street, settlement, districtKey);
+
+      if (!streetPart) {
+        return `${prefix} ${settLabel}`.replace(/\s+/g, " ").trim();
+      }
+      return `${prefix} ${settLabel} ${streetPart}`.replace(/\s+/g, " ").trim();
     }
 
     function buildCleanBoxAddress(job) {
-      const meta = DISTRICTS[job.district] || DISTRICTS["Edirne Merkez"];
-      const loc = meta.ilce === "Merkez" ? `${meta.il} Merkez` : `${meta.ilce} / ${meta.il}`;
-      const sett = sanitizeRepeatedText(job.settlement || "");
-      let streetPart = sanitizeRepeatedText(job.streetOnly || "");
+      const prefix = formatNetRegionPrefix(job.district);
+      const settLabel = formatNetSettlementLabel(job.settlement, job.district);
+      const rawStreetCandidate = job.streetOnly || job.address || "";
+      const streetPart = formatNetStreetPart(rawStreetCandidate, job.settlement, job.district);
 
       if (!streetPart) {
-        const raw = sanitizeRepeatedText(job.address || "");
-        streetPart = raw
-          .replace(/\([^)]*\)/g, "")
-          .replace(new RegExp(`^${sett.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*,?\\s*`, "i"), "")
-          .replace(new RegExp(`,?\\s*${loc.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"), "")
-          .trim();
+        return `${prefix} ${settLabel}`.replace(/\s+/g, " ").trim();
       }
-
-      streetPart = properTr(
-        streetPart
-          .replace(/\b\d{7,12}\b/g, "")
-          .replace(/\b(trifaze|monofaze|sayaç|sayac|merkez|seri|tesisat)\b/gi, "")
-          .replace(/\s+/g, " ")
-          .trim()
-      );
-
-      if (!streetPart || ["genel", "merkez", "koy ici", "koyun kendisi"].includes(asciiKey(streetPart))) {
-        return `${sett}, ${loc}`;
-      }
-      return `${sett}, ${streetPart}, ${loc}`;
+      return `${prefix} ${settLabel} ${streetPart}`.replace(/\s+/g, " ").trim();
     }
 
     function normalizeRecord(raw, key) {
@@ -949,11 +997,9 @@
     };
 
     function saveToLocalCache(jobsObj) {
-      if (!AI_SHIELD.autoSaveCache) return;
       try {
         localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify({
           savedAt: Date.now(),
-          engine: AI_SHIELD.name,
           count: Object.keys(jobsObj).length,
           jobs: jobsObj
         }));
@@ -992,7 +1038,7 @@
       const rec = normalizeRecord(raw, key);
       const rawText = sanitizeRepeatedText([
         rec._rawSource, raw.settlement, raw.district, raw.aboneAdi
-      ].filter(Boolean).join(" | "));
+      ].filter(Boolean).join(" "));
 
       let tesisatNo = String(rec.tesisatNo || "").trim();
       let seriNo = String(rec.seriNo || "").trim();
@@ -1041,24 +1087,21 @@
         const valid = Boolean(rec.tesisatNo || rec.seriNo || rec.streetOnly || rec.settlement);
         if (!valid) return;
 
-        if (AI_SHIELD.dedupeRecords) {
-          const sig = asciiKey(
-            rec.tesisatNo
-              ? `tes_${rec.tesisatNo}_${rec.seriNo}`
-              : `${rec.district}_${rec.settlement}_${rec.address}_${rec.meterType}`
-          );
-          if (seen.has(sig)) {
-            const existingIdx = out.findIndex(x => x._sig === sig);
-            if (existingIdx !== -1 && rec.completed) {
-              out[existingIdx].completed = true;
-              out[existingIdx].completedAt = rec.completedAt || Date.now();
-            }
-            return;
+        const sig = asciiKey(
+          rec.tesisatNo
+            ? `tes_${rec.tesisatNo}_${rec.seriNo}`
+            : `${rec.district}_${rec.settlement}_${rec.address}_${rec.meterType}`
+        );
+        if (seen.has(sig)) {
+          const existingIdx = out.findIndex(x => x._sig === sig);
+          if (existingIdx !== -1 && rec.completed) {
+            out[existingIdx].completed = true;
+            out[existingIdx].completedAt = rec.completedAt || Date.now();
           }
-          rec._sig = sig;
-          seen.add(sig);
+          return;
         }
-
+        rec._sig = sig;
+        seen.add(sig);
         out.push(rec);
       });
 
@@ -1066,7 +1109,7 @@
     }
 
     function autonomousAIController(rawList, opts = {}) {
-      const { syncServer = AI_SHIELD.autoSyncServer, reason = "otonom", resetPaging = false } = opts;
+      const { syncServer = false, reason = "otonom", resetPaging = false } = opts;
       if (aiCycleLock) return;
       aiCycleLock = true;
 
@@ -1090,24 +1133,19 @@
             lastServerPushHash = digest;
             set(ref(db, `${DB_PATH}/jobs`), payload)
               .then(() => {
-                el.adminStatus.textContent = `🤖 Zırhlı AI (${reason}): ${allJobs.length} kayıt temizlendi, hafızaya ve sunucuya işlendi.`;
+                el.adminStatus.textContent = `🤖 AI (${reason}): ${allJobs.length} kayıt temizlendi, hafızaya ve sunucuya işlendi.`;
               })
               .catch(err => {
-                el.adminStatus.textContent = `🤖 Zırhlı AI (${reason}): ${allJobs.length} kayıt hafızada hazır (Sunucu: ${err.message})`;
+                el.adminStatus.textContent = `🤖 AI (${reason}): ${allJobs.length} kayıt hafızada hazır (Sunucu: ${err.message})`;
               });
           }
         } else if (allJobs.length > 0) {
-          el.adminStatus.textContent = `🤖 Zırhlı AI aktif: ${allJobs.length} kayıt hatasız ve hazır.`;
+          el.adminStatus.textContent = `🤖 AI aktif: ${allJobs.length} kayıt hatasız ve hazır.`;
         }
       } finally {
         aiCycleLock = false;
       }
     }
-
-    window.__runFullAI = (overrideServerSync = true) => {
-      lastServerPushHash = "";
-      autonomousAIController(allJobs, { syncServer: Boolean(overrideServerSync), reason: "manuel tam yetki", resetPaging: false });
-    };
 
     function renderDistrictBreakdown() {
       const pool = allJobs.filter(j => {
@@ -1221,7 +1259,7 @@
 
     function mapsUrl(job) {
       const boxAddr = buildCleanBoxAddress(job);
-      const query = boxAddr || job.address || `${job.settlement}, ${job.district}`;
+      const query = boxAddr || job.address || `${formatNetRegionPrefix(job.district)} ${formatNetSettlementLabel(job.settlement, job.district)}`;
       return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
     }
 
@@ -1316,11 +1354,11 @@
     function ensureMap() {
       if (mapInstance) { setTimeout(() => mapInstance.invalidateSize(), 120); return; }
       canvasRenderer = L.canvas({ padding: 0.5 });
-      mapInstance = L.map("map", { zoomControl: true, renderer: canvasRenderer }).setView([41.6771, 26.5557], 11);
+      mapInstance = L.map("map", { zoomControl: true, renderer: canvasRenderer }).setView([41.6771, 26.5557], 10);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap" }).addTo(mapInstance);
       markerLayer = L.layerGroup().addTo(mapInstance);
       mapInstance.on("zoomend", () => {
-        if (!showIndividualPins && activeTab === "map") renderMap(false);
+        if (activeTab === "map") renderMap(false);
       });
     }
 
@@ -1356,11 +1394,9 @@
           bounds.push([lat, lng]);
           const gKey = `${j.district}__${j.settlement}__${j.category}`;
           if (!groups.has(gKey)) {
-            groups.set(gKey, { lat, lng, count: 0, sample: j, items: [] });
+            groups.set(gKey, { lat, lng, count: 0, sample: j });
           }
-          const g = groups.get(gKey);
-          g.count += 1;
-          g.items.push(j);
+          groups.get(gKey).count += 1;
         });
 
         groups.forEach(g => {
@@ -1374,7 +1410,7 @@
             fillColor: color,
             fillOpacity: 0.88
           });
-          cm.bindTooltip(`${g.sample.settlement} (${g.sample.district}): ${g.count} iş`, { direction: "top" });
+          cm.bindTooltip(`${buildCleanBoxAddress(g.sample)}: ${g.count} iş`, { direction: "top" });
           cm.on("click", () => {
             selectedSettlement = g.sample.settlement;
             el.settlementSelect.value = selectedSettlement;
@@ -1400,7 +1436,7 @@
       }
 
       el.mapStatus.textContent = `Haritada ${filteredJobs.length} iş gösteriliyor (${showIndividualPins ? "Tekil İş Noktaları" : "Yerleşim Toplu Noktalar"} • Mavi: Mahalle, Yeşil: Köy).`;
-      if (fit && bounds.length) mapInstance.fitBounds(bounds, { padding: [24, 24], maxZoom: 14 });
+      if (fit && bounds.length) mapInstance.fitBounds(bounds, { padding: [24, 24], maxZoom: 13 });
       renderSelectedMapJob();
 
       const near = [...filteredJobs]
@@ -1418,7 +1454,7 @@
         </div>
       `).join("") : `<div class="map-info">Yakın kayıt yok.</div>`;
 
-      setTimeout(() => mapInstance.invalidateSize(), 120);
+      setTimeout(() => mapInstance.invalidateSize(), 150);
     }
 
     window.__toggleJob = async (id, nextState) => {
@@ -1520,9 +1556,9 @@
     el.repairDbBtn.addEventListener("click", async () => {
       try {
         if (!allJobs.length) { el.adminStatus.textContent = "Düzenlenecek kayıt yok."; return; }
-        el.adminStatus.textContent = "🤖 Zırhlı AI tüm kayıtları temizleyip düzenliyor...";
+        el.adminStatus.textContent = "🤖 AI tüm kayıtları net adres formatına çeviriyor...";
         lastServerPushHash = "";
-        autonomousAIController(allJobs, { syncServer: true, reason: "zırhlı tam temizlik", resetPaging: false });
+        autonomousAIController(allJobs, { syncServer: true, reason: "net adres düzenleme", resetPaging: false });
       } catch (e) { el.adminStatus.textContent = "❌ Hata: " + e.message; }
     });
 
@@ -1550,7 +1586,7 @@
         el.adminStatus.textContent = "Dosyada kayıt bulunamadı.";
         return;
       }
-      el.adminStatus.textContent = `🤖 Zırhlı AI ${rows.length} satırı tek seferde okuyup düzenliyor...`;
+      el.adminStatus.textContent = `🤖 AI ${rows.length} satırı okuyup net adrese çeviriyor...`;
       lastServerPushHash = "";
       autonomousAIController(rows, { syncServer: true, reason: "dosya yükleme", resetPaging: true });
     }
@@ -1559,7 +1595,7 @@
       const file = e.target.files[0];
       if (!file) return;
       try {
-        el.adminStatus.textContent = "🤖 AI Excel dosyasındaki tüm sayfaları tek seferde okuyor...";
+        el.adminStatus.textContent = "🤖 AI Excel dosyasındaki tüm sayfaları okuyor...";
         const buf = await file.arrayBuffer();
         const wb = XLSX.read(buf, { type: "array", cellDates: true });
         const collected = [];
@@ -1577,7 +1613,7 @@
             const settlement = aiPickColumn(row, ["mahalle", "koy", "köy", "yerlesim", "yerleşim", "mah"]);
             const district = aiPickColumn(row, ["ilce", "ilçe", "district"]);
             const meterType = aiPickColumn(row, ["sayac tipi", "sayaç tipi", "faz", "tip", "meter"]);
-            const fallback = address || Object.values(row).map(v => String(v ?? "").trim()).filter(Boolean).join(" | ");
+            const fallback = address || Object.values(row).map(v => String(v ?? "").trim()).filter(Boolean).join(" ");
 
             collected.push({
               id: `xl_${sheetName}_${i + 1}_${tesisatNo || "t"}_${seriNo || "s"}_${Date.now()}`,
@@ -1629,7 +1665,7 @@
 
     onValue(ref(db, "/"), snap => {
       el.syncStatus.className = "sync-status sync-ok";
-      el.syncStatus.textContent = "🟢 Sunucu Bağlı • Zırhlı AI";
+      el.syncStatus.textContent = "🟢 Sunucu Bağlı • AI Aktif";
 
       const serverJobs = extractJobs(snap.val());
       if (serverJobs.length > 0) {
@@ -1643,7 +1679,7 @@
       el.syncStatus.className = "sync-status sync-err";
       el.syncStatus.textContent = "❌ Bağlantı Hatası (AI Hafıza)";
       if (allJobs.length > 0) {
-        el.adminStatus.textContent = `🤖 Zırhlı AI Hafıza Modu: Sunucu bağlantısı olmadan ${allJobs.length} kayıt ekranda.`;
+        el.adminStatus.textContent = `🤖 AI Hafıza Modu: Sunucu bağlantısı olmadan ${allJobs.length} kayıt ekranda.`;
       } else {
         el.adminStatus.textContent = err.message;
       }
