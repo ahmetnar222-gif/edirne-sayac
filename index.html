@@ -8,34 +8,36 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { background-color: #0b1120; color: #f8fafc; min-height: 100vh; padding-bottom: 48px; }
+    body { background-color: #0b1120; color: #f8fafc; min-height: 100vh; padding-bottom: 56px; }
 
     .header {
       background: linear-gradient(135deg, #101c3d 0%, #0d162f 100%);
       border-bottom: 1px solid #1e293b;
-      padding: 14px 16px;
+      padding: 12px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
-    .header-left { display: flex; align-items: center; gap: 10px; }
+    .header-left { display: flex; align-items: center; gap: 9px; min-width: 0; }
     .badge-tredas {
       background-color: #f59e0b;
       color: #0f172a;
       font-weight: 800;
-      font-size: 13px;
-      padding: 5px 10px;
+      font-size: 12px;
+      padding: 5px 8px;
       border-radius: 7px;
+      flex-shrink: 0;
     }
-    .header-title { font-size: 15px; font-weight: 700; line-height: 1.25; color: #f1f5f9; }
+    .header-title { font-size: 14px; font-weight: 700; line-height: 1.2; color: #f1f5f9; }
+    .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .counter-pill {
       background-color: #1e293b;
       border: 1px solid #334155;
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 999px;
       font-size: 12px;
       font-weight: 600;
@@ -43,6 +45,25 @@
       white-space: nowrap;
     }
     .counter-pill span { color: #10b981; font-weight: 800; }
+    .btn-menu {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-menu.admin-active {
+      border-color: #10b981;
+      color: #6ee7b7;
+      background-color: #064e3b;
+    }
 
     .container { max-width: 640px; margin: 0 auto; padding: 14px 14px 0; }
 
@@ -54,10 +75,39 @@
       margin-bottom: 12px;
     }
 
+    .admin-drawer {
+      display: none;
+      background-color: #111827;
+      border: 1px solid #2563eb;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .admin-drawer.open { display: block; }
+    .admin-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+    .admin-badge { font-size: 12px; font-weight: 800; color: #93c5fd; }
+    .btn-logout {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      color: #fca5a5;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
     .upload-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
+      margin-bottom: 10px;
     }
     .upload-box {
       background-color: #0f172a;
@@ -66,9 +116,7 @@
       padding: 12px 10px;
       text-align: center;
     }
-    .upload-box.excel-box {
-      border-color: #3b82f6;
-    }
+    .upload-box.excel-box { border-color: #3b82f6; }
     .upload-title {
       font-size: 12px;
       font-weight: 800;
@@ -77,21 +125,59 @@
       display: block;
       line-height: 1.3;
     }
-    .upload-box.excel-box .upload-title {
-      color: #93c5fd;
+    .upload-box.excel-box .upload-title { color: #93c5fd; }
+    .file-input { width: 100%; color: #e2e8f0; font-size: 11px; }
+
+    .manual-box {
+      background-color: #0b1120;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 10px;
     }
-    .file-input {
+    .manual-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+    .manual-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .btn-add-manual {
       width: 100%;
-      color: #e2e8f0;
-      font-size: 11px;
+      background-color: #2563eb;
+      border: none;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 9px;
+      border-radius: 9px;
+      cursor: pointer;
+      margin-top: 2px;
     }
+
+    .btn-reset-all {
+      width: 100%;
+      background-color: #450a0a;
+      border: 1px solid #991b1b;
+      color: #fecaca;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
     .scan-status {
       font-size: 12px;
       color: #6ee7b7;
       font-weight: 700;
-      margin-top: 10px;
+      margin-top: 8px;
       text-align: center;
-      min-height: 18px;
+      min-height: 16px;
     }
 
     .region-tabs {
@@ -114,12 +200,9 @@
       cursor: pointer;
       line-height: 1.25;
     }
-    .region-btn.active {
-      background-color: #1e293b;
-      color: #ffffff;
-    }
+    .region-btn.active { background-color: #1e293b; color: #ffffff; }
 
-    .select-box, .search-box {
+    .select-box, .search-box, .mini-input {
       width: 100%;
       background-color: #0f172a;
       border: 1px solid #263244;
@@ -127,10 +210,11 @@
       font-size: 13px;
       padding: 10px 12px;
       border-radius: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       outline: none;
     }
-    .select-box:focus, .search-box:focus { border-color: #3b82f6; }
+    .mini-input { font-size: 12px; padding: 8px 10px; }
+    .select-box:focus, .search-box:focus, .mini-input:focus { border-color: #3b82f6; }
 
     .chip-row { display: flex; gap: 7px; flex-wrap: wrap; }
     .chip-btn {
@@ -214,11 +298,7 @@
       margin-bottom: 8px;
     }
 
-    .action-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-    }
+    .action-stack { display: flex; flex-direction: column; gap: 7px; }
     .btn-action {
       width: 100%;
       border: none;
@@ -228,16 +308,55 @@
       cursor: pointer;
     }
     .btn-action:active { transform: scale(0.98); }
-    .btn-done {
-      background-color: #10b981;
-      color: #052e16;
-      font-weight: 800;
-    }
+    .btn-done { background-color: #10b981; color: #052e16; font-weight: 800; }
     .btn-abone-yok {
       background-color: #451a03;
       border: 1px solid #b45309;
       color: #fde68a;
       font-weight: 700;
+    }
+
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.78);
+      z-index: 120;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-card {
+      width: 100%;
+      max-width: 360px;
+      background-color: #111827;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .modal-title { font-size: 15px; font-weight: 800; margin-bottom: 6px; color: #f8fafc; }
+    .modal-sub { font-size: 12px; color: #94a3b8; margin-bottom: 12px; line-height: 1.4; }
+    .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+    .btn-cancel {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .btn-confirm {
+      background-color: #f59e0b;
+      border: none;
+      color: #0f172a;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
     }
 
     .empty-state {
@@ -266,7 +385,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.25s;
-      z-index: 100;
+      z-index: 140;
       white-space: nowrap;
     }
     .toast.show { opacity: 1; }
@@ -279,11 +398,19 @@
       <div class="badge-tredas">TREDAŞ</div>
       <div class="header-title">Edirne Sayaç<br>Saha Rehberi</div>
     </div>
-    <div class="counter-pill">İşlenen: <span id="doneCount">0</span> / <span id="totalCount">0</span></div>
+    <div class="header-right">
+      <div class="counter-pill">İşlenen: <span id="doneCount">0</span> / <span id="totalCount">0</span></div>
+      <button class="btn-menu" id="menuBtn" type="button" aria-label="Yetkili Menüsü" onclick="openMenuOrAdmin()">⋮</button>
+    </div>
   </div>
 
   <div class="container">
-    <div class="card">
+    <div class="admin-drawer" id="adminDrawer">
+      <div class="admin-header-row">
+        <span class="admin-badge">🔐 YETKİLİ PANELİ (Yönetim)</span>
+        <button class="btn-logout" type="button" onclick="logoutAdmin()">Çıkış Yap</button>
+      </div>
+
       <div class="upload-grid">
         <div class="upload-box">
           <label class="upload-title" for="pdfFileInput">📄 PDF Seç<br>(Otomatik Tarar)</label>
@@ -306,6 +433,25 @@
           />
         </div>
       </div>
+
+      <div class="manual-box">
+        <div class="manual-title">➕ Yeni İş Emri Ekle</div>
+        <div class="manual-grid">
+          <input type="text" id="manTesisat" class="mini-input" placeholder="Tesisat No" />
+          <input type="text" id="manSeri" class="mini-input" placeholder="Seri No (Örn: LUN-123)" />
+          <input type="text" id="manIlce" class="mini-input" placeholder="İlçe (Örn: SÜLOĞLU)" />
+          <input type="text" id="manMahalle" class="mini-input" placeholder="Mahalle / Köy" />
+        </div>
+        <input type="text" id="manAdres" class="mini-input" placeholder="Açık Adres (Sokak, No, Köy/Mahalle)" />
+        <select id="manTip" class="mini-input">
+          <option value="Monofaze">Monofaze</option>
+          <option value="Trifaze">Trifaze</option>
+        </select>
+        <button class="btn-add-manual" type="button" onclick="addManualJob()">✓ Kaydı Listeye Ekle</button>
+      </div>
+
+      <button class="btn-reset-all" type="button" onclick="wipeAllJobsAdmin()">🗑️ Tüm Listeyi Sıfırla (Yönetici)</button>
+
       <div class="scan-status" id="scanStatus"></div>
     </div>
 
@@ -346,6 +492,25 @@
     <div class="job-list" id="jobList"></div>
   </div>
 
+  <div class="modal-backdrop" id="pinModal">
+    <div class="modal-card">
+      <div class="modal-title">🔐 Yetkili Girişi</div>
+      <div class="modal-sub">PDF/Excel yükleme, kayıt ekleme veya listeyi sıfırlama işlemleri için yetkili şifresini girin.</div>
+      <input
+        type="password"
+        id="pinInput"
+        class="select-box"
+        inputmode="numeric"
+        placeholder="Yetkili PIN Kodu"
+        onkeydown="if(event.key==='Enter') verifyAdminPin()"
+      />
+      <div class="modal-actions">
+        <button class="btn-cancel" type="button" onclick="closePinModal()">İptal</button>
+        <button class="btn-confirm" type="button" onclick="verifyAdminPin()">Giriş Yap</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast">✓ Kaydedildi</div>
 
   <script>
@@ -354,16 +519,22 @@
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
     }
 
-    const STORAGE_PROCESSED = "tredas_edirne_v4_islenen";
-    const STORAGE_JOBS = "tredas_edirne_v4_isler";
-    const DB_NAME = "TredasEdirneSahaDB_v4";
+    const ADMIN_PIN = "1923";
+    const STORAGE_PROCESSED = "tredas_edirne_v7_islenen";
+    const STORAGE_JOBS = "tredas_edirne_v7_isler";
+    const STORAGE_ADMIN_AUTH = "tredas_edirne_v7_admin";
+    const DB_NAME = "TredasEdirneSahaDB_v7";
     const STORE_PROCESSED = "processedJobs";
     const STORE_JOBS = "jobs";
+    const CACHE_NAME = "tredas-edirne-vault-v7";
+    const CACHE_KEY = "/__tredas_edirne_state_v7.json";
 
     let processedMap = {};
     let jobsList = [];
     let currentRegion = "ALL";
     let currentPhase = "ALL";
+    let isAdminLoggedIn = false;
+    let lastSavedAt = 0;
 
     const LOCATION_ALIASES = {
       "KEMALKOY": "KEMERKÖY",
@@ -372,9 +543,12 @@
       "KEMAL KOYU": "KEMERKÖY",
       "1 MURAT": "1.MURAT",
       "BIRINCI MURAT": "1.MURAT",
-      "SUKRUPASA": "ŞÜKRÜPAŞA",
-      "ABDURRAHMAN": "ABDURRAHMAN"
+      "SUKRUPASA": "ŞÜKRÜPAŞA"
     };
+
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(() => {});
+    }
 
     function trUpper(str) {
       return String(str || "").toLocaleUpperCase("tr").trim();
@@ -418,20 +592,20 @@
 
     function unifyLocationName(rawName, existingNames = []) {
       const cleaned = trUpper(rawName)
+        .replace(/\bKÖYÜN\s+KENDİSİ\b/gi, " ")
+        .replace(/\bKOYUN\s+KENDISI\b/gi, " ")
+        .replace(/\b(KÖYÜ|KÖY|KOYU|KOY|BELDESİ|BELDE|MAH\.?|MAHALLESİ)\b/gi, " ")
         .replace(/^[,;:\-|/.\s]+|[,;:\-|/.\s]+$/g, "")
-        .replace(/\s+/g, " ");
+        .replace(/\s+/g, " ")
+        .trim();
 
       if (!cleaned || cleaned.length < 2) return "GENEL";
 
       const norm = normalizeKey(cleaned);
-      if (LOCATION_ALIASES[norm]) {
-        return LOCATION_ALIASES[norm];
-      }
+      if (LOCATION_ALIASES[norm]) return LOCATION_ALIASES[norm];
 
       const compact = norm.replace(/\s+/g, "");
-      if (LOCATION_ALIASES[compact]) {
-        return LOCATION_ALIASES[compact];
-      }
+      if (LOCATION_ALIASES[compact]) return LOCATION_ALIASES[compact];
 
       for (const candidate of existingNames) {
         const candNorm = normalizeKey(candidate);
@@ -439,93 +613,267 @@
         const candCompact = candNorm.replace(/\s+/g, "");
         if (candCompact === compact) return candidate;
         if (Math.min(compact.length, candCompact.length) >= 5) {
-          const dist = levenshteinDistance(compact, candCompact);
-          if (dist <= 2) return candidate;
+          if (levenshteinDistance(compact, candCompact) <= 2) return candidate;
         }
       }
-
       return cleaned;
     }
 
-    function saveAllData() {
-      try {
-        localStorage.setItem(STORAGE_PROCESSED, JSON.stringify(processedMap));
-        localStorage.setItem(STORAGE_JOBS, JSON.stringify(jobsList));
-      } catch (e) {}
-
-      if (window.indexedDB) {
-        const req = indexedDB.open(DB_NAME, 1);
-        req.onupgradeneeded = (e) => {
-          const db = e.target.result;
-          if (!db.objectStoreNames.contains(STORE_PROCESSED)) {
-            db.createObjectStore(STORE_PROCESSED, { keyPath: "id" });
-          }
-          if (!db.objectStoreNames.contains(STORE_JOBS)) {
-            db.createObjectStore(STORE_JOBS, { keyPath: "id" });
-          }
-        };
-        req.onsuccess = (e) => {
-          const db = e.target.result;
-          const tx1 = db.transaction(STORE_PROCESSED, "readwrite");
-          const s1 = tx1.objectStore(STORE_PROCESSED);
-          s1.clear();
-          Object.entries(processedMap).forEach(([id, info]) => s1.put({ id, ...info }));
-
-          const tx2 = db.transaction(STORE_JOBS, "readwrite");
-          const s2 = tx2.objectStore(STORE_JOBS);
-          s2.clear();
-          jobsList.forEach(j => s2.put(j));
-        };
+    function syncAdminUi() {
+      const drawer = document.getElementById("adminDrawer");
+      const btn = document.getElementById("menuBtn");
+      if (isAdminLoggedIn) {
+        drawer.classList.add("open");
+        btn.classList.add("admin-active");
+        btn.textContent = "✓";
+      } else {
+        drawer.classList.remove("open");
+        btn.classList.remove("admin-active");
+        btn.textContent = "⋮";
       }
     }
 
-    function loadAllData() {
+    function openMenuOrAdmin() {
+      if (isAdminLoggedIn) {
+        document.getElementById("adminDrawer").classList.toggle("open");
+        return;
+      }
+      document.getElementById("pinInput").value = "";
+      document.getElementById("pinModal").classList.add("open");
+      setTimeout(() => document.getElementById("pinInput").focus(), 50);
+    }
+
+    function closePinModal() {
+      document.getElementById("pinModal").classList.remove("open");
+    }
+
+    function verifyAdminPin() {
+      const entered = document.getElementById("pinInput").value.trim();
+      if (entered === ADMIN_PIN) {
+        isAdminLoggedIn = true;
+        try { sessionStorage.setItem(STORAGE_ADMIN_AUTH, "1"); } catch (e) {}
+        closePinModal();
+        syncAdminUi();
+        showToast("🔐 Yetkili girişi başarılı");
+      } else {
+        showToast("❌ Hatalı yetkili şifresi");
+      }
+    }
+
+    function logoutAdmin() {
+      isAdminLoggedIn = false;
+      try { sessionStorage.removeItem(STORAGE_ADMIN_AUTH); } catch (e) {}
+      syncAdminUi();
+      showToast("Yetkili oturumu kapatıldı");
+    }
+
+    function wipeAllJobsAdmin() {
+      if (!isAdminLoggedIn) {
+        openMenuOrAdmin();
+        return;
+      }
+      if (!confirm("Tüm iş emirleri ve işlenen kayıtlar kalıcı olarak sıfırlansın mı?")) return;
+      jobsList = [];
+      processedMap = {};
+      lastSavedAt = Date.now();
       try {
-        const pRaw = localStorage.getItem(STORAGE_PROCESSED);
-        if (pRaw) processedMap = JSON.parse(pRaw) || {};
-        const jRaw = localStorage.getItem(STORAGE_JOBS);
-        if (jRaw) jobsList = JSON.parse(jRaw) || [];
+        localStorage.removeItem(STORAGE_JOBS);
+        localStorage.removeItem(STORAGE_PROCESSED);
+        localStorage.removeItem(STORAGE_JOBS + "_ts");
+      } catch (e) {}
+      try {
+        window.name = JSON.stringify({ __tredas_v7: true, ts: lastSavedAt, jobsList: [], processedMap: {} });
+      } catch (e) {}
+      writeCacheVault({ ts: lastSavedAt, jobsList: [], processedMap: {} });
+      if (window.indexedDB) {
+        try {
+          const req = indexedDB.open(DB_NAME, 1);
+          req.onsuccess = (e) => {
+            const db = e.target.result;
+            const tx = db.transaction([STORE_JOBS, STORE_PROCESSED], "readwrite");
+            tx.objectStore(STORE_JOBS).clear();
+            tx.objectStore(STORE_PROCESSED).clear();
+          };
+        } catch (e) {}
+      }
+      populateIlceDropdown();
+      populateMahalleDropdown();
+      renderList();
+      document.getElementById("scanStatus").textContent = "🗑️ Liste sıfırlandı.";
+      showToast("🗑️ Tüm kayıtlar sıfırlandı");
+    }
+
+    function mergeStateIntoMemory(incomingJobs, incomingProcessed, incomingTs = 0) {
+      let changed = false;
+      if (Array.isArray(incomingJobs) && incomingJobs.length > 0) {
+        const existingMap = new Map(jobsList.map(j => [j.id, j]));
+        for (const job of incomingJobs) {
+          if (!job || !job.id) continue;
+          if (!existingMap.has(job.id)) {
+            jobsList.push(job);
+            existingMap.set(job.id, job);
+            changed = true;
+          }
+        }
+      }
+      if (incomingProcessed && typeof incomingProcessed === "object") {
+        for (const [id, info] of Object.entries(incomingProcessed)) {
+          if (!info) continue;
+          const cur = processedMap[id];
+          const nextTs = Number(info.ts || incomingTs || 0);
+          const curTs = Number((cur && cur.ts) || 0);
+          if (!cur || nextTs >= curTs) {
+            processedMap[id] = { durum: info.durum, ts: nextTs };
+            changed = true;
+          }
+        }
+      }
+      if (incomingTs > lastSavedAt) lastSavedAt = incomingTs;
+      return changed;
+    }
+
+    async function writeCacheVault(snapshot) {
+      if (!("caches" in window)) return;
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put(CACHE_KEY, new Response(JSON.stringify(snapshot), {
+          headers: { "Content-Type": "application/json" }
+        }));
+      } catch (e) {}
+    }
+
+    async function readCacheVault() {
+      if (!("caches" in window)) return null;
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        const match = await cache.match(CACHE_KEY);
+        if (!match) return null;
+        return await match.json();
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function saveAllData() {
+      const now = Date.now();
+      if (now > lastSavedAt) lastSavedAt = now;
+      const snapshot = { ts: lastSavedAt, jobsList, processedMap };
+
+      try {
+        localStorage.setItem(STORAGE_PROCESSED, JSON.stringify(processedMap));
+        localStorage.setItem(STORAGE_JOBS, JSON.stringify(jobsList));
+        localStorage.setItem(STORAGE_JOBS + "_ts", String(lastSavedAt));
       } catch (e) {}
 
+      try {
+        window.name = JSON.stringify({ __tredas_v7: true, ...snapshot });
+      } catch (e) {}
+
+      writeCacheVault(snapshot);
+
       if (window.indexedDB) {
-        const req = indexedDB.open(DB_NAME, 1);
-        req.onupgradeneeded = (e) => {
-          const db = e.target.result;
-          if (!db.objectStoreNames.contains(STORE_PROCESSED)) {
-            db.createObjectStore(STORE_PROCESSED, { keyPath: "id" });
-          }
-          if (!db.objectStoreNames.contains(STORE_JOBS)) {
-            db.createObjectStore(STORE_JOBS, { keyPath: "id" });
-          }
-        };
-        req.onsuccess = (e) => {
-          const db = e.target.result;
-          const tx = db.transaction([STORE_PROCESSED, STORE_JOBS], "readonly");
-          const r1 = tx.objectStore(STORE_PROCESSED).getAll();
-          const r2 = tx.objectStore(STORE_JOBS).getAll();
-          tx.oncomplete = () => {
-            let changed = false;
-            (r1.result || []).forEach(item => {
-              if (!processedMap[item.id]) {
-                processedMap[item.id] = { durum: item.durum, ts: item.ts };
-                changed = true;
-              }
-            });
-            const existingIds = new Set(jobsList.map(j => j.id));
-            (r2.result || []).forEach(job => {
-              if (!existingIds.has(job.id)) {
-                jobsList.push(job);
-                changed = true;
-              }
-            });
-            if (changed) {
-              saveAllData();
-              populateIlceDropdown();
-              populateMahalleDropdown();
-              renderList();
+        try {
+          const req = indexedDB.open(DB_NAME, 1);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_PROCESSED)) {
+              db.createObjectStore(STORE_PROCESSED, { keyPath: "id" });
+            }
+            if (!db.objectStoreNames.contains(STORE_JOBS)) {
+              db.createObjectStore(STORE_JOBS, { keyPath: "id" });
             }
           };
-        };
+          req.onsuccess = (e) => {
+            const db = e.target.result;
+            const tx1 = db.transaction(STORE_PROCESSED, "readwrite");
+            const s1 = tx1.objectStore(STORE_PROCESSED);
+            s1.clear();
+            Object.entries(processedMap).forEach(([id, info]) => s1.put({ id, ...info }));
+
+            const tx2 = db.transaction(STORE_JOBS, "readwrite");
+            const s2 = tx2.objectStore(STORE_JOBS);
+            s2.clear();
+            jobsList.forEach(j => s2.put(j));
+          };
+        } catch (e) {}
+      }
+    }
+
+    async function loadAllData() {
+      try {
+        if (sessionStorage.getItem(STORAGE_ADMIN_AUTH) === "1") {
+          isAdminLoggedIn = true;
+          syncAdminUi();
+        }
+      } catch (e) {}
+
+      let anyChanged = false;
+      try {
+        const pRaw = localStorage.getItem(STORAGE_PROCESSED);
+        const jRaw = localStorage.getItem(STORAGE_JOBS);
+        const tRaw = Number(localStorage.getItem(STORAGE_JOBS + "_ts") || "0");
+        if (mergeStateIntoMemory(jRaw ? JSON.parse(jRaw) : [], pRaw ? JSON.parse(pRaw) : {}, tRaw)) {
+          anyChanged = true;
+        }
+      } catch (e) {}
+
+      if (window.name) {
+        try {
+          const nameObj = JSON.parse(window.name);
+          if (nameObj && nameObj.__tredas_v7) {
+            if (mergeStateIntoMemory(nameObj.jobsList, nameObj.processedMap, Number(nameObj.ts || 0))) {
+              anyChanged = true;
+            }
+          }
+        } catch (e) {}
+      }
+
+      const cachedSnap = await readCacheVault();
+      if (cachedSnap && mergeStateIntoMemory(cachedSnap.jobsList, cachedSnap.processedMap, Number(cachedSnap.ts || 0))) {
+        anyChanged = true;
+      }
+
+      if (window.indexedDB) {
+        try {
+          const db = await new Promise((resolve, reject) => {
+            const req = indexedDB.open(DB_NAME, 1);
+            req.onupgradeneeded = (e) => {
+              const d = e.target.result;
+              if (!d.objectStoreNames.contains(STORE_PROCESSED)) {
+                d.createObjectStore(STORE_PROCESSED, { keyPath: "id" });
+              }
+              if (!d.objectStoreNames.contains(STORE_JOBS)) {
+                d.createObjectStore(STORE_JOBS, { keyPath: "id" });
+              }
+            };
+            req.onsuccess = (e) => resolve(e.target.result);
+            req.onerror = reject;
+          });
+
+          const [idbProc, idbJobs] = await new Promise((resolve, reject) => {
+            const tx = db.transaction([STORE_PROCESSED, STORE_JOBS], "readonly");
+            const r1 = tx.objectStore(STORE_PROCESSED).getAll();
+            const r2 = tx.objectStore(STORE_JOBS).getAll();
+            tx.oncomplete = () => resolve([r1.result || [], r2.result || []]);
+            tx.onerror = reject;
+          });
+
+          const procDict = {};
+          idbProc.forEach(item => {
+            if (item && item.id) procDict[item.id] = { durum: item.durum, ts: item.ts || 0 };
+          });
+          if (mergeStateIntoMemory(idbJobs, procDict, lastSavedAt)) anyChanged = true;
+        } catch (e) {}
+      }
+
+      if (jobsList.length > 0 || anyChanged) {
+        jobsList.forEach(j => {
+          j.bolge = detectBolge(j.adres + " " + j.mahalle + " " + j.ilce, j.mahalle);
+        });
+        saveAllData();
+        populateIlceDropdown();
+        populateMahalleDropdown();
+        renderList();
       }
     }
 
@@ -557,15 +905,23 @@
     }
 
     function detectBolge(text, mahalleName) {
-      const norm = normalizeKey(text + " " + mahalleName);
-      if (/\bKOYU?\b|\bKOY\b|\bBELDESI?\b/.test(norm)) return "KOY";
+      const norm = normalizeKey((text || "") + " " + (mahalleName || ""));
+      if (/\bKOYU?\b|\bKOY\b|\bKOYUN\s+KENDISI\b|\bBELDESI?\b|\bBELDE\b|\bBUCAK\b|\bMEVKII\b|\bYAYLA\b/.test(norm)) {
+        return "KOY";
+      }
       return "MERKEZ";
     }
 
     function detectMahalle(text, existingNames) {
       const upper = trUpper(text);
 
-      const koyMatch = upper.match(/([A-ZÇĞİÖŞÜ0-9.\-]{2,25}(?:\s+[A-ZÇĞİÖŞÜ0-9.\-]{2,20})?)\s*(?:\bKÖYÜ\b|\bKÖY\b|\bBELDESİ\b)/);
+      const koyKendisiMatch = upper.match(/([A-ZÇĞİÖŞÜ0-9.\-]{2,25}(?:\s+[A-ZÇĞİÖŞÜ0-9.\-]{2,20})?)\s+(?:KÖYÜN\s+KENDİSİ|KOYUN\s+KENDISI)/);
+      if (koyKendisiMatch && koyKendisiMatch[1]) {
+        const raw = koyKendisiMatch[1].replace(/^(?:MERKEZ|EDİRNE|KEŞAN|UZUNKÖPRÜ|İPSALA|HAVSA|ENEZ|LALAPAŞA|MERİÇ|SÜLOĞLU|\s|[,;:\-|/])+/, "");
+        return unifyLocationName(raw || koyKendisiMatch[1], existingNames);
+      }
+
+      const koyMatch = upper.match(/([A-ZÇĞİÖŞÜ0-9.\-]{2,25}(?:\s+[A-ZÇĞİÖŞÜ0-9.\-]{2,20})?)\s*(?:\bKÖYÜ\b|\bKÖY\b|\bBELDESİ\b|\bBELDE\b)/);
       if (koyMatch && koyMatch[1]) {
         const raw = koyMatch[1].replace(/^(?:MERKEZ|EDİRNE|KEŞAN|UZUNKÖPRÜ|İPSALA|HAVSA|ENEZ|LALAPAŞA|MERİÇ|SÜLOĞLU|\s|[,;:\-|/])+/, "");
         return unifyLocationName(raw || koyMatch[1], existingNames);
@@ -584,7 +940,6 @@
           return unifyLocationName(LOCATION_ALIASES[ak], existingNames);
         }
       }
-
       return "GENEL";
     }
 
@@ -593,19 +948,12 @@
     }
 
     function cleanAddressText(rawChunk, tesisat, seri) {
-      let addr = rawChunk
-        .replace(/\s*\|\s*/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      if (tesisat) {
-        addr = addr.replace(new RegExp("\\b" + tesisat + "\\b", "g"), " ");
-      }
+      let addr = rawChunk.replace(/\s*\|\s*/g, " ").replace(/\s+/g, " ").trim();
+      if (tesisat) addr = addr.replace(new RegExp("\\b" + tesisat + "\\b", "g"), " ");
       if (seri && seri !== "BİLİNMİYOR") {
         const escSeri = seri.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&").replace(/-/g, "[-_ ]?");
         addr = addr.replace(new RegExp("\\b" + escSeri + "\\b", "gi"), " ");
       }
-
       addr = addr
         .replace(/\b(monofaze|trifaze|3\s*faz|üç\s*faz)\b/gi, " ")
         .replace(/\s+([,.;:/])/g, "$1")
@@ -613,8 +961,35 @@
         .replace(/^\s*[,;:\-|/]+\s*|\s*[,;:\-|/]+\s*$/g, "")
         .replace(/\s+/g, " ")
         .trim();
-
       return addr || rawChunk.replace(/\s+/g, " ").trim();
+    }
+
+    function buildGoogleMapsQuery(item) {
+      let q = String(item.adres || "")
+        .replace(/^\s*\d+\s*(?:sayaç|sayac|adet|no\.?|kayıt)\b[:\-\s]*/i, "")
+        .replace(/\b(?:iç\s*kapı(?:\s*no)?|daire(?:\s*no)?|kat|blok(?:\s*no)?|asansör|bodrum|zemin)\s*[:.#-]?\s*[a-z0-9çğıöşü_-]+/gi, " ")
+        .replace(/\b(koyun\s*kendisi|köyün\s*kendisi)\b/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const normQ = normalizeKey(q);
+      const normMah = item.mahalle && item.mahalle !== "GENEL" ? normalizeKey(item.mahalle) : "";
+      const normIlce = item.ilce ? normalizeKey(item.ilce) : "";
+
+      const parts = [];
+      if (q) parts.push(q);
+      if (normMah && !normQ.includes(normMah)) {
+        parts.push(item.bolge === "KOY" ? (item.mahalle + " Köyü") : (item.mahalle + " Mah."));
+      }
+      if (normIlce && !normQ.includes(normIlce)) {
+        parts.push(item.ilce);
+      }
+      if (!normQ.includes("EDIRNE")) {
+        parts.push("Edirne");
+      }
+      parts.push("Türkiye");
+
+      return parts.join(", ").replace(/\s*,\s*,+/g, ", ").trim();
     }
 
     function parseSingleChunk(chunk, sourcePrefix, existingNames) {
@@ -635,7 +1010,7 @@
       const adres = cleanAddressText(cleaned, tesisat, seri);
 
       return {
-        id: sourcePrefix + "-" + Date.now() + "-" + tesisat + "-" + Math.random().toString(36).slice(2, 6),
+        id: sourcePrefix + "-" + tesisat + "-" + seri,
         ilce,
         bolge,
         mahalle,
@@ -646,6 +1021,52 @@
       };
     }
 
+    function addManualJob() {
+      if (!isAdminLoggedIn) {
+        openMenuOrAdmin();
+        return;
+      }
+      const tesisat = document.getElementById("manTesisat").value.trim();
+      const seri = trUpper(document.getElementById("manSeri").value) || "BİLİNMİYOR";
+      const ilce = trUpper(document.getElementById("manIlce").value) || "EDİRNE MERKEZ";
+      const rawMah = document.getElementById("manMahalle").value.trim();
+      const adres = document.getElementById("manAdres").value.trim();
+      const tip = document.getElementById("manTip").value;
+
+      if (!tesisat || !adres) {
+        showToast("Tesisat No ve Adres gerekli");
+        return;
+      }
+
+      const existingNames = [...new Set(jobsList.map(j => j.mahalle))];
+      const mahalle = rawMah ? unifyLocationName(rawMah, existingNames) : detectMahalle(adres, existingNames);
+      const bolge = detectBolge(adres + " " + rawMah, mahalle);
+
+      const newItem = {
+        id: "MAN-" + tesisat + "-" + Date.now().toString(36),
+        ilce,
+        bolge,
+        mahalle,
+        tesisat,
+        tip,
+        seri,
+        adres
+      };
+
+      jobsList.unshift(newItem);
+      saveAllData();
+      populateIlceDropdown();
+      populateMahalleDropdown();
+      renderList();
+
+      document.getElementById("manTesisat").value = "";
+      document.getElementById("manSeri").value = "";
+      document.getElementById("manMahalle").value = "";
+      document.getElementById("manAdres").value = "";
+      document.getElementById("scanStatus").textContent = "✅ Yeni kayıt eklendi (Toplam: " + jobsList.length + ").";
+      showToast("✓ Kayıt eklendi");
+    }
+
     function addParsedChunks(chunks, sourcePrefix) {
       const existingNames = [...new Set(jobsList.map(j => j.mahalle))];
       const existingKeys = new Set(jobsList.map(j => j.tesisat + "|" + j.seri));
@@ -654,15 +1075,11 @@
       for (const chunk of chunks) {
         const parsed = parseSingleChunk(chunk, sourcePrefix, existingNames);
         if (!parsed) continue;
-
-        if (!existingNames.includes(parsed.mahalle)) {
-          existingNames.push(parsed.mahalle);
-        }
-
+        if (!existingNames.includes(parsed.mahalle)) existingNames.push(parsed.mahalle);
         const dedupKey = parsed.tesisat + "|" + parsed.seri;
         if (existingKeys.has(dedupKey)) continue;
         existingKeys.add(dedupKey);
-        jobsList.unshift(parsed);
+        jobsList.push(parsed);
         addedCount++;
       }
 
@@ -674,9 +1091,7 @@
     }
 
     async function extractTextFromPdfFile(file) {
-      if (!window.pdfjsLib) {
-        throw new Error("PDF okuyucu yüklenemedi.");
-      }
+      if (!window.pdfjsLib) throw new Error("PDF okuyucu yüklenemedi.");
       const buffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
       let fullText = "";
@@ -697,46 +1112,41 @@
           lineText += item.str + " ";
           lastY = y;
         }
-        if (lineText.trim()) {
-          fullText += lineText.trim() + "\n";
-        }
+        if (lineText.trim()) fullText += lineText.trim() + "\n";
       }
       return fullText;
     }
 
     async function handlePdfFileSelect(event) {
+      if (!isAdminLoggedIn) {
+        event.target.value = "";
+        openMenuOrAdmin();
+        return;
+      }
       const file = event.target.files && event.target.files[0];
       const statusEl = document.getElementById("scanStatus");
       if (!file) return;
 
       statusEl.textContent = "⏳ PDF taranıyor...";
-
       try {
         const rawText = await extractTextFromPdfFile(file);
         const lines = rawText.split(/\r?\n/);
         const chunks = [];
-
         for (const line of lines) {
           const trimmed = line.trim();
           if (!trimmed) continue;
           const multiMatches = trimmed.match(/\b\d{6,16}\b/g);
           if (multiMatches && multiMatches.length > 1) {
-            trimmed.split(/(?=\b\d{6,16}\b)/).forEach(p => {
-              if (p.trim()) chunks.push(p.trim());
-            });
+            trimmed.split(/(?=\b\d{6,16}\b)/).forEach(p => { if (p.trim()) chunks.push(p.trim()); });
           } else {
             chunks.push(trimmed);
           }
         }
-
         const addedCount = addParsedChunks(chunks, "PDF");
-        if (addedCount > 0) {
-          statusEl.textContent = "✅ PDF'den " + addedCount + " kayıt eklendi.";
-          showToast("✓ " + addedCount + " kayıt eklendi");
-        } else {
-          statusEl.textContent = "⚠️ PDF tarandı; eklenecek yeni kayıt bulunamadı.";
-          showToast("Yeni kayıt bulunamadı");
-        }
+        statusEl.textContent = addedCount > 0
+          ? "✅ PDF'den " + addedCount + " kayıt eklendi (Toplam: " + jobsList.length + ")."
+          : "⚠️ PDF tarandı; eklenecek yeni kayıt bulunamadı.";
+        showToast(addedCount > 0 ? "✓ " + addedCount + " kayıt eklendi" : "Yeni kayıt bulunamadı");
       } catch (err) {
         statusEl.textContent = "❌ PDF okunamadı.";
       } finally {
@@ -745,20 +1155,21 @@
     }
 
     async function handleExcelFileSelect(event) {
+      if (!isAdminLoggedIn) {
+        event.target.value = "";
+        openMenuOrAdmin();
+        return;
+      }
       const file = event.target.files && event.target.files[0];
       const statusEl = document.getElementById("scanStatus");
       if (!file) return;
 
       statusEl.textContent = "⏳ Excel dosyası taranıyor...";
-
       try {
-        if (!window.XLSX) {
-          throw new Error("Excel okuyucu yüklenemedi.");
-        }
+        if (!window.XLSX) throw new Error("Excel okuyucu yüklenemedi.");
         const buffer = await file.arrayBuffer();
         const workbook = XLSX.read(buffer, { type: "array" });
         const chunks = [];
-
         workbook.SheetNames.forEach(sheetName => {
           const sheet = workbook.Sheets[sheetName];
           const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "" });
@@ -768,15 +1179,11 @@
             if (joined) chunks.push(joined);
           });
         });
-
         const addedCount = addParsedChunks(chunks, "XLS");
-        if (addedCount > 0) {
-          statusEl.textContent = "✅ Excel'den " + addedCount + " kayıt eklendi.";
-          showToast("✓ " + addedCount + " kayıt eklendi");
-        } else {
-          statusEl.textContent = "⚠️ Excel tarandı; eklenecek yeni kayıt bulunamadı.";
-          showToast("Yeni kayıt bulunamadı");
-        }
+        statusEl.textContent = addedCount > 0
+          ? "✅ Excel'den " + addedCount + " kayıt eklendi (Toplam: " + jobsList.length + ")."
+          : "⚠️ Excel tarandı; eklenecek yeni kayıt bulunamadı.";
+        showToast(addedCount > 0 ? "✓ " + addedCount + " kayıt eklendi" : "Yeni kayıt bulunamadı");
       } catch (err) {
         statusEl.textContent = "❌ Excel dosyası okunamadı.";
       } finally {
@@ -835,14 +1242,20 @@
         return true;
       });
       const mahalleler = [...new Set(filtered.map(j => j.mahalle))].sort((a, b) => a.localeCompare(b, "tr"));
-      sel.innerHTML = '<option value="ALL">Tüm Mahalle / Köyler</option>';
+      const defaultLabel = currentRegion === "KOY"
+        ? "Tüm Köyler / Beldeler"
+        : currentRegion === "MERKEZ"
+          ? "Tüm Merkez Mahalleler"
+          : "Tüm Mahalle / Köyler";
+      sel.innerHTML = `<option value="ALL">${defaultLabel}</option>`;
       mahalleler.forEach(m => {
         const opt = document.createElement("option");
         opt.value = m;
-        opt.textContent = m;
+        opt.textContent = currentRegion === "KOY" ? (m + " Köyü") : m;
         sel.appendChild(opt);
       });
       if (mahalleler.includes(prev)) sel.value = prev;
+      else sel.value = "ALL";
     }
 
     function renderList() {
@@ -876,19 +1289,21 @@
 
       const listEl = document.getElementById("jobList");
       if (visible.length === 0) {
-        listEl.innerHTML = '<div class="empty-state">📂 Henüz kayıt yok veya bu filtrede bekleyen iş kalmadı. Yukarıdan PDF veya Excel seçebilirsin.</div>';
+        listEl.innerHTML = '<div class="empty-state">📂 Kayıt bulunamadı veya bu filtrede bekleyen iş kalmadı. Yetkili girişi (⋮) ile PDF/Excel yükleyebilirsin.</div>';
         return;
       }
 
       listEl.innerHTML = visible.map(item => {
-        const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(item.adres);
+        const mapQuery = buildGoogleMapsQuery(item);
+        const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
+        const yerEtiketi = item.bolge === "KOY" ? (item.mahalle + " KÖYÜ") : item.mahalle;
         return `
           <div class="job-card">
             <div class="job-top">
               <span class="job-id">Tesisat: ${item.tesisat}</span>
               <span class="job-type">${item.tip}</span>
             </div>
-            <div class="job-meta">Seri No: <strong>${item.seri}</strong> • ${item.ilce} / ${item.mahalle}</div>
+            <div class="job-meta">Seri No: <strong>${item.seri}</strong> • ${item.ilce} / ${yerEtiketi}</div>
             <div class="job-address">📍 ${item.adres}</div>
             <a class="btn-map" href="${mapsUrl}" target="_blank" rel="noopener">🗺️ Haritada Göster</a>
             <div class="action-stack">
@@ -900,10 +1315,21 @@
       }).join("");
     }
 
-    loadAllData();
-    populateIlceDropdown();
-    populateMahalleDropdown();
-    renderList();
+    window.addEventListener("pagehide", saveAllData);
+    window.addEventListener("beforeunload", saveAllData);
+    window.addEventListener("focus", () => { loadAllData(); });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") saveAllData();
+      else if (document.visibilityState === "visible") loadAllData();
+    });
+
+    (async function boot() {
+      syncAdminUi();
+      populateIlceDropdown();
+      populateMahalleDropdown();
+      renderList();
+      await loadAllData();
+    })();
   </script>
 </body>
 </html>
