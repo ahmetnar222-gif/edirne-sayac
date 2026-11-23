@@ -37,7 +37,7 @@
     .container {
       max-width: 980px;
       margin: 0 auto;
-      padding: 10px 10px 68px;
+      padding: 10px 10px 72px;
     }
 
     .topbar {
@@ -56,13 +56,7 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
     }
 
-    .brand-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
-      flex: 1;
-    }
+    .brand-row { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
 
     .badge-tredas {
       background: var(--accent);
@@ -75,25 +69,8 @@
     }
 
     .title-group { min-width: 0; }
-
-    .app-title {
-      font-size: 14px;
-      font-weight: 800;
-      margin: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .sync-status {
-      font-size: 11px;
-      font-weight: 700;
-      margin-top: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
+    .app-title { font-size: 14px; font-weight: 800; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sync-status { font-size: 11px; font-weight: 700; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sync-ok { color: #34d399; }
     .sync-err { color: #f87171; }
     .sync-busy { color: #fbbf24; }
@@ -122,13 +99,7 @@
       flex-shrink: 0;
     }
 
-    .tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
     .tab-btn {
       background: var(--bg-card);
       color: var(--text-muted);
@@ -139,12 +110,7 @@
       font-weight: 800;
       cursor: pointer;
     }
-
-    .tab-btn.active {
-      background: var(--bg-soft);
-      color: #ffffff;
-      border-color: var(--accent-2);
-    }
+    .tab-btn.active { background: var(--bg-soft); color: #ffffff; border-color: var(--accent-2); }
 
     .card {
       background: var(--bg-card);
@@ -154,13 +120,7 @@
       margin-bottom: 10px;
     }
 
-    .cat-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
+    .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
     .cat-btn {
       background: var(--bg-input);
       color: var(--text-muted);
@@ -171,18 +131,9 @@
       font-weight: 700;
       cursor: pointer;
     }
+    .cat-btn.active { background: rgba(59, 130, 246, 0.25); color: #ffffff; border-color: var(--accent-2); }
 
-    .cat-btn.active {
-      background: rgba(59, 130, 246, 0.25);
-      color: #ffffff;
-      border-color: var(--accent-2);
-    }
-
-    .filter-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .filter-stack { display: flex; flex-direction: column; gap: 8px; }
 
     select, input[type="text"], input[type="password"] {
       width: 100%;
@@ -195,20 +146,8 @@
       outline: none;
     }
 
-    .controls-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .meter-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
+    .controls-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+    .meter-row { display: flex; flex-wrap: wrap; gap: 6px; }
 
     .chip-btn {
       background: var(--bg-input);
@@ -220,25 +159,10 @@
       font-weight: 700;
       cursor: pointer;
     }
+    .chip-btn.active { background: rgba(59, 130, 246, 0.28); color: #ffffff; border-color: var(--accent-2); }
 
-    .chip-btn.active {
-      background: rgba(59, 130, 246, 0.28);
-      color: #ffffff;
-      border-color: var(--accent-2);
-    }
-
-    .group-header-title {
-      font-size: 13px;
-      font-weight: 800;
-      color: #fbbf24;
-      margin-bottom: 6px;
-    }
-
-    .district-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
+    .group-header-title { font-size: 13px; font-weight: 800; color: #fbbf24; margin-bottom: 6px; }
+    .district-pills { display: flex; flex-wrap: wrap; gap: 6px; }
 
     .d-pill {
       background: var(--bg-input);
@@ -250,36 +174,11 @@
       font-weight: 700;
       cursor: pointer;
     }
+    .d-pill.active { background: rgba(16, 185, 129, 0.22); color: #ffffff; border-color: var(--success); }
 
-    .d-pill.active {
-      background: rgba(16, 185, 129, 0.22);
-      color: #ffffff;
-      border-color: var(--success);
-    }
-
-    .progress-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    .progress-bar {
-      width: 100%;
-      height: 8px;
-      background: var(--bg-input);
-      border-radius: 999px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent-2), var(--success));
-      width: 0%;
-      transition: width 0.25s ease;
-    }
+    .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; margin-bottom: 6px; }
+    .progress-bar { width: 100%; height: 8px; background: var(--bg-input); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-2), var(--success)); width: 0%; transition: width 0.25s ease; }
 
     .job-card, .selected-job-card {
       background: var(--bg-card);
@@ -289,43 +188,15 @@
       margin-bottom: 10px;
     }
 
-    .selected-job-card {
-      border: 2px solid var(--accent);
-      background: #131d33;
-      margin-top: 10px;
-    }
+    .selected-job-card { border: 2px solid var(--accent); background: #131d33; margin-top: 10px; }
+    .job-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+    .job-title { font-size: 14px; font-weight: 800; color: #fbbf24; }
 
-    .job-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-
-    .job-title {
-      font-size: 14px;
-      font-weight: 800;
-      color: #fbbf24;
-    }
-
-    .tag {
-      font-size: 11px;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 999px;
-      white-space: nowrap;
-    }
-
+    .tag { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
     .tag-mahalle { background: rgba(59, 130, 246, 0.25); color: #bfdbfe; }
     .tag-koy { background: rgba(16, 185, 129, 0.25); color: #a7f3d0; }
 
-    .job-meta {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-    }
-
+    .job-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; word-break: break-word; }
     .job-addr {
       font-size: 13px;
       color: #ffffff;
@@ -337,11 +208,7 @@
       word-break: break-word;
     }
 
-    .job-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
+    .job-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
     .btn {
       border: 1px solid var(--border);
@@ -364,29 +231,9 @@
     .btn-warning { background: var(--accent); border-color: var(--accent); color: #111827; }
     .btn-danger { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.55); color: #fecaca; }
 
-    #map {
-      width: 100%;
-      height: 390px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      margin-top: 8px;
-      z-index: 1;
-    }
-
-    .map-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .map-info {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 8px;
-      word-break: break-word;
-    }
+    #map { width: 100%; height: 390px; border-radius: 12px; border: 1px solid var(--border); margin-top: 8px; z-index: 1; }
+    .map-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+    .map-info { font-size: 12px; color: var(--text-muted); margin-top: 8px; word-break: break-word; }
 
     .nearby-item {
       display: flex;
@@ -425,12 +272,7 @@
       margin-bottom: 10px;
     }
 
-    .admin-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-      gap: 8px;
-      margin-top: 10px;
-    }
+    .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; margin-top: 10px; }
 
     .modal-backdrop {
       position: fixed;
@@ -442,7 +284,6 @@
       padding: 16px;
       z-index: 1200;
     }
-
     .modal-backdrop.open { display: flex; }
 
     .modal-card {
@@ -592,8 +433,7 @@
       <div id="pinError" style="color:var(--danger); font-size:12px; margin-top:8px;"></div>
     </div>
   </div>
-
-  <script type="module">
+   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
@@ -612,15 +452,16 @@
     const ADMIN_PIN = "1923";
     const PAGE_SIZE = 40;
 
-    const AI_AUTHORITY = {
-      name: "TREDAŞ Saha Tam Yetkili AI",
-      fullAccess: true,
-      autoCleanData: true,
-      autoDeduplicate: true,
-      autoResolveGeo: true,
-      autoSyncCache: true,
-      autoSyncServer: true,
-      autoRefreshUI: true
+    const AI_SHIELD = {
+      name: "TREDAŞ Zırhlı Saha AI v4",
+      maxPassPerRecord: 1,
+      strictSingleCategory: true,
+      stripNoiseTokens: true,
+      dedupePhrases: true,
+      singleParenthesisLoc: true,
+      dedupeRecords: true,
+      autoSaveCache: true,
+      autoSyncServer: true
     };
 
     const DISTRICTS = {
@@ -666,7 +507,8 @@
       "begendik": "Beğendik", "kuplu": "Küplü", "subasi": "Subaşı", "kircasalih": "Kırcasalih",
       "igneada": "İğneada", "kiyikoy": "Kıyıköy", "ahmetbey": "Ahmetbey", "evrensekiz": "Evrensekiz",
       "buyukkaristiran": "Büyükkarıştıran", "kavakkoy": "Kavakköy", "kaynarca": "Kaynarca",
-      "abalar": "Abalar", "buyukdoganca": "Büyükdoğanca", "copkoy": "Çöpköy"
+      "abalar": "Abalar", "buyukdoganca": "Büyükdoğanca", "copkoy": "Çöpköy",
+      "avariz": "Avarız", "degirmenyeni": "Değirmenyeni", "kemal": "Kemal"
     };
 
     const KOYLER = new Set([
@@ -675,7 +517,7 @@
       "orhaniye", "uzgac", "ahirkoy", "karakasim", "haciumur", "yenimuhacir",
       "begendik", "kuplu", "subasi", "kircasalih", "igneada", "kiyikoy",
       "ahmetbey", "evrensekiz", "buyukkaristiran", "kavakkoy", "kaynarca", "abalar",
-      "buyukdoganca", "copkoy"
+      "buyukdoganca", "copkoy", "avariz", "degirmenyeni", "kemal"
     ]);
 
     const COORDS = {
@@ -700,70 +542,14 @@
       "karakas": [41.7375, 27.2240], "yayla": [41.7315, 27.2180], "demirtas": [41.7410, 27.2290],
       "akalar": [41.7330, 27.2320], "kocahidir": [41.7440, 27.2150], "igneada": [41.8747, 27.9919],
       "kiyikoy": [41.6358, 28.0819], "ahmetbey": [41.4342, 27.4958], "evrensekiz": [41.4008, 27.2564],
-      "buyukkaristiran": [41.3753, 27.5150]
+      "buyukkaristiran": [41.3753, 27.5150], "avariz": [41.6510, 26.6150],
+      "degirmenyeni": [41.6680, 26.4850], "kemal": [41.6285, 26.4385]
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    let allJobs = [];
-    let filteredJobs = [];
-    let visibleLimit = PAGE_SIZE;
-    let selectedCat = "ALL";
-    let selectedDistrict = "ALL";
-    let selectedSettlement = "ALL";
-    let selectedMeter = "ALL";
-    let sortMode = "DEFAULT";
-    let searchQuery = "";
-    let showCompleted = false;
-    let isAdmin = false;
-    let activeTab = "list";
-    let selectedMapJobId = null;
-    let mapInstance = null;
-    let canvasRenderer = null;
-    let markerLayer = null;
-    let userLatLng = null;
-    let userMarker = null;
-
-    const el = {
-      syncStatus: document.getElementById("syncStatus"),
-      doneCounter: document.getElementById("doneCounter"),
-      menuBtn: document.getElementById("menuBtn"),
-      menuModal: document.getElementById("menuModal"),
-      pinInput: document.getElementById("pinInput"),
-      pinSubmitBtn: document.getElementById("pinSubmitBtn"),
-      pinCloseBtn: document.getElementById("pinCloseBtn"),
-      pinError: document.getElementById("pinError"),
-      adminPanel: document.getElementById("adminPanel"),
-      logoutAdminBtn: document.getElementById("logoutAdminBtn"),
-      excelInput: document.getElementById("excelInput"),
-      pdfInput: document.getElementById("pdfInput"),
-      repairDbBtn: document.getElementById("repairDbBtn"),
-      showCompletedToggle: document.getElementById("showCompletedToggle"),
-      clearAllBtn: document.getElementById("clearAllBtn"),
-      adminStatus: document.getElementById("adminStatus"),
-      tabListBtn: document.getElementById("tabListBtn"),
-      tabMapBtn: document.getElementById("tabMapBtn"),
-      listView: document.getElementById("listView"),
-      mapView: document.getElementById("mapView"),
-      districtSelect: document.getElementById("districtSelect"),
-      settlementSelect: document.getElementById("settlementSelect"),
-      searchInput: document.getElementById("searchInput"),
-      sortSelect: document.getElementById("sortSelect"),
-      subGroupTitle: document.getElementById("subGroupTitle"),
-      districtBreakdownPills: document.getElementById("districtBreakdownPills"),
-      filteredCountLabel: document.getElementById("filteredCountLabel"),
-      percentLabel: document.getElementById("percentLabel"),
-      progressFill: document.getElementById("progressFill"),
-      jobsContainer: document.getElementById("jobsContainer"),
-      loadMoreWrap: document.getElementById("loadMoreWrap"),
-      loadMoreBtn: document.getElementById("loadMoreBtn"),
-      locateBtn: document.getElementById("locateBtn"),
-      fitMapBtn: document.getElementById("fitMapBtn"),
-      mapStatus: document.getElementById("mapStatus"),
-      selectedMapJobWrap: document.getElementById("selectedMapJobWrap"),
-      nearbyList: document.getElementById("nearbyList")
-    };
+    const NOISE_SINGLE_CHARS = new Set([
+      "u", "ü", "o", "ö", "a", "e", "i", "ı", "c", "ç", "s", "ş",
+      "g", "ğ", "v", "y", "z", "n", "m", "l", "r", "t", "k", "d", "b", "p", "h", "f", "j"
+    ]);
 
     const trLower = s => (s || "").toString().toLocaleLowerCase("tr-TR").trim();
     const asciiKey = s => trLower(s)
@@ -774,12 +560,62 @@
     const properTr = s => trLower(s).replace(/\s+/g, " ").split(" ").filter(Boolean)
       .map(w => w.charAt(0).toLocaleUpperCase("tr-TR") + w.slice(1)).join(" ");
 
-    function parsePipe(rawText) {
-      const text = String(rawText || "").trim();
+    function sanitizeRepeatedText(input) {
+      let s = String(input || "").replace(/\s+/g, " ").trim();
+      if (!s) return "";
+
+      if (AI_SHIELD.stripNoiseTokens) {
+        const words = s.split(" ").filter(w => {
+          const core = w.replace(/[^a-zA-ZçğıöşüÇĞİÖŞÜ0-9.]/g, "");
+          if (!core) return false;
+          const low = asciiKey(core);
+          if (core.length === 1 && NOISE_SINGLE_CHARS.has(low)) return false;
+          return true;
+        });
+        s = words.join(" ");
+      }
+
+      if (AI_SHIELD.dedupePhrases) {
+        for (let gram = 4; gram >= 1; gram--) {
+          const parts = s.split(" ");
+          const out = [];
+          let i = 0;
+          while (i < parts.length) {
+            const cur = parts.slice(i, i + gram).join(" ");
+            const nxt = parts.slice(i + gram, i + gram * 2).join(" ");
+            if (cur && asciiKey(cur) === asciiKey(nxt)) {
+              out.push(...parts.slice(i, i + gram));
+              i += gram * 2;
+              while (i + gram <= parts.length && asciiKey(parts.slice(i, i + gram).join(" ")) === asciiKey(cur)) {
+                i += gram;
+              }
+            } else {
+              out.push(parts[i]);
+              i += 1;
+            }
+          }
+          s = out.join(" ");
+        }
+
+        const segs = s.split(/\s*[,|]\s*/).filter(Boolean);
+        const uniq = [];
+        for (const seg of segs) {
+          const keySeg = asciiKey(seg.replace(/\b(mahallesi|mah\.?|koyu|köyü|koy|köy)\b/gi, ""));
+          if (!keySeg) continue;
+          const exists = uniq.some(prev => asciiKey(prev.replace(/\b(mahallesi|mah\.?|koyu|köyü|koy|köy)\b/gi, "")) === keySeg);
+          if (!exists) uniq.push(seg.trim());
+        }
+        s = uniq.join(", ");
+      }
+
+      return s.replace(/\s+/g, " ").trim();
+    }
+     function parsePipe(rawText) {
+      const text = sanitizeRepeatedText(rawText);
       if (!text.includes("|")) {
         return { street: text, tesisat: "", seri: "", place: "", meter: "" };
       }
-      const parts = text.split("|").map(p => p.trim()).filter(Boolean);
+      const parts = text.split("|").map(p => sanitizeRepeatedText(p)).filter(Boolean);
       let tesisat = "", seri = "", meter = "";
       const places = [], streets = [];
       for (const p of parts) {
@@ -795,18 +631,18 @@
           places.push(p);
         }
       }
-      const street = (streets.join(", ") || places[places.length - 1] || "")
+      const street = sanitizeRepeatedText(streets.join(", ") || places[places.length - 1] || "")
         .replace(/\bKÖYÜN\s+KENDİSİ\s+(MAH\.?|MAHALLESİ)\s*/gi, "")
         .replace(/\bKÖYÜN\s+KENDİSİ\b/gi, "Köy İçi")
         .replace(/\b(MERKEZ|EDİRNE|KIRKLARELİ)\s*\/?\s*$/gi, "")
         .replace(/\bDISKAPINO\s*:/gi, "No:")
         .replace(/\bDAIRENO\s*:/gi, "Daire:")
         .replace(/\s+/g, " ").trim();
-      return { street, tesisat, seri, place: places.join(" "), meter };
+      return { street, tesisat, seri, place: sanitizeRepeatedText(places.join(" ")), meter };
     }
 
     function detectDistrict(text) {
-      const n = asciiKey(text);
+      const n = asciiKey(sanitizeRepeatedText(text));
       const isK = n.includes("kirklareli");
       for (const [k, meta] of Object.entries(DISTRICTS)) {
         if (meta.ilce === "Merkez") continue;
@@ -817,7 +653,7 @@
     }
 
     function resolveSettlement(rawSett, rawAddr, districtKey) {
-      const src = `${rawSett || ""} ${rawAddr || ""}`.trim();
+      const src = sanitizeRepeatedText(`${rawSett || ""} ${rawAddr || ""}`);
       const norm = asciiKey(src);
       let matchedKey = null;
 
@@ -833,71 +669,106 @@
       let base = "";
 
       if (matchedKey) {
-        base = NAMES[matchedKey];
+        base = sanitizeRepeatedText(NAMES[matchedKey] || "");
         cat = KOYLER.has(matchedKey) ? "KOY" : "MAHALLE";
       } else {
-        let cand = (rawSett || "").trim();
+        let cand = sanitizeRepeatedText(rawSett || "");
         if (!cand) {
           const kM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]+?)\s*(?:Köyü|Köy|Beldesi|Belde|Belediyesi)/i);
           const mM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]+?)\s*(?:Mahallesi|Mah\.?|Mh\.?)/i);
           if (kM) { cat = "KOY"; cand = kM[1]; }
           else if (mM) { cat = "MAHALLE"; cand = mM[1]; }
         }
-        if ((/\bkoyu\b|\bkoy\b|\bbeldesi\b|\bbelediyesi\b/i.test(norm)) && !/\bmah\b|\bmahallesi\b/i.test(norm)) cat = "KOY";
+        if ((/\bkoyu\b|\bkoy\b|\bbeldesi\b|\bbelediyesi\b/i.test(norm)) && !/\bmah\b|\bmahallesi\b/i.test(norm)) {
+          cat = "KOY";
+        }
 
-        cand = cand
-          .replace(/\b(mahallesi|mah\.?|mh\.?|köyü|koyu|köy|koy|beldesi|belde|belediyesi|belediye|edirne|kırklareli|kirklareli|merkez|genel|köyün kendisi)\b/gi, " ")
-          .replace(/[|/\\\-–—]+/g, " ").replace(/\s+/g, " ").trim();
+        cand = sanitizeRepeatedText(
+          cand
+            .replace(/\b(mahallesi|mah\.?|mh\.?|köyü|koyu|köy|koy|beldesi|belde|belediyesi|belediye|edirne|kırklareli|kirklareli|merkez|genel|köyün kendisi|köy içi)\b/gi, " ")
+            .replace(/[|/\\\-–—.,]+/g, " ")
+        );
 
         const cKey = asciiKey(cand);
         if (NAMES[cKey]) {
           matchedKey = cKey;
-          base = NAMES[cKey];
+          base = sanitizeRepeatedText(NAMES[cKey] || "");
           cat = KOYLER.has(cKey) ? "KOY" : "MAHALLE";
+        } else if (cand.length >= 2 && !/^\d+$/.test(cand) && !NOISE_SINGLE_CHARS.has(cKey)) {
+          base = sanitizeRepeatedText(properTr(cand));
+          matchedKey = cKey;
         } else {
           const meta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
-          base = cand ? properTr(cand) : `${meta.ilce} Merkez`;
+          base = `${meta.ilce} Merkez`;
           matchedKey = asciiKey(base);
         }
       }
 
-      if (cat === "KOY") return { category: "KOY", settlement: `${base} Köyü`, baseKey: matchedKey };
+      if (!base || base === "." || NOISE_SINGLE_CHARS.has(asciiKey(base))) {
+        const meta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
+        base = `${meta.ilce} Merkez`;
+      }
+
+      base = sanitizeRepeatedText(base.replace(/\s+(Mah\.?|Mahallesi|Köyü|Koyu|Köy)$/i, ""));
+      if (!base) {
+        const meta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
+        base = `${meta.ilce} Merkez`;
+      }
+
+      if (cat === "KOY") {
+        return { category: "KOY", settlement: `${base} Köyü`, baseKey: matchedKey };
+      }
       return { category: "MAHALLE", settlement: `${base} Mah.`, baseKey: matchedKey };
     }
 
     function cleanAddress(street, districtKey, settlement) {
       const meta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
-      let s = (street || "")
-        .replace(/^(edirne|kırklareli|kirklareli|merkez)\s*([\/\-–—,]|\s)+(merkez|edirne|kırklareli|kirklareli)?\s*[-–—,/]?\s*/i, "")
-        .replace(/\s+/g, " ").trim();
-
-      const baseOnly = settlement.replace(/\s+(Mah\.|Köyü)$/i, "").trim();
-      if (baseOnly) {
-        s = s.replace(new RegExp(`^${baseOnly}\\s*(Mahallesi|Mah\\.?|Köyü|Beldesi|Belediyesi)?\\s*[,\\-–—]?\\s*`, "i"), "").trim();
-      }
-
       const loc = meta.ilce === "Merkez" ? `${meta.il} Merkez` : `${meta.ilce} / ${meta.il}`;
-      if (!s || ["genel", "merkez", "koy ici", "koyun kendisi"].includes(asciiKey(s))) {
-        return `${settlement}, ${loc}`;
+
+      let s = String(street || "")
+        .replace(/(\s*\([^)]*\)\s*)+$/g, " ")
+        .replace(/^(edirne|kırklareli|kirklareli|merkez)\s*([\/\-–—,]|\s)+(merkez|edirne|kırklareli|kirklareli)?\s*[-–—,/]?\s*/i, "");
+
+      s = sanitizeRepeatedText(s);
+
+      const cleanSett = sanitizeRepeatedText(settlement);
+      const baseOnly = cleanSett.replace(/\s+(Mah\.|Köyü)$/i, "").trim();
+
+      if (baseOnly) {
+        const esc = baseOnly.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        s = s.replace(new RegExp(`(?:^|,\\s*)${esc}(?:\\s+(?:Mahallesi|Mah\\.?|Köyü|Koyu|Beldesi|Belediyesi))?(?:\\s*,\\s*|$)`, "gi"), " ");
       }
-      return `${settlement}, ${properTr(s)} (${loc})`;
+
+      s = sanitizeRepeatedText(s.replace(/^[,;\-\s]+|[,;\-\s]+$/g, ""));
+
+      if (!s || ["genel", "merkez", "koy ici", "koyun kendisi"].includes(asciiKey(s))) {
+        return `${cleanSett}, ${loc}`;
+      }
+      return `${cleanSett}, ${properTr(s)} (${loc})`;
     }
 
     function normalizeRecord(raw, key) {
-      const rawAddr = String(raw.address || raw.rawAddress || raw.adres || raw.ADRES || "").trim();
-      const p = parsePipe(rawAddr);
+      const seedSource = sanitizeRepeatedText(
+        raw._rawSource || raw.rawAddress || raw.adres || raw.ADRES || raw.address || ""
+      );
+      const p = parsePipe(seedSource);
       const tesisatNo = String(raw.tesisatNo || raw.installationNo || raw["Tesisat No"] || p.tesisat || "").trim();
       const seriNo = String(raw.seriNo || raw.serialNo || raw["Seri No"] || p.seri || "").trim();
-      const district = DISTRICTS[raw.district] ? raw.district : detectDistrict(`${raw.district || raw["İlçe"] || ""} ${p.place} ${rawAddr}`);
-      const sett = resolveSettlement(`${raw.settlement || raw.neighborhood || raw["Mahalle"] || raw["Köy"] || ""} ${p.place}`, `${p.street} ${rawAddr}`, district);
-      const mNorm = asciiKey(`${raw.meterType || raw["Sayaç Tipi"] || ""} ${p.meter} ${rawAddr}`);
-      const meterType = mNorm.includes("tri") || mNorm.includes("3 faz") ? "TRI" : "MONO";
+      const district = DISTRICTS[raw.district] ? raw.district : detectDistrict(`${raw.district || raw["İlçe"] || ""} ${p.place} ${seedSource}`);
+      const sett = resolveSettlement(
+        sanitizeRepeatedText(`${raw.settlement || raw.neighborhood || raw["Mahalle"] || raw["Köy"] || ""} ${p.place}`),
+        `${p.street} ${seedSource}`,
+        district
+      );
+      const mNorm = asciiKey(`${raw.meterType || raw["Sayaç Tipi"] || ""} ${p.meter} ${seedSource}`);
+      const meterType = (mNorm.includes("tri") || mNorm.includes("3 faz")) ? "TRI" : "MONO";
       const address = cleanAddress(p.street, district, sett.settlement);
-      const rawTitle = String(raw.aboneAdi || raw.customerName || raw["Abone Adı"] || "").trim();
+      const rawTitle = sanitizeRepeatedText(raw.aboneAdi || raw.customerName || raw["Abone Adı"] || "");
       const displayTitle = tesisatNo ? `Tesisat: ${tesisatNo}` : (rawTitle && !rawTitle.includes("|") ? properTr(rawTitle) : `${sett.settlement} Kaydı`);
 
       return {
         id: String(raw.id || key),
+        _rawSource: seedSource || address,
         tesisatNo, seriNo, displayTitle, district,
         category: sett.category, settlement: sett.settlement, baseKey: sett.baseKey,
         address, streetOnly: p.street || "", meterType,
@@ -951,14 +822,76 @@
       }
       return { lat: 41.6771, lng: 26.5557 };
     }
+     const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    // AI_MOTORU_BASLANGIC
+    let allJobs = [];
+    let filteredJobs = [];
+    let visibleLimit = PAGE_SIZE;
+    let selectedCat = "ALL";
+    let selectedDistrict = "ALL";
+    let selectedSettlement = "ALL";
+    let selectedMeter = "ALL";
+    let sortMode = "DEFAULT";
+    let searchQuery = "";
+    let showCompleted = false;
+    let isAdmin = false;
+    let activeTab = "list";
+    let selectedMapJobId = null;
+    let mapInstance = null;
+    let canvasRenderer = null;
+    let markerLayer = null;
+    let userLatLng = null;
+    let userMarker = null;
+    let aiCycleLock = false;
+    let lastServerPushHash = "";
+
+    const el = {
+      syncStatus: document.getElementById("syncStatus"),
+      doneCounter: document.getElementById("doneCounter"),
+      menuBtn: document.getElementById("menuBtn"),
+      menuModal: document.getElementById("menuModal"),
+      pinInput: document.getElementById("pinInput"),
+      pinSubmitBtn: document.getElementById("pinSubmitBtn"),
+      pinCloseBtn: document.getElementById("pinCloseBtn"),
+      pinError: document.getElementById("pinError"),
+      adminPanel: document.getElementById("adminPanel"),
+      logoutAdminBtn: document.getElementById("logoutAdminBtn"),
+      excelInput: document.getElementById("excelInput"),
+      pdfInput: document.getElementById("pdfInput"),
+      repairDbBtn: document.getElementById("repairDbBtn"),
+      showCompletedToggle: document.getElementById("showCompletedToggle"),
+      clearAllBtn: document.getElementById("clearAllBtn"),
+      adminStatus: document.getElementById("adminStatus"),
+      tabListBtn: document.getElementById("tabListBtn"),
+      tabMapBtn: document.getElementById("tabMapBtn"),
+      listView: document.getElementById("listView"),
+      mapView: document.getElementById("mapView"),
+      districtSelect: document.getElementById("districtSelect"),
+      settlementSelect: document.getElementById("settlementSelect"),
+      searchInput: document.getElementById("searchInput"),
+      sortSelect: document.getElementById("sortSelect"),
+      subGroupTitle: document.getElementById("subGroupTitle"),
+      districtBreakdownPills: document.getElementById("districtBreakdownPills"),
+      filteredCountLabel: document.getElementById("filteredCountLabel"),
+      percentLabel: document.getElementById("percentLabel"),
+      progressFill: document.getElementById("progressFill"),
+      jobsContainer: document.getElementById("jobsContainer"),
+      loadMoreWrap: document.getElementById("loadMoreWrap"),
+      loadMoreBtn: document.getElementById("loadMoreBtn"),
+      locateBtn: document.getElementById("locateBtn"),
+      fitMapBtn: document.getElementById("fitMapBtn"),
+      mapStatus: document.getElementById("mapStatus"),
+      selectedMapJobWrap: document.getElementById("selectedMapJobWrap"),
+      nearbyList: document.getElementById("nearbyList")
+    };
+
     function saveToLocalCache(jobsObj) {
-      if (!AI_AUTHORITY.autoSyncCache) return;
+      if (!AI_SHIELD.autoSaveCache) return;
       try {
         localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify({
           savedAt: Date.now(),
-          authority: AI_AUTHORITY.name,
+          engine: AI_SHIELD.name,
           count: Object.keys(jobsObj).length,
           jobs: jobsObj
         }));
@@ -986,24 +919,23 @@
       for (const k of Object.keys(row)) {
         const nk = asciiKey(k);
         if (keywords.some(kw => nk.includes(asciiKey(kw)))) {
-          const val = String(row[k] ?? "").trim();
+          const val = sanitizeRepeatedText(String(row[k] ?? ""));
           if (val) return val;
         }
       }
       return "";
     }
 
-    function aiCompleteSingleRecord(raw, key) {
-      const base = normalizeRecord(raw, key);
-      const rawText = [
-        raw.address, raw.rawAddress, raw.adres, raw.ADRES,
-        raw.settlement, raw.neighborhood, raw.district, raw.aboneAdi, raw.streetOnly
-      ].filter(Boolean).join(" | ");
+    function aiRepairSingle(raw, key) {
+      const rec = normalizeRecord(raw, key);
+      const rawText = sanitizeRepeatedText([
+        rec._rawSource, raw.settlement, raw.district, raw.aboneAdi
+      ].filter(Boolean).join(" | "));
 
-      let tesisatNo = base.tesisatNo;
-      let seriNo = base.seriNo;
+      let tesisatNo = String(rec.tesisatNo || "").trim();
+      let seriNo = String(rec.seriNo || "").trim();
       if (!tesisatNo) {
-        const mTes = rawText.match(/\b(\d{8,12})\b/);
+        const mTes = rawText.match(/\b(\d{7,12})\b/);
         if (mTes) tesisatNo = mTes[1];
       }
       if (!seriNo) {
@@ -1011,18 +943,17 @@
         if (mSer) seriNo = mSer[1].toUpperCase();
       }
 
-      const district = DISTRICTS[base.district] ? base.district : detectDistrict(rawText);
-      const sett = resolveSettlement(`${base.settlement} ${raw.settlement || ""}`, `${base.address} ${rawText}`, district);
-      const category = sett.category === "KOY" ? "KOY" : "MAHALLE";
-
-      const mNorm = asciiKey(`${base.meterType} ${rawText}`);
+      const district = DISTRICTS[rec.district] ? rec.district : detectDistrict(rawText);
+      const sett = resolveSettlement(rec.settlement, `${rec.streetOnly} ${rec._rawSource}`, district);
+      const category = sett.settlement.endsWith("Köyü") ? "KOY" : "MAHALLE";
+      const mNorm = asciiKey(`${rec.meterType} ${rawText}`);
       const meterType = (mNorm.includes("tri") || mNorm.includes("3 faz") || mNorm.includes("trifaze")) ? "TRI" : "MONO";
-
-      const address = cleanAddress(base.streetOnly || base.address, district, sett.settlement);
+      const address = cleanAddress(rec.streetOnly, district, sett.settlement);
 
       const candidate = {
-        ...base,
+        ...rec,
         id: String(raw.id || key),
+        _rawSource: rec._rawSource || address,
         tesisatNo,
         seriNo,
         district,
@@ -1038,27 +969,27 @@
       return { ...candidate, displayTitle, lat, lng };
     }
 
-    function aiDeduplicateAndClean(items) {
-      const cleaned = [];
+    function aiCleanCollection(items) {
+      const out = [];
       const seen = new Set();
 
       (items || []).forEach((item, idx) => {
         if (!item || typeof item !== "object") return;
-        const rec = aiCompleteSingleRecord(item, item.id || `ai_${idx + 1}`);
-        const hasIdentity = Boolean(rec.tesisatNo || rec.seriNo || rec.streetOnly || rec.settlement);
-        if (!hasIdentity) return;
+        const rec = aiRepairSingle(item, item.id || `ai_${idx + 1}`);
+        const valid = Boolean(rec.tesisatNo || rec.seriNo || rec.streetOnly || rec.settlement);
+        if (!valid) return;
 
-        if (AI_AUTHORITY.autoDeduplicate) {
+        if (AI_SHIELD.dedupeRecords) {
           const sig = asciiKey(
             rec.tesisatNo
               ? `tes_${rec.tesisatNo}_${rec.seriNo}`
               : `${rec.district}_${rec.settlement}_${rec.address}_${rec.meterType}`
           );
           if (seen.has(sig)) {
-            const existingIdx = cleaned.findIndex(c => c._sig === sig);
+            const existingIdx = out.findIndex(x => x._sig === sig);
             if (existingIdx !== -1 && rec.completed) {
-              cleaned[existingIdx].completed = true;
-              cleaned[existingIdx].completedAt = rec.completedAt || Date.now();
+              out[existingIdx].completed = true;
+              out[existingIdx].completedAt = rec.completedAt || Date.now();
             }
             return;
           }
@@ -1066,36 +997,30 @@
           seen.add(sig);
         }
 
-        cleaned.push(rec);
+        out.push(rec);
       });
 
-      return cleaned.map(({ _sig, ...rest }) => rest);
+      return out.map(({ _sig, ...rest }) => rest);
     }
 
-    let aiCycleLock = false;
-    let lastServerPushHash = "";
-
     function autonomousAIController(rawList, opts = {}) {
-      const { syncServer = AI_AUTHORITY.autoSyncServer, reason = "otonom döngü", resetPaging = false } = opts;
-      if (!AI_AUTHORITY.fullAccess || aiCycleLock) return;
+      const { syncServer = AI_SHIELD.autoSyncServer, reason = "otonom", resetPaging = false } = opts;
+      if (aiCycleLock) return;
       aiCycleLock = true;
 
       try {
-        const cleanList = AI_AUTHORITY.autoCleanData ? aiDeduplicateAndClean(rawList) : (rawList || []);
+        const cleaned = aiCleanCollection(rawList);
         const payload = {};
-        cleanList.forEach((j, idx) => {
+        cleaned.forEach((j, idx) => {
           const safeId = String(j.id || `job_${idx + 1}`).replace(/[.#$/\[\]]/g, "_").slice(0, 120);
           payload[safeId] = { ...j, id: safeId };
         });
 
         allJobs = Object.values(payload);
         saveToLocalCache(payload);
-
-        if (AI_AUTHORITY.autoRefreshUI) {
-          populateFilters();
-          applyFilters(resetPaging);
-          if (activeTab === "map") renderMap(false);
-        }
+        populateFilters();
+        applyFilters(resetPaging);
+        if (activeTab === "map") renderMap(false);
 
         if (syncServer && allJobs.length > 0) {
           const digest = `${allJobs.length}_${allJobs.filter(x => x.completed).length}_${allJobs[0]?.id || ""}`;
@@ -1103,14 +1028,14 @@
             lastServerPushHash = digest;
             set(ref(db, `${DB_PATH}/jobs`), payload)
               .then(() => {
-                el.adminStatus.textContent = `🤖 Tam Yetkili AI (${reason}): ${allJobs.length} kayıt hafızaya ve sunucuya işlendi.`;
+                el.adminStatus.textContent = `🤖 Zırhlı AI (${reason}): ${allJobs.length} kayıt temizlendi, hafızaya ve sunucuya işlendi.`;
               })
               .catch(err => {
-                el.adminStatus.textContent = `🤖 Tam Yetkili AI (${reason}): ${allJobs.length} kayıt hafızada hazır (Sunucu: ${err.message})`;
+                el.adminStatus.textContent = `🤖 Zırhlı AI (${reason}): ${allJobs.length} kayıt hafızada hazır (Sunucu: ${err.message})`;
               });
           }
         } else if (allJobs.length > 0) {
-          el.adminStatus.textContent = `🤖 Tam Yetkili AI aktif: ${allJobs.length} kayıt hafızada hazır.`;
+          el.adminStatus.textContent = `🤖 Zırhlı AI aktif: ${allJobs.length} kayıt hatasız ve hazır.`;
         }
       } finally {
         aiCycleLock = false;
@@ -1118,6 +1043,7 @@
     }
 
     window.__runFullAI = (overrideServerSync = true) => {
+      lastServerPushHash = "";
       autonomousAIController(allJobs, { syncServer: Boolean(overrideServerSync), reason: "manuel tam yetki", resetPaging: false });
     };
 
@@ -1175,7 +1101,7 @@
       el.districtSelect.value = selectedDistrict;
 
       const sPool = pool.filter(j => selectedDistrict === "ALL" || j.district === selectedDistrict);
-      const settlements = Array.from(new Set(sPool.map(j => j.settlement))).sort((a, b) => a.localeCompare(b, "tr"));
+      const settlements = Array.from(new Set(sPool.map(j => j.settlement).filter(s => s && !s.startsWith(" .")))).sort((a, b) => a.localeCompare(b, "tr"));
       const ph = selectedCat === "KOY" ? "Tüm Köyler" : selectedCat === "MAHALLE" ? "Tüm Mahalleler" : "Tüm Mahalle / Köyler";
       el.settlementSelect.innerHTML = `<option value="ALL">${ph} (${settlements.length})</option>` +
         settlements.map(s => `<option value="${s}">${s}</option>`).join("");
@@ -1486,9 +1412,9 @@
     el.repairDbBtn.addEventListener("click", async () => {
       try {
         if (!allJobs.length) { el.adminStatus.textContent = "Düzenlenecek kayıt yok."; return; }
-        el.adminStatus.textContent = "🤖 Tam Yetkili AI sunucudaki tüm kayıtları temizleyip düzenliyor...";
+        el.adminStatus.textContent = "🤖 Zırhlı AI tüm kayıtları temizleyip düzenliyor...";
         lastServerPushHash = "";
-        autonomousAIController(allJobs, { syncServer: true, reason: "tam yetkili temizlik", resetPaging: false });
+        autonomousAIController(allJobs, { syncServer: true, reason: "zırhlı tam temizlik", resetPaging: false });
       } catch (e) { el.adminStatus.textContent = "❌ Hata: " + e.message; }
     });
 
@@ -1516,7 +1442,7 @@
         el.adminStatus.textContent = "Dosyada kayıt bulunamadı.";
         return;
       }
-      el.adminStatus.textContent = `🤖 Tam Yetkili AI ${rows.length} satırı tek seferde okuyup düzenliyor...`;
+      el.adminStatus.textContent = `🤖 Zırhlı AI ${rows.length} satırı tek seferde okuyup düzenliyor...`;
       lastServerPushHash = "";
       autonomousAIController(rows, { syncServer: true, reason: "dosya yükleme", resetPaging: true });
     }
@@ -1595,7 +1521,7 @@
 
     onValue(ref(db, "/"), snap => {
       el.syncStatus.className = "sync-status sync-ok";
-      el.syncStatus.textContent = "🟢 Sunucu Bağlı • Tam Yetkili AI";
+      el.syncStatus.textContent = "🟢 Sunucu Bağlı • Zırhlı AI";
 
       const serverJobs = extractJobs(snap.val());
       if (serverJobs.length > 0) {
@@ -1609,7 +1535,7 @@
       el.syncStatus.className = "sync-status sync-err";
       el.syncStatus.textContent = "❌ Bağlantı Hatası (AI Hafıza)";
       if (allJobs.length > 0) {
-        el.adminStatus.textContent = `🤖 AI Hafıza Modu: Sunucu bağlantısı olmadan ${allJobs.length} kayıt ekranda.`;
+        el.adminStatus.textContent = `🤖 Zırhlı AI Hafıza Modu: Sunucu bağlantısı olmadan ${allJobs.length} kayıt ekranda.`;
       } else {
         el.adminStatus.textContent = err.message;
       }
