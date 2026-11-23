@@ -5,16 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Edirne Sayaç Saha Rehberi</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: rgba(59, 130, 246, 0.25); }
-    html, body { pointer-events: auto; touch-action: manipulation; }
-    body { background-color: #0b1120; color: #f8fafc; min-height: 100vh; padding-bottom: 56px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+    html, body { touch-action: manipulation; background-color: #0b1120; color: #f8fafc; min-height: 100vh; padding-bottom: 50px; }
 
     .header {
-      background: linear-gradient(135deg, #101c3d 0%, #0d162f 100%);
+      background: #101c3d;
       border-bottom: 1px solid #1e293b;
       padding: 12px 14px;
       display: flex;
@@ -23,7 +26,7 @@
       gap: 8px;
       position: sticky;
       top: 0;
-      z-index: 1000;
+      z-index: 100;
     }
     .header-left { display: flex; align-items: center; gap: 9px; min-width: 0; }
     .badge-tredas {
@@ -35,16 +38,11 @@
       border-radius: 7px;
       flex-shrink: 0;
     }
-    .header-title { font-size: 14px; font-weight: 700; line-height: 1.2; color: #f1f5f9; }
-    .autosave-pill {
-      display: inline-block;
-      margin-top: 2px;
-      font-size: 10px;
-      font-weight: 700;
-      color: #34d399;
-    }
-    .autosave-pill.cloud-live { color: #38bdf8; }
-    .autosave-pill.cloud-warn { color: #fbbf24; }
+    .header-title { font-size: 14px; font-weight: 700; color: #f1f5f9; }
+    .sync-pill { display: inline-block; margin-top: 2px; font-size: 11px; font-weight: 700; color: #fbbf24; }
+    .sync-pill.online { color: #34d399; }
+    .sync-pill.error { color: #f87171; }
+
     .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .counter-pill {
       background-color: #1e293b;
@@ -54,7 +52,6 @@
       font-size: 12px;
       font-weight: 600;
       color: #cbd5e1;
-      white-space: nowrap;
     }
     .counter-pill span { color: #10b981; font-weight: 800; }
     .btn-menu {
@@ -67,508 +64,99 @@
       font-size: 18px;
       font-weight: 800;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
-    .btn-menu.admin-active {
-      border-color: #10b981;
-      color: #6ee7b7;
-      background-color: #064e3b;
-    }
+    .btn-menu.admin-active { border-color: #10b981; color: #6ee7b7; background-color: #064e3b; }
 
     .container { max-width: 640px; margin: 0 auto; padding: 14px 14px 0; }
+    .card { background-color: #111827; border: 1px solid #1f2937; border-radius: 14px; padding: 12px; margin-bottom: 12px; }
 
-    .card {
-      background-color: #111827;
-      border: 1px solid #1f2937;
-      border-radius: 16px;
-      padding: 12px;
-      margin-bottom: 12px;
-    }
-
-    .admin-drawer {
-      display: none;
-      background-color: #111827;
-      border: 1px solid #2563eb;
-      border-radius: 16px;
-      padding: 14px;
-      margin-bottom: 12px;
-    }
+    .admin-drawer { display: none; background-color: #111827; border: 1px solid #2563eb; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
     .admin-drawer.open { display: block; }
-    .admin-header-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-      gap: 8px;
-    }
+    .admin-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .admin-badge { font-size: 12px; font-weight: 800; color: #93c5fd; }
-    .btn-logout {
-      background-color: #1e293b;
-      border: 1px solid #334155;
-      color: #fca5a5;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 6px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+    .btn-logout { background-color: #1e293b; border: 1px solid #334155; color: #fca5a5; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
 
-    .upload-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-    .upload-box {
-      background-color: #0f172a;
-      border: 2px dashed #10b981;
-      border-radius: 12px;
-      padding: 12px 10px;
-      text-align: center;
-    }
+    .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .upload-box { background-color: #0f172a; border: 2px dashed #10b981; border-radius: 12px; padding: 12px 10px; text-align: center; }
     .upload-box.excel-box { border-color: #3b82f6; }
-    .upload-title {
-      font-size: 12px;
-      font-weight: 800;
-      color: #a7f3d0;
-      margin-bottom: 6px;
-      display: block;
-      line-height: 1.3;
-    }
+    .upload-title { font-size: 12px; font-weight: 800; color: #a7f3d0; margin-bottom: 6px; display: block; }
     .upload-box.excel-box .upload-title { color: #93c5fd; }
     .file-input { width: 100%; color: #e2e8f0; font-size: 11px; }
 
-    .backup-box {
-      background-color: #0b1120;
-      border: 1px solid #1e293b;
-      border-radius: 12px;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-    .backup-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: #6ee7b7;
-      margin-bottom: 8px;
-    }
-    .backup-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      align-items: center;
-    }
-    .btn-export {
-      width: 100%;
-      background-color: #065f46;
-      border: 1px solid #10b981;
-      color: #ecfdf5;
-      font-size: 12px;
-      font-weight: 800;
-      padding: 9px;
-      border-radius: 9px;
-      cursor: pointer;
-    }
-    .import-label {
-      display: block;
-      background-color: #1e293b;
-      border: 1px dashed #60a5fa;
-      color: #bfdbfe;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 8px;
-      border-radius: 9px;
-      text-align: center;
-      cursor: pointer;
-    }
+    .backup-box, .manual-box { background-color: #0b1120; border: 1px solid #1e293b; border-radius: 12px; padding: 10px; margin-bottom: 10px; }
+    .backup-title, .manual-title { font-size: 12px; font-weight: 700; color: #6ee7b7; margin-bottom: 8px; }
+    .manual-title { color: #cbd5e1; }
+    .backup-row, .manual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .btn-export { width: 100%; background-color: #065f46; border: 1px solid #10b981; color: #ecfdf5; font-size: 12px; font-weight: 800; padding: 9px; border-radius: 9px; cursor: pointer; }
+    .import-label { display: block; background-color: #1e293b; border: 1px dashed #60a5fa; color: #bfdbfe; font-size: 11px; font-weight: 700; padding: 8px; border-radius: 9px; text-align: center; cursor: pointer; }
+    .btn-add-manual { width: 100%; background-color: #2563eb; border: none; color: #ffffff; font-size: 12px; font-weight: 800; padding: 9px; border-radius: 9px; cursor: pointer; margin-top: 4px; }
+    .btn-reset-all { width: 100%; background-color: #450a0a; border: 1px solid #991b1b; color: #fecaca; font-size: 12px; font-weight: 800; padding: 10px; border-radius: 10px; cursor: pointer; }
+    .scan-status { font-size: 12px; color: #6ee7b7; font-weight: 700; margin-top: 8px; text-align: center; }
 
-    .manual-box {
-      background-color: #0b1120;
-      border: 1px solid #1e293b;
-      border-radius: 12px;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-    .manual-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: #cbd5e1;
-      margin-bottom: 8px;
-    }
-    .manual-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .btn-add-manual {
-      width: 100%;
-      background-color: #2563eb;
-      border: none;
-      color: #ffffff;
-      font-size: 12px;
-      font-weight: 800;
-      padding: 9px;
-      border-radius: 9px;
-      cursor: pointer;
-      margin-top: 2px;
-    }
+    .view-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background-color: #0b1120; padding: 4px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #1e293b; }
+    .view-btn { background: transparent; border: none; color: #94a3b8; font-size: 13px; font-weight: 700; padding: 10px 8px; border-radius: 9px; cursor: pointer; }
+    .view-btn.active { background-color: #1e293b; color: #ffffff; }
 
-    .btn-reset-all {
-      width: 100%;
-      background-color: #450a0a;
-      border: 1px solid #991b1b;
-      color: #fecaca;
-      font-size: 12px;
-      font-weight: 800;
-      padding: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-
-    .scan-status {
-      font-size: 12px;
-      color: #6ee7b7;
-      font-weight: 700;
-      margin-top: 8px;
-      text-align: center;
-      min-height: 16px;
-    }
-
-    .view-switch {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      background-color: #0b1120;
-      padding: 4px;
-      border-radius: 12px;
-      margin-bottom: 12px;
-      border: 1px solid #1e293b;
-    }
-    .view-btn {
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      font-size: 13px;
-      font-weight: 700;
-      padding: 10px 8px;
-      border-radius: 9px;
-      cursor: pointer;
-    }
-    .view-btn.active {
-      background-color: #1e293b;
-      color: #ffffff;
-    }
-
-    .map-wrapper {
-      display: none;
-      margin-bottom: 12px;
-    }
+    .map-wrapper { display: none; margin-bottom: 12px; }
     .map-wrapper.open { display: block; }
-    .map-toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-      flex-wrap: wrap;
-    }
-    .btn-gps {
-      background-color: #1e293b;
-      border: 1px solid #475569;
-      color: #f8fafc;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 8px 12px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-    .map-hint {
-      font-size: 11px;
-      color: #94a3b8;
-      font-weight: 600;
-    }
-    #sahaMap {
-      width: 100%;
-      height: 340px;
-      border-radius: 14px;
-      border: 1px solid #263244;
-      background-color: #1e293b;
-      z-index: 1;
-    }
+    .map-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .btn-gps { background-color: #1e293b; border: 1px solid #475569; color: #f8fafc; font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+    .map-hint { font-size: 11px; color: #94a3b8; }
+    #sahaMap { width: 100%; height: 320px; border-radius: 12px; border: 1px solid #263244; background-color: #1e293b; z-index: 1; }
 
-    .distance-box {
-      margin-top: 10px;
-      border-top: 1px solid #1f2937;
-      padding-top: 10px;
-    }
-    .distance-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: #cbd5e1;
-      margin-bottom: 8px;
-    }
-    .distance-item {
-      background-color: #0f172a;
-      border: 1px solid #1e293b;
-      border-radius: 10px;
-      padding: 9px 10px;
-      margin-bottom: 6px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-    .distance-info { min-width: 0; }
+    .distance-box { margin-top: 10px; border-top: 1px solid #1f2937; padding-top: 10px; }
+    .distance-title { font-size: 12px; font-weight: 700; color: #cbd5e1; margin-bottom: 8px; }
+    .distance-item { background-color: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 9px 10px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .distance-loc { font-size: 12px; font-weight: 700; color: #f8fafc; }
-    .distance-addr { font-size: 11px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .distance-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-    .dist-badge {
-      background-color: #1e293b;
-      color: #e2e8f0;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 8px;
-      border-radius: 7px;
-    }
-    .btn-mini-gmap {
-      background-color: #10b981;
-      color: #052e16;
-      text-decoration: none;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 5px 9px;
-      border-radius: 7px;
-    }
+    .distance-addr { font-size: 11px; color: #94a3b8; }
+    .dist-badge { background-color: #1e293b; color: #e2e8f0; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 7px; }
+    .btn-mini-gmap { background-color: #10b981; color: #052e16; text-decoration: none; font-size: 11px; font-weight: 800; padding: 5px 9px; border-radius: 7px; }
 
-    .leaflet-popup-content-wrapper {
-      background: #111827;
-      color: #f8fafc;
-      border: 1px solid #334155;
-      border-radius: 12px;
-    }
-    .leaflet-popup-tip { background: #111827; }
-    .popup-gmap-btn {
-      display: block;
-      margin-top: 8px;
-      background: #10b981;
-      color: #052e16 !important;
-      text-align: center;
-      font-weight: 800;
-      font-size: 12px;
-      padding: 7px 10px;
-      border-radius: 8px;
-      text-decoration: none;
-    }
-
-    .region-tabs {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      background-color: #0b1120;
-      padding: 4px;
-      border-radius: 11px;
-      margin-bottom: 10px;
-    }
-    .region-btn {
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 8px 6px;
-      border-radius: 8px;
-      cursor: pointer;
-      line-height: 1.25;
-    }
+    .region-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; background-color: #0b1120; padding: 4px; border-radius: 11px; margin-bottom: 10px; }
+    .region-btn { background: transparent; border: none; color: #94a3b8; font-size: 12px; font-weight: 600; padding: 8px 6px; border-radius: 8px; cursor: pointer; }
     .region-btn.active { background-color: #1e293b; color: #ffffff; }
 
     .select-box, .search-box, .mini-input {
-      width: 100%;
-      background-color: #0f172a;
-      border: 1px solid #263244;
-      color: #e2e8f0;
-      font-size: 13px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      margin-bottom: 8px;
-      outline: none;
+      width: 100%; background-color: #0f172a; border: 1px solid #263244; color: #e2e8f0;
+      font-size: 13px; padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; outline: none;
     }
     .mini-input { font-size: 12px; padding: 8px 10px; }
-    .select-box:focus, .search-box:focus, .mini-input:focus { border-color: #3b82f6; }
-
     .chip-row { display: flex; gap: 7px; flex-wrap: wrap; }
-    .chip-btn {
-      background-color: #0f172a;
-      border: 1px solid #263244;
-      color: #94a3b8;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 6px 13px;
-      border-radius: 999px;
-      cursor: pointer;
-    }
-    .chip-btn.active {
-      background-color: #172554;
-      border-color: #3b82f6;
-      color: #93c5fd;
-    }
+    .chip-btn { background-color: #0f172a; border: 1px solid #263244; color: #94a3b8; font-size: 12px; font-weight: 600; padding: 6px 13px; border-radius: 999px; cursor: pointer; }
+    .chip-btn.active { background-color: #172554; border-color: #3b82f6; color: #93c5fd; }
 
-    .progress-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-      font-weight: 600;
-      color: #cbd5e1;
-      margin-bottom: 8px;
-    }
+    .progress-top { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 8px; }
     .progress-pct { color: #10b981; font-weight: 800; }
-    .progress-bar-bg {
-      width: 100%;
-      height: 8px;
-      background-color: #1e293b;
-      border-radius: 999px;
-      overflow: hidden;
-    }
-    .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #10b981, #34d399);
-      width: 0%;
-      transition: width 0.3s ease;
-    }
+    .progress-bar-bg { width: 100%; height: 8px; background-color: #1e293b; border-radius: 999px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: #10b981; width: 0%; }
 
     .job-list { display: flex; flex-direction: column; gap: 10px; }
-    .job-card {
-      background-color: #111827;
-      border: 1px solid #1f2937;
-      border-radius: 14px;
-      padding: 14px;
-    }
-    .job-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
+    .job-card { background-color: #111827; border: 1px solid #1f2937; border-radius: 14px; padding: 14px; }
+    .job-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .job-id { font-size: 12px; font-weight: 700; color: #f59e0b; }
-    .job-type {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
-      background-color: #1e293b;
-      color: #93c5fd;
-    }
+    .job-type { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background-color: #1e293b; color: #93c5fd; }
     .job-meta { font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
     .job-address { font-size: 13px; color: #e2e8f0; line-height: 1.4; margin-bottom: 10px; }
 
-    .btn-map {
-      width: 100%;
-      background-color: #1e293b;
-      border: 1px solid #334155;
-      color: #e2e8f0;
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 9px 10px;
-      border-radius: 10px;
-      text-align: center;
-      display: block;
-      margin-bottom: 8px;
-    }
-
+    .btn-map { width: 100%; background-color: #1e293b; border: 1px solid #334155; color: #e2e8f0; text-decoration: none; font-size: 13px; font-weight: 600; padding: 9px 10px; border-radius: 10px; text-align: center; display: block; margin-bottom: 8px; }
     .action-stack { display: flex; flex-direction: column; gap: 7px; }
-    .btn-action {
-      width: 100%;
-      border: none;
-      font-size: 13px;
-      padding: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-    .btn-action:active { transform: scale(0.98); }
+    .btn-action { width: 100%; border: none; font-size: 13px; padding: 10px; border-radius: 10px; cursor: pointer; }
     .btn-done { background-color: #10b981; color: #052e16; font-weight: 800; }
-    .btn-abone-yok {
-      background-color: #451a03;
-      border: 1px solid #b45309;
-      color: #fde68a;
-      font-weight: 700;
-    }
+    .btn-abone-yok { background-color: #451a03; border: 1px solid #b45309; color: #fde68a; font-weight: 700; }
 
-    .modal-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(2, 6, 23, 0.78);
-      z-index: 1200;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
+    .btn-load-more { width: 100%; background-color: #1e293b; border: 1px solid #3b82f6; color: #93c5fd; font-size: 13px; font-weight: 700; padding: 12px; border-radius: 12px; cursor: pointer; margin-top: 6px; }
+
+    .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.82); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
     .modal-backdrop.open { display: flex; }
-    .modal-card {
-      width: 100%;
-      max-width: 360px;
-      background-color: #111827;
-      border: 1px solid #334155;
-      border-radius: 16px;
-      padding: 16px;
-    }
-    .modal-title { font-size: 15px; font-weight: 800; margin-bottom: 6px; color: #f8fafc; }
-    .modal-sub { font-size: 12px; color: #94a3b8; margin-bottom: 12px; line-height: 1.4; }
+    .modal-card { width: 100%; max-width: 360px; background-color: #111827; border: 1px solid #334155; border-radius: 16px; padding: 16px; }
+    .modal-title { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+    .modal-sub { font-size: 12px; color: #94a3b8; margin-bottom: 12px; }
     .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
-    .btn-cancel {
-      background-color: #1e293b;
-      border: 1px solid #334155;
-      color: #cbd5e1;
-      font-size: 13px;
-      font-weight: 700;
-      padding: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-    .btn-confirm {
-      background-color: #f59e0b;
-      border: none;
-      color: #0f172a;
-      font-size: 13px;
-      font-weight: 800;
-      padding: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
+    .btn-cancel { background-color: #1e293b; border: 1px solid #334155; color: #cbd5e1; font-size: 13px; font-weight: 700; padding: 10px; border-radius: 10px; cursor: pointer; }
+    .btn-confirm { background-color: #f59e0b; border: none; color: #0f172a; font-size: 13px; font-weight: 800; padding: 10px; border-radius: 10px; cursor: pointer; }
 
-    .empty-state {
-      text-align: center;
-      padding: 36px 16px;
-      background-color: #111827;
-      border: 1px dashed #334155;
-      border-radius: 14px;
-      color: #94a3b8;
-      font-size: 14px;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: #065f46;
-      border: 1px solid #10b981;
-      color: #ecfdf5;
-      padding: 10px 16px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s;
-      z-index: 1400;
-      white-space: nowrap;
-    }
+    .empty-state { text-align: center; padding: 32px 16px; background-color: #111827; border: 1px dashed #334155; border-radius: 14px; color: #94a3b8; font-size: 14px; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #065f46; border: 1px solid #10b981; color: #ecfdf5; padding: 10px 16px; border-radius: 999px; font-size: 12px; font-weight: 700; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 300; }
     .toast.show { opacity: 1; }
   </style>
 </head>
@@ -579,47 +167,35 @@
       <div class="badge-tredas">TREDAŞ</div>
       <div>
         <div class="header-title">Edirne Sayaç Saha Rehberi</div>
-        <div class="autosave-pill" id="autosaveBadge">● Bulut Bağlantısı Bekleniyor</div>
+        <div class="sync-pill" id="syncBadge">⏳ Sunucuya Bağlanıyor...</div>
       </div>
     </div>
     <div class="header-right">
       <div class="counter-pill">İşlenen: <span id="doneCount">0</span> / <span id="totalCount">0</span></div>
-      <button class="btn-menu" id="menuBtn" type="button" aria-label="Yetkili Menüsü" onclick="openMenuOrAdmin()">⋮</button>
+      <button class="btn-menu" id="menuBtn" type="button" onclick="openMenuOrAdmin()">⋮</button>
     </div>
   </div>
 
   <div class="container">
     <div class="admin-drawer" id="adminDrawer">
       <div class="admin-header-row">
-        <span class="admin-badge">🔐 YETKİLİ PANELİ (Yönetim)</span>
+        <span class="admin-badge">🔐 YETKİLİ PANELİ (Sunucu Yönetimi)</span>
         <button class="btn-logout" type="button" onclick="logoutAdmin()">Çıkış Yap</button>
       </div>
 
       <div class="upload-grid">
         <div class="upload-box">
-          <label class="upload-title" for="pdfFileInput">📄 PDF Seç<br>(Otomatik Tarar)</label>
-          <input
-            type="file"
-            id="pdfFileInput"
-            class="file-input"
-            accept=".pdf,application/pdf"
-            onchange="handlePdfFileSelect(event)"
-          />
+          <label class="upload-title" for="pdfFileInput">📄 PDF Yükle<br>(Sunucuya Kaydeder)</label>
+          <input type="file" id="pdfFileInput" class="file-input" accept=".pdf,application/pdf" onchange="handlePdfFileSelect(event)" />
         </div>
         <div class="upload-box excel-box">
-          <label class="upload-title" for="excelFileInput">📊 Excel Seç<br>(.xlsx / .xls / .csv)</label>
-          <input
-            type="file"
-            id="excelFileInput"
-            class="file-input"
-            accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
-            onchange="handleExcelFileSelect(event)"
-          />
+          <label class="upload-title" for="excelFileInput">📊 Excel Yükle<br>(.xlsx / .xls / .csv)</label>
+          <input type="file" id="excelFileInput" class="file-input" accept=".xlsx,.xls,.csv" onchange="handleExcelFileSelect(event)" />
         </div>
       </div>
 
       <div class="backup-box">
-        <div class="backup-title">💾 Ortak Bulut + Yedek Dosyası (.json)</div>
+        <div class="backup-title">💾 Yedek Dosyası (.json)</div>
         <div class="backup-row">
           <button class="btn-export" type="button" onclick="downloadBackupJson()">⬇️ Yedek İndir</button>
           <label class="import-label" for="backupFileInput">
@@ -633,7 +209,7 @@
         <div class="manual-title">➕ Yeni İş Emri Ekle</div>
         <div class="manual-grid">
           <input type="text" id="manTesisat" class="mini-input" placeholder="Tesisat No" />
-          <input type="text" id="manSeri" class="mini-input" placeholder="Seri No (Örn: LUN-123)" />
+          <input type="text" id="manSeri" class="mini-input" placeholder="Seri No" />
           <input type="text" id="manIlce" class="mini-input" placeholder="İlçe (Örn: SÜLOĞLU)" />
           <input type="text" id="manMahalle" class="mini-input" placeholder="Mahalle / Köy" />
         </div>
@@ -642,11 +218,10 @@
           <option value="Monofaze">Monofaze</option>
           <option value="Trifaze">Trifaze</option>
         </select>
-        <button class="btn-add-manual" type="button" onclick="addManualJob()">✓ Kaydı Listeye Ekle</button>
+        <button class="btn-add-manual" type="button" onclick="addManualJob()">✓ Kaydı Sunucuya Ekle</button>
       </div>
 
-      <button class="btn-reset-all" type="button" onclick="wipeAllJobsAdmin()">🗑️ Tüm Listeyi Sıfırla (Yönetici)</button>
-
+      <button class="btn-reset-all" type="button" onclick="wipeAllJobsAdmin()">🗑️ Sunucudaki Tüm Listeyi Sıfırla</button>
       <div class="scan-status" id="scanStatus"></div>
     </div>
 
@@ -666,11 +241,11 @@
         <option value="ALL">Tüm İlçeler</option>
       </select>
 
-      <select id="mahalleSelect" class="select-box" onchange="renderList()">
+      <select id="mahalleSelect" class="select-box" onchange="resetRenderLimit(); renderList();">
         <option value="ALL">Tüm Mahalle / Köyler</option>
       </select>
 
-      <input type="text" id="searchInput" class="search-box" placeholder="Tesisat No, Seri No, Mahalle veya Sokak ara..." oninput="renderList()" />
+      <input type="text" id="searchInput" class="search-box" placeholder="Tesisat No, Seri No, Mahalle veya Sokak ara..." oninput="onSearchInput()" />
 
       <div class="chip-row">
         <button class="chip-btn active" data-phase="ALL" onclick="setPhase('ALL', this)">Tüm Sayaçlar</button>
@@ -682,11 +257,11 @@
     <div class="card map-wrapper" id="mapSection">
       <div class="map-toolbar">
         <button class="btn-gps" type="button" onclick="locateUserOnMap()">📍 Uzaklıkları Hesapla</button>
-        <span class="map-hint" id="gpsStatusText">Mahalle, sokak ve no ile konum gösterir</span>
+        <span class="map-hint" id="gpsStatusText">Sadece harita sekmesi açıkken yüklenir</span>
       </div>
       <div id="sahaMap"></div>
       <div class="distance-box" id="distanceBox">
-        <div class="distance-title" id="distanceTitle">📏 İşlerin Uzaklık Sırası</div>
+        <div class="distance-title" id="distanceTitle">📏 Yakındaki İşler</div>
         <div id="distanceList"></div>
       </div>
     </div>
@@ -707,15 +282,8 @@
   <div class="modal-backdrop" id="pinModal" onclick="if(event.target===this) closePinModal()">
     <div class="modal-card">
       <div class="modal-title">🔐 Yetkili Girişi</div>
-      <div class="modal-sub">PDF/Excel yükleme, kayıt ekleme, yedek alma veya sıfırlama için yetkili şifresini girin.</div>
-      <input
-        type="password"
-        id="pinInput"
-        class="select-box"
-        inputmode="numeric"
-        placeholder="Yetkili PIN Kodu"
-        onkeydown="if(event.key==='Enter') verifyAdminPin()"
-      />
+      <div class="modal-sub">PDF/Excel yükleme, kayıt ekleme veya sıfırlama için yetkili PIN kodunu girin.</div>
+      <input type="password" id="pinInput" class="select-box" inputmode="numeric" placeholder="Yetkili PIN Kodu" onkeydown="if(event.key==='Enter') verifyAdminPin()" />
       <div class="modal-actions">
         <button class="btn-cancel" type="button" onclick="closePinModal()">İptal</button>
         <button class="btn-confirm" type="button" onclick="verifyAdminPin()">Giriş Yap</button>
@@ -725,13 +293,11 @@
 
   <div class="toast" id="toast">✓ Kaydedildi</div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-database.js";
-
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBKtYaeuAiY1Pb8NspS2eiD8PA6aTksw24",
       authDomain: "edirne-sayac-saha.firebaseapp.com",
+      databaseURL: "https://edirne-sayac-saha-default-rtdb.firebaseio.com",
       projectId: "edirne-sayac-saha",
       storageBucket: "edirne-sayac-saha.firebasestorage.app",
       messagingSenderId: "587813278589",
@@ -739,438 +305,553 @@
       measurementId: "G-8NZ19TQY38"
     };
 
-    const DB_PATH = "edirne_saha_v13/shared_state";
-    let dbRef = null;
-    let isApplyingRemote = false;
-
-    try {
-      const app = initializeApp(firebaseConfig);
-      const db = getDatabase(app);
-      dbRef = ref(db, DB_PATH);
-    } catch (e) {
-      dbRef = null;
-    }
-
-    window.__firebaseSync = {
-      pushSnapshot(snapshot) {
-        if (!dbRef || isApplyingRemote) return;
-        set(dbRef, {
-          ts: snapshot.ts || Date.now(),
-          jobsList: snapshot.jobsList || [],
-          processedMap: snapshot.processedMap || {}
-        }).then(() => {
-          if (typeof window.__setCloudStatus === "function") {
-            window.__setCloudStatus("live", snapshot.ts || Date.now());
-          }
-        }).catch(() => {
-          if (typeof window.__setCloudStatus === "function") {
-            window.__setCloudStatus("warn", snapshot.ts || Date.now());
-          }
-        });
-      },
-      subscribe(onRemoteData) {
-        if (!dbRef) {
-          if (typeof window.__setCloudStatus === "function") {
-            window.__setCloudStatus("warn", Date.now());
-          }
-          return;
-        }
-        onValue(dbRef, (snap) => {
-          const val = snap.val();
-          if (typeof window.__setCloudStatus === "function") {
-            window.__setCloudStatus("live", (val && val.ts) || Date.now());
-          }
-          if (!val) return;
-          isApplyingRemote = true;
-          try {
-            onRemoteData(
-              Array.isArray(val.jobsList) ? val.jobsList : [],
-              val.processedMap && typeof val.processedMap === "object" ? val.processedMap : {},
-              Number(val.ts || 0)
-            );
-          } finally {
-            isApplyingRemote = false;
-          }
-        }, () => {
-          if (typeof window.__setCloudStatus === "function") {
-            window.__setCloudStatus("warn", Date.now());
-          }
-        });
-      }
-    };
-
-    if (typeof window.__startFirebaseListener === "function") {
-      window.__startFirebaseListener();
-    }
-  </script>
-
-  <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
-        regs.forEach(r => r.unregister().catch(() => {}));
+        regs.forEach(r => r.unregister());
       }).catch(() => {});
     }
 
-    if (window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-    }
-
     const ADMIN_PIN = "1923";
-    const STORAGE_PROCESSED = "tredas_edirne_v13_islenen";
-    const STORAGE_JOBS = "tredas_edirne_v13_isler";
-    const STORAGE_ADMIN_AUTH = "tredas_edirne_v13_admin";
-    const DB_NAME = "TredasEdirneSahaDB_v13";
-    const STORE_PROCESSED = "processedJobs";
-    const STORE_JOBS = "jobs";
-    const CACHE_NAME = "tredas-edirne-vault-v13";
-    const CACHE_KEY = "/__tredas_edirne_state_v13.json";
+    const DB_ROOT_PATH = "edirne_saha_v1";
+    const LOCAL_CACHE_KEY = "tredas_edirne_fast_cache_v1";
 
-    const LEGACY_KEYS = [
-      { jobs: "tredas_edirne_v12_isler", proc: "tredas_edirne_v12_islenen", ts: "tredas_edirne_v12_isler_ts" },
-      { jobs: "tredas_edirne_v11_isler", proc: "tredas_edirne_v11_islenen", ts: "tredas_edirne_v11_isler_ts" },
-      { jobs: "tredas_edirne_v10_isler", proc: "tredas_edirne_v10_islenen", ts: "tredas_edirne_v10_isler_ts" }
-    ];
-
+    let db = null;
+    let jobsMap = {};
     let processedMap = {};
     let jobsList = [];
+
     let currentRegion = "ALL";
     let currentPhase = "ALL";
     let currentViewMode = "LIST";
     let isAdminLoggedIn = false;
-    let lastSavedAt = 0;
+    let renderLimit = 40;
+    let searchTimer = null;
 
     let leafletMap = null;
     let markersLayer = null;
     let userMarker = null;
     let userCoords = null;
 
-    const LOCATION_ALIASES = {
-      "KEMALKOY": "KEMERKÖY",
-      "KEMERKOY": "KEMERKÖY",
-      "KEMER KOYU": "KEMERKÖY",
-      "KEMAL KOYU": "KEMERKÖY",
-      "1 MURAT": "1.MURAT",
-      "BIRINCI MURAT": "1.MURAT",
-      "SUKRUPASA": "ŞÜKRÜPAŞA"
-    };
-
     const EDIRNE_KNOWN_COORDS = {
-      "EDIRNE MERKEZ": [41.6771, 26.5557],
-      "SULOGLU": [41.7678, 26.9125],
-      "HAVSA": [41.5494, 26.8211],
-      "UZUNKOPRU": [41.2667, 26.6861],
-      "KESAN": [40.8558, 26.6303],
-      "IPSALA": [40.9225, 26.3822],
-      "ENEZ": [40.7247, 26.0825],
-      "LALAPASA": [41.8406, 26.7364],
-      "MERIC": [41.1908, 26.4186],
-      "CAVUSBEY": [41.6712, 26.5448],
-      "SUKRUPASA": [41.6815, 26.5785],
-      "1 MURAT": [41.6685, 26.5820],
-      "FATIH": [41.6650, 26.5920],
-      "KOCASINAN": [41.6725, 26.5695],
-      "ABDURRAHMAN": [41.6745, 26.5612],
-      "BABADEMIRTAS": [41.6798, 26.5515],
-      "SABUNI": [41.6758, 26.5542],
-      "TALATPASA": [41.6730, 26.5525],
-      "MEYDAN": [41.6812, 26.5568],
-      "MEDRESE ALI BEY": [41.6789, 26.5590],
-      "MITHATPASA": [41.6762, 26.5502],
-      "UMURBEY": [41.6708, 26.5588],
-      "YILDIRIM BEYAZIT": [41.6785, 26.5315],
-      "YILDIRIM HACISARRAF": [41.6752, 26.5345],
-      "YENICERILER": [41.6722, 26.5360],
-      "KARAAGAC": [41.6565, 26.5225],
-      "ISTASYON": [41.6615, 26.5765],
-      "BARUTLUK": [41.6845, 26.5642],
-      "NISANCIPASA": [41.6820, 26.5510],
-      "SARI CAPASA": [41.6780, 26.5480],
-      "DILAVERBEY": [41.6740, 26.5495],
-      "TASLISEKBAN": [41.7985, 26.8850],
+      "EDIRNE MERKEZ": [41.6771, 26.5557], "SULOGLU": [41.7678, 26.9125],
+      "HAVSA": [41.5494, 26.8211], "UZUNKOPRU": [41.2667, 26.6861],
+      "KESAN": [40.8558, 26.6303], "IPSALA": [40.9225, 26.3822],
+      "ENEZ": [40.7247, 26.0825], "LALAPASA": [41.8406, 26.7364],
+      "MERIC": [41.1908, 26.4186], "CAVUSBEY": [41.6712, 26.5448],
+      "SUKRUPASA": [41.6815, 26.5785], "1 MURAT": [41.6685, 26.5820],
+      "FATIH": [41.6650, 26.5920], "KOCASINAN": [41.6725, 26.5695],
+      "ABDURRAHMAN": [41.6745, 26.5612], "BABADEMIRTAS": [41.6798, 26.5515],
+      "SABUNI": [41.6758, 26.5542], "TALATPASA": [41.6730, 26.5525],
+      "MEYDAN": [41.6812, 26.5568], "MEDRESE ALI BEY": [41.6789, 26.5590],
+      "MITHATPASA": [41.6762, 26.5502], "UMURBEY": [41.6708, 26.5588],
+      "YILDIRIM BEYAZIT": [41.6785, 26.5315], "YILDIRIM HACISARRAF": [41.6752, 26.5345],
+      "YENICERILER": [41.6722, 26.5360], "KARAAGAC": [41.6565, 26.5225],
+      "ISTASYON": [41.6615, 26.5765], "BARUTLUK": [41.6845, 26.5642],
+      "NISANCIPASA": [41.6820, 26.5510], "SARI CAPASA": [41.6780, 26.5480],
+      "DILAVERBEY": [41.6740, 26.5495], "TASLISEKBAN": [41.7985, 26.8850],
       "KEMERKOY": [41.6512, 26.6485]
     };
 
-    if (navigator.storage && navigator.storage.persist) {
-      navigator.storage.persist().catch(() => {});
+    function setSyncStatus(text, type) {
+      const el = document.getElementById("syncBadge");
+      if (!el) return;
+      el.textContent = text;
+      el.className = "sync-pill " + (type || "");
     }
 
-    function trUpper(str) {
-      return String(str || "").toLocaleUpperCase("tr").trim();
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => t.classList.remove("show"), 2000);
     }
 
-    function stripDiacritics(str) {
-      return trUpper(str)
-        .replace(/İ/g, "I")
-        .replace(/Ğ/g, "G")
-        .replace(/Ü/g, "U")
-        .replace(/Ş/g, "S")
-        .replace(/Ö/g, "O")
-        .replace(/Ç/g, "C");
-    }
+    function initFirebaseServer() {
+      try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
 
-    function normalizeKey(str) {
-      return stripDiacritics(str)
-        .replace(/[^A-Z0-9]+/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
-
-    function levenshteinDistance(a, b) {
-      if (a === b) return 0;
-      if (!a.length) return b.length;
-      if (!b.length) return a.length;
-      const dp = Array.from({ length: a.length + 1 }, (_, i) => [i]);
-      for (let j = 1; j <= b.length; j++) dp[0][j] = j;
-      for (let i = 1; i <= a.length; i++) {
-        for (let j = 1; j <= b.length; j++) {
-          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-          dp[i][j] = Math.min(
-            dp[i - 1][j] + 1,
-            dp[i][j - 1] + 1,
-            dp[i - 1][j - 1] + cost
-          );
-        }
-      }
-      return dp[a.length][b.length];
-    }
-
-    function unifyLocationName(rawName, existingNames = []) {
-      const cleaned = trUpper(rawName)
-        .replace(/\bKÖYÜN\s+KENDİSİ\b/gi, " ")
-        .replace(/\bKOYUN\s+KENDISI\b/gi, " ")
-        .replace(/\b(KÖYÜ|KÖY|KOYU|KOY|BELDESİ|BELDE|MAH\.?|MAHALLESİ)\b/gi, " ")
-        .replace(/^[,;:\-|/.\s]+|[,;:\-|/.\s]+$/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      if (!cleaned || cleaned.length < 2) return "GENEL";
-
-      const norm = normalizeKey(cleaned);
-      if (LOCATION_ALIASES[norm]) return LOCATION_ALIASES[norm];
-
-      const compact = norm.replace(/\s+/g, "");
-      if (LOCATION_ALIASES[compact]) return LOCATION_ALIASES[compact];
-
-      for (const candidate of existingNames) {
-        const candNorm = normalizeKey(candidate);
-        if (candNorm === norm) return candidate;
-        const candCompact = candNorm.replace(/\s+/g, "");
-        if (candCompact === compact) return candidate;
-        if (Math.min(compact.length, candCompact.length) >= 5) {
-          if (levenshteinDistance(compact, candCompact) <= 2) return candidate;
-        }
-      }
-      return cleaned;
-    }
-
-    function hashString(str) {
-      let h = 2166136261;
-      for (let i = 0; i < str.length; i++) {
-        h ^= str.charCodeAt(i);
-        h = Math.imul(h, 16777619);
-      }
-      return h >>> 0;
-    }
-
-    function resolveItemCoordinates(item) {
-      const mahNorm = normalizeKey(item.mahalle || "");
-      const ilceNorm = normalizeKey(item.ilce || "");
-      let base = EDIRNE_KNOWN_COORDS[mahNorm] || EDIRNE_KNOWN_COORDS[mahNorm.replace(/\s+/g, "")];
-
-      if (!base) {
-        for (const [k, coords] of Object.entries(EDIRNE_KNOWN_COORDS)) {
-          if (mahNorm && (mahNorm.includes(k) || k.includes(mahNorm)) && mahNorm.length >= 4) {
-            base = coords;
-            break;
+        db.ref(".info/connected").on("value", (snap) => {
+          if (snap.val() === true) {
+            setSyncStatus("🟢 Sunucu Bağlı (Canlı Ortak)", "online");
+          } else {
+            setSyncStatus("🟡 Çevrimdışı (Bağlantı Bekleniyor)", "");
           }
-        }
-      }
+        });
 
-      if (!base) {
-        base = EDIRNE_KNOWN_COORDS[ilceNorm] || EDIRNE_KNOWN_COORDS["EDIRNE MERKEZ"];
-        if (mahNorm && mahNorm !== "GENEL") {
-          const mahHash = hashString(ilceNorm + "_" + mahNorm);
-          const angle = ((mahHash % 360) * Math.PI) / 180;
-          const dist = 0.015 + ((mahHash % 100) / 100) * 0.045;
-          base = [
-            base[0] + Math.sin(angle) * dist,
-            base[1] + Math.cos(angle) * dist * 1.25
-          ];
-        }
-      }
+        db.ref(DB_ROOT_PATH + "/jobs").on("value", (snap) => {
+          jobsMap = snap.val() || {};
+          jobsList = Object.values(jobsMap);
+          saveLocalFallback();
+          populateIlceDropdown();
+          populateMahalleDropdown();
+          renderList();
+        }, () => {
+          setSyncStatus("❌ Sunucu Okuma Hatası", "error");
+        });
 
-      const itemHash = hashString(String(item.tesisat || item.id || "") + "_" + String(item.adres || ""));
-      const jitterAngle = ((itemHash % 360) * Math.PI) / 180;
-      const jitterRadius = 0.001 + (((itemHash >> 8) % 100) / 100) * 0.006;
-      return [
-        base[0] + Math.sin(jitterAngle) * jitterRadius,
-        base[1] + Math.cos(jitterAngle) * jitterRadius * 1.2
+        db.ref(DB_ROOT_PATH + "/processed").on("value", (snap) => {
+          processedMap = snap.val() || {};
+          saveLocalFallback();
+          renderList();
+        });
+      } catch (e) {
+        setSyncStatus("❌ Sunucu Bağlantı Hatası", "error");
+        loadLocalFallback();
+      }
+    }
+
+    function saveLocalFallback() {
+      try {
+        localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify({ jobsMap, processedMap }));
+      } catch (e) {}
+    }
+
+    function loadLocalFallback() {
+      try {
+        const raw = localStorage.getItem(LOCAL_CACHE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        jobsMap = parsed.jobsMap || {};
+        processedMap = parsed.processedMap || {};
+        jobsList = Object.values(jobsMap);
+        populateIlceDropdown();
+        populateMahalleDropdown();
+        renderList();
+      } catch (e) {}
+    }
+
+    function trUpper(str) { return String(str || "").toLocaleUpperCase("tr").trim(); }
+    function stripDiacritics(str) {
+      return trUpper(str).replace(/İ/g, "I").replace(/Ğ/g, "G").replace(/Ü/g, "U").replace(/Ş/g, "S").replace(/Ö/g, "O").replace(/Ç/g, "C");
+    }
+    function normalizeKey(str) {
+      return stripDiacritics(str).replace(/[^A-Z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+    }
+
+    function detectIlce(text) {
+      const norm = normalizeKey(text);
+      const map = [
+        ["EDIRNE MERKEZ", "EDİRNE MERKEZ"], ["KESAN", "KEŞAN"], ["UZUNKOPRU", "UZUNKÖPRÜ"],
+        ["IPSALA", "İPSALA"], ["HAVSA", "HAVSA"], ["ENEZ", "ENEZ"],
+        ["LALAPASA", "LALAPAŞA"], ["MERIC", "MERİÇ"], ["SULOGLU", "SÜLOĞLU"]
       ];
+      for (const [k, label] of map) { if (norm.includes(k)) return label; }
+      return "EDİRNE MERKEZ";
     }
 
-    function haversineMeters(lat1, lon1, lat2, lon2) {
-      const R = 6371000;
-      const toRad = (d) => (d * Math.PI) / 180;
-      const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lon2 - lon1);
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    function detectBolge(text, mahalleName) {
+      const norm = normalizeKey((text || "") + " " + (mahalleName || ""));
+      return /\bKOYU?\b|\bKOY\b|\bBELDESI?\b|\bBELDE\b|\bBUCAK\b|\bYAYLA\b/.test(norm) ? "KOY" : "MERKEZ";
     }
 
-    function formatDistance(meters) {
-      if (meters < 1000) return Math.round(meters) + " m";
-      return (meters / 1000).toFixed(1) + " km";
+    function detectMahalle(text) {
+      const upper = trUpper(text);
+      const koyMatch = upper.match(/([A-ZÇĞİÖŞÜ0-9.\-]{2,25})\s*(?:\bKÖYÜ\b|\bKÖY\b|\bBELDESİ\b|\bBELDE\b)/);
+      if (koyMatch && koyMatch[1]) return koyMatch[1].trim();
+      const mahMatch = upper.match(/([A-ZÇĞİÖŞÜ0-9.\-]{1,20})\s*(?:\bMAH\.?\b|\bMAHALLESİ\b)/);
+      if (mahMatch && mahMatch[1]) return mahMatch[1].trim();
+      return "GENEL";
     }
 
-    function ensureLeafletMap() {
-      if (leafletMap || !window.L) return;
-      leafletMap = L.map("sahaMap", { zoomControl: true }).setView([41.6771, 26.5557], 11);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "© OpenStreetMap"
-      }).addTo(leafletMap);
-      markersLayer = L.layerGroup().addTo(leafletMap);
+    function detectTip(text) {
+      return /trifaze|3\s*faz|üç\s*faz|uc\s*faz/i.test(stripDiacritics(text)) ? "Trifaze" : "Monofaze";
+    }
+
+    function buildGoogleMapsQuery(item) {
+      return [item.adres, item.mahalle !== "GENEL" ? item.mahalle : "", item.ilce, "Edirne", "Türkiye"]
+        .filter(Boolean).join(", ");
+    }
+
+    function markJobStatus(id, durum) {
+      const entry = { durum, ts: Date.now() };
+      processedMap[id] = entry;
+      renderList();
+      showToast("✓ Sunucuya Kaydedildi");
+
+      if (db) {
+        db.ref(DB_ROOT_PATH + "/processed/" + id).set(entry).catch(() => {
+          showToast("⚠️ İnternet zayıf, tekrar denenecek");
+        });
+      }
+      saveLocalFallback();
+    }
+
+    function addManualJob() {
+      if (!isAdminLoggedIn) return openMenuOrAdmin();
+      const tesisat = document.getElementById("manTesisat").value.trim();
+      const seri = trUpper(document.getElementById("manSeri").value) || "BİLİNMİYOR";
+      const ilce = trUpper(document.getElementById("manIlce").value) || "EDİRNE MERKEZ";
+      const mahalle = trUpper(document.getElementById("manMahalle").value) || "GENEL";
+      const adres = trUpper(document.getElementById("manAdres").value);
+      const tip = document.getElementById("manTip").value;
+
+      if (!tesisat || !adres) return showToast("Tesisat No ve Adres gerekli");
+
+      const id = "MAN_" + tesisat + "_" + Date.now().toString(36);
+      const newItem = {
+        id, ilce, bolge: detectBolge(adres + " " + mahalle, mahalle),
+        mahalle, tesisat, tip, seri, adres
+      };
+
+      if (db) {
+        db.ref(DB_ROOT_PATH + "/jobs/" + id).set(newItem);
+      } else {
+        jobsMap[id] = newItem;
+        jobsList = Object.values(jobsMap);
+        renderList();
+      }
+
+      document.getElementById("manTesisat").value = "";
+      document.getElementById("manSeri").value = "";
+      document.getElementById("manMahalle").value = "";
+      document.getElementById("manAdres").value = "";
+      showToast("✓ Sunucuya Eklendi");
+    }
+
+    function parseChunksAndUpload(chunks, prefix) {
+      const updates = {};
+      let addedCount = 0;
+
+      for (const chunk of chunks) {
+        const cleaned = chunk.replace(/\s+/g, " ").trim();
+        const tesisatMatch = cleaned.match(/\b(\d{6,16})\b/);
+        if (!tesisatMatch) continue;
+
+        const tesisat = tesisatMatch[1];
+        const seriMatch = cleaned.match(/\b([A-ZÇĞİÖŞÜ]{2,6}[-_ ]?\d{4,12})\b/i);
+        const seri = seriMatch ? trUpper(seriMatch[1]).replace(/\s+/g, "-") : "BİLİNMİYOR";
+        const safeId = (prefix + "_" + tesisat + "_" + seri).replace(/[.#$\[\]/]/g, "_");
+
+        if (jobsMap[safeId]) continue;
+
+        const mahalle = detectMahalle(cleaned);
+        const ilce = detectIlce(cleaned);
+        const bolge = detectBolge(cleaned, mahalle);
+
+        const jobObj = {
+          id: safeId, ilce, bolge, mahalle, tesisat,
+          tip: detectTip(cleaned), seri, adres: cleaned.slice(0, 140)
+        };
+        updates[safeId] = jobObj;
+        jobsMap[safeId] = jobObj;
+        addedCount++;
+      }
+
+      if (addedCount > 0) {
+        if (db) {
+          db.ref(DB_ROOT_PATH + "/jobs").update(updates);
+        } else {
+          jobsList = Object.values(jobsMap);
+          populateIlceDropdown();
+          populateMahalleDropdown();
+          renderList();
+        }
+      }
+      return addedCount;
+    }
+
+    async function handlePdfFileSelect(event) {
+      if (!isAdminLoggedIn) { event.target.value = ""; return openMenuOrAdmin(); }
+      const file = event.target.files && event.target.files[0];
+      const statusEl = document.getElementById("scanStatus");
+      if (!file) return;
+
+      statusEl.textContent = "⏳ PDF taranıyor ve sunucuya aktarılıyor...";
+      try {
+        if (window.pdfjsLib) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        }
+        const buffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+        const chunks = [];
+
+        for (let p = 1; p <= pdf.numPages; p++) {
+          const page = await pdf.getPage(p);
+          const content = await page.getTextContent();
+          const lineText = content.items.map(it => it.str).join(" ");
+          lineText.split(/(?=\b\d{6,16}\b)/).forEach(part => {
+            if (part.trim()) chunks.push(part.trim());
+          });
+        }
+
+        const added = parseChunksAndUpload(chunks, "PDF");
+        statusEl.textContent = added > 0
+          ? `✅ ${added} yeni kayıt sunucuya yüklendi!`
+          : "⚠️ Yeni kayıt bulunamadı (tümü zaten yüklü).";
+      } catch (e) {
+        statusEl.textContent = "❌ PDF okunamadı.";
+      } finally {
+        event.target.value = "";
+      }
+    }
+
+    async function handleExcelFileSelect(event) {
+      if (!isAdminLoggedIn) { event.target.value = ""; return openMenuOrAdmin(); }
+      const file = event.target.files && event.target.files[0];
+      const statusEl = document.getElementById("scanStatus");
+      if (!file) return;
+
+      statusEl.textContent = "⏳ Excel taranıyor ve sunucuya aktarılıyor...";
+      try {
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: "array" });
+        const chunks = [];
+        workbook.SheetNames.forEach(name => {
+          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[name], { header: 1, defval: "" });
+          rows.forEach(r => {
+            const line = r.map(c => String(c || "").trim()).filter(Boolean).join(" | ");
+            if (line) chunks.push(line);
+          });
+        });
+
+        const added = parseChunksAndUpload(chunks, "XLS");
+        statusEl.textContent = added > 0
+          ? `✅ ${added} yeni kayıt sunucuya yüklendi!`
+          : "⚠️ Yeni kayıt bulunamadı.";
+      } catch (e) {
+        statusEl.textContent = "❌ Excel okunamadı.";
+      } finally {
+        event.target.value = "";
+      }
+    }
+
+    function wipeAllJobsAdmin() {
+      if (!isAdminLoggedIn) return openMenuOrAdmin();
+      if (!confirm("Sunucudaki TÜM liste herkes için sıfırlansın mı?")) return;
+      jobsMap = {};
+      processedMap = {};
+      jobsList = [];
+      if (db) {
+        db.ref(DB_ROOT_PATH).remove();
+      }
+      localStorage.removeItem(LOCAL_CACHE_KEY);
+      renderList();
+      showToast("🗑️ Sunucu listesi sıfırlandı");
+    }
+
+    function downloadBackupJson() {
+      const payload = { exportedAt: new Date().toISOString(), jobsMap, processedMap };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "edirne-sayac-yedek.json";
+      a.click();
+    }
+
+    async function handleBackupImport(event) {
+      if (!isAdminLoggedIn) { event.target.value = ""; return openMenuOrAdmin(); }
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        if (data.jobsMap && db) {
+          await db.ref(DB_ROOT_PATH + "/jobs").update(data.jobsMap);
+        }
+        if (data.processedMap && db) {
+          await db.ref(DB_ROOT_PATH + "/processed").update(data.processedMap);
+        }
+        showToast("✅ Yedek sunucuya yüklendi");
+      } catch (e) {
+        showToast("❌ Geçersiz yedek dosyası");
+      } finally {
+        event.target.value = "";
+      }
+    }
+
+    function resetRenderLimit() { renderLimit = 40; }
+    function loadMoreCards() { renderLimit += 40; renderList(); }
+
+    function onSearchInput() {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        resetRenderLimit();
+        renderList();
+      }, 250);
+    }
+
+    function setRegion(region, btn) {
+      currentRegion = region;
+      document.querySelectorAll(".region-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      resetRenderLimit();
+      populateMahalleDropdown();
+      renderList();
+    }
+
+    function setPhase(phase, btn) {
+      currentPhase = phase;
+      document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      resetRenderLimit();
+      renderList();
+    }
+
+    function populateIlceDropdown() {
+      const sel = document.getElementById("ilceSelect");
+      const prev = sel.value;
+      const ilceler = [...new Set(jobsList.map(j => j.ilce))].sort((a, b) => a.localeCompare(b, "tr"));
+      sel.innerHTML = '<option value="ALL">Tüm İlçeler</option>' + ilceler.map(il => `<option value="${il}">${il}</option>`).join("");
+      if (ilceler.includes(prev)) sel.value = prev;
+    }
+
+    function onIlceChange() {
+      resetRenderLimit();
+      populateMahalleDropdown();
+      renderList();
+    }
+
+    function populateMahalleDropdown() {
+      const sel = document.getElementById("mahalleSelect");
+      const prev = sel.value;
+      const selectedIlce = document.getElementById("ilceSelect").value;
+      const filtered = jobsList.filter(j => {
+        if (selectedIlce !== "ALL" && j.ilce !== selectedIlce) return false;
+        if (currentRegion !== "ALL" && j.bolge !== currentRegion) return false;
+        return true;
+      });
+      const mahalleler = [...new Set(filtered.map(j => j.mahalle))].sort((a, b) => a.localeCompare(b, "tr"));
+      sel.innerHTML = '<option value="ALL">Tüm Mahalle / Köyler</option>' + mahalleler.map(m => `<option value="${m}">${m}</option>`).join("");
+      if (mahalleler.includes(prev)) sel.value = prev;
+    }
+
+    function renderList() {
+      const selectedIlce = document.getElementById("ilceSelect").value;
+      const selectedMahalle = document.getElementById("mahalleSelect").value;
+      const query = document.getElementById("searchInput").value.trim().toLocaleLowerCase("tr");
+
+      const total = jobsList.length;
+      const done = jobsList.filter(j => Boolean(processedMap[j.id])).length;
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+      document.getElementById("doneCount").textContent = done;
+      document.getElementById("totalCount").textContent = total;
+      document.getElementById("progressPct").textContent = "%" + pct;
+      document.getElementById("progressFill").style.width = pct + "%";
+
+      const visible = jobsList.filter(item => {
+        if (processedMap[item.id]) return false;
+        if (selectedIlce !== "ALL" && item.ilce !== selectedIlce) return false;
+        if (currentRegion !== "ALL" && item.bolge !== currentRegion) return false;
+        if (selectedMahalle !== "ALL" && item.mahalle !== selectedMahalle) return false;
+        if (currentPhase !== "ALL" && item.tip !== currentPhase) return false;
+        if (query) {
+          const hay = (item.tesisat + " " + item.seri + " " + item.ilce + " " + item.mahalle + " " + item.adres).toLocaleLowerCase("tr");
+          if (!hay.includes(query)) return false;
+        }
+        return true;
+      });
+
+      document.getElementById("progressLabel").textContent = "Ekranda Kalan İş: " + visible.length;
+
+      if (currentViewMode === "MAP") {
+        updateMapView(visible);
+      }
+
+      const listEl = document.getElementById("jobList");
+      if (visible.length === 0) {
+        listEl.innerHTML = '<div class="empty-state">📂 Bekleyen iş bulunamadı. Yetkili girişi (⋮) ile PDF/Excel yükleyebilirsin.</div>';
+        return;
+      }
+
+      const sliced = visible.slice(0, renderLimit);
+      let html = sliced.map(item => {
+        const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(buildGoogleMapsQuery(item));
+        return `
+          <div class="job-card">
+            <div class="job-top">
+              <span class="job-id">Tesisat: ${item.tesisat}</span>
+              <span class="job-type">${item.tip}</span>
+            </div>
+            <div class="job-meta">Seri No: <strong>${item.seri}</strong> • ${item.ilce} / ${item.mahalle}</div>
+            <div class="job-address">📍 ${item.adres}</div>
+            <a class="btn-map" href="${mapsUrl}" target="_blank" rel="noopener">🗺️ Haritada Göster</a>
+            <div class="action-stack">
+              <button class="btn-action btn-done" onclick="markJobStatus('${item.id}', 'Tamamlandı')">✓ İşi Tamamla</button>
+              <button class="btn-action btn-abone-yok" onclick="markJobStatus('${item.id}', 'Abone Yok / Kapalı')">🚪 Abone Yok / Kapalı</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      if (visible.length > renderLimit) {
+        html += `<button class="btn-load-more" type="button" onclick="loadMoreCards()">⬇️ Daha Fazla Göster (${visible.length - renderLimit} kayıt daha)</button>`;
+      }
+      listEl.innerHTML = html;
     }
 
     function switchViewMode(mode) {
       currentViewMode = mode;
       const mapSec = document.getElementById("mapSection");
-      const btnList = document.getElementById("btnViewList");
-      const btnMap = document.getElementById("btnViewMap");
+      document.getElementById("btnViewList").classList.toggle("active", mode === "LIST");
+      document.getElementById("btnViewMap").classList.toggle("active", mode === "MAP");
 
       if (mode === "MAP") {
         mapSec.classList.add("open");
-        btnMap.classList.add("active");
-        btnList.classList.remove("active");
-        ensureLeafletMap();
+        if (!leafletMap && window.L) {
+          leafletMap = L.map("sahaMap").setView([41.6771, 26.5557], 11);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18 }).addTo(leafletMap);
+          markersLayer = L.layerGroup().addTo(leafletMap);
+        }
         setTimeout(() => {
           if (leafletMap) leafletMap.invalidateSize();
           renderList();
-        }, 80);
+        }, 100);
       } else {
         mapSec.classList.remove("open");
-        btnList.classList.add("active");
-        btnMap.classList.remove("active");
       }
     }
 
     function locateUserOnMap() {
       const statusEl = document.getElementById("gpsStatusText");
-      if (!navigator.geolocation) {
-        statusEl.textContent = "Konum servisi kullanılamıyor.";
-        return;
-      }
+      if (!navigator.geolocation) return;
       statusEl.textContent = "Konum alınıyor...";
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          userCoords = [pos.coords.latitude, pos.coords.longitude];
-          statusEl.textContent = "Konumuna göre uzaklıklar güncellendi";
-          ensureLeafletMap();
-          if (leafletMap) {
-            if (userMarker) leafletMap.removeLayer(userMarker);
-            userMarker = L.circleMarker(userCoords, {
-              radius: 8,
-              fillColor: "#10b981",
-              color: "#ffffff",
-              weight: 2,
-              fillOpacity: 0.95
-            }).addTo(leafletMap).bindPopup("Konumun");
-            leafletMap.setView(userCoords, 13);
-          }
-          renderList();
-        },
-        () => {
-          statusEl.textContent = "Konum izni verilmedi.";
-        },
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
+      navigator.geolocation.getCurrentPosition((pos) => {
+        userCoords = [pos.coords.latitude, pos.coords.longitude];
+        statusEl.textContent = "Konumuna göre sıralandı";
+        if (leafletMap) {
+          if (userMarker) leafletMap.removeLayer(userMarker);
+          userMarker = L.circleMarker(userCoords, { radius: 8, fillColor: "#10b981", color: "#fff", weight: 2, fillOpacity: 1 }).addTo(leafletMap);
+          leafletMap.setView(userCoords, 13);
+        }
+        renderList();
+      }, () => { statusEl.textContent = "Konum alınamadı"; });
     }
 
-    function updateCalmMapAndDistances(visibleItems) {
-      const distTitle = document.getElementById("distanceTitle");
-      const distList = document.getElementById("distanceList");
-      const refPoint = userCoords || EDIRNE_KNOWN_COORDS["EDIRNE MERKEZ"];
-
-      const enriched = visibleItems.map(item => {
-        const cleanAdres = formatMahalleSokakNo(item);
-        const coords = resolveItemCoordinates({ ...item, adres: cleanAdres });
-        const meters = haversineMeters(refPoint[0], refPoint[1], coords[0], coords[1]);
-        return { item, cleanAdres, coords, meters };
-      }).sort((a, b) => a.meters - b.meters);
-
-      distTitle.textContent = userCoords
-        ? "📏 Konumuna Göre Uzaklık (Yakından Uzağa)"
-        : "📏 Edirne Merkeze Göre Uzaklık";
-
-      if (enriched.length === 0) {
-        distList.innerHTML = '<div style="font-size:12px;color:#94a3b8;">Gösterilecek bekleyen iş yok.</div>';
-      } else {
-        distList.innerHTML = enriched.slice(0, 8).map(({ item, cleanAdres, meters }) => {
-          const mapQuery = buildGoogleMapsQuery({ ...item, adres: cleanAdres });
-          const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
-          return `
-            <div class="distance-item">
-              <div class="distance-info">
-                <div class="distance-loc">${cleanAdres}</div>
-                <div class="distance-addr">Tesisat: ${item.tesisat} • ${item.ilce}</div>
-              </div>
-              <div class="distance-actions">
-                <span class="dist-badge">${formatDistance(meters)}</span>
-                <a class="btn-mini-gmap" href="${mapsUrl}" target="_blank" rel="noopener">Harita</a>
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
-      if (!leafletMap || !markersLayer || currentViewMode !== "MAP") return;
-
+    function updateMapView(visibleItems) {
+      if (!leafletMap || !markersLayer) return;
       markersLayer.clearLayers();
-      const bounds = [];
+      const ref = userCoords || EDIRNE_KNOWN_COORDS["EDIRNE MERKEZ"];
 
-      enriched.slice(0, 120).forEach(({ item, cleanAdres, coords, meters }) => {
-        bounds.push(coords);
-        const mapQuery = buildGoogleMapsQuery({ ...item, adres: cleanAdres });
-        const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
+      const topItems = visibleItems.slice(0, 50).map(item => {
+        const key = normalizeKey(item.mahalle);
+        const base = EDIRNE_KNOWN_COORDS[key] || EDIRNE_KNOWN_COORDS[normalizeKey(item.ilce)] || [41.6771, 26.5557];
+        const d = Math.hypot(base[0] - ref[0], base[1] - ref[1]) * 111;
+        return { item, coords: base, km: d };
+      }).sort((a, b) => a.km - b.km);
 
-        const marker = L.circleMarker(coords, {
-          radius: 6,
-          fillColor: "#38bdf8",
-          color: "#0f172a",
-          weight: 1.5,
-          fillOpacity: 0.85
-        });
-
-        marker.bindPopup(`
-          <div style="font-size:12px;line-height:1.45;">
-            <strong>${cleanAdres}</strong><br>
-            <span style="color:#94a3b8;">${item.ilce} • ${formatDistance(meters)}</span>
-            <a class="popup-gmap-btn" href="${mapsUrl}" target="_blank" rel="noopener">Google Haritalar'da Aç</a>
+      document.getElementById("distanceList").innerHTML = topItems.slice(0, 6).map(({ item, km }) => {
+        const url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(buildGoogleMapsQuery(item));
+        return `
+          <div class="distance-item">
+            <div>
+              <div class="distance-loc">${item.mahalle} • ${item.tesisat}</div>
+              <div class="distance-addr">${item.adres.slice(0, 45)}</div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span class="dist-badge">~${km.toFixed(1)} km</span>
+              <a class="btn-mini-gmap" href="${url}" target="_blank" rel="noopener">Git</a>
+            </div>
           </div>
-        `);
-        marker.addTo(markersLayer);
+        `;
+      }).join("");
+
+      topItems.forEach(({ item, coords }) => {
+        L.circleMarker(coords, { radius: 6, fillColor: "#38bdf8", color: "#0f172a", weight: 1.5, fillOpacity: 0.9 })
+          .bindPopup(`<strong>${item.tesisat}</strong><br>${item.mahalle}`)
+          .addTo(markersLayer);
       });
-
-      if (bounds.length > 0 && !userCoords) {
-        leafletMap.fitBounds(bounds, { padding: [24, 24], maxZoom: 13 });
-      }
-    }
-
-    function syncAdminUi() {
-      const drawer = document.getElementById("adminDrawer");
-      const btn = document.getElementById("menuBtn");
-      if (isAdminLoggedIn) {
-        drawer.classList.add("open");
-        btn.classList.add("admin-active");
-        btn.textContent = "✓";
-      } else {
-        drawer.classList.remove("open");
-        btn.classList.remove("admin-active");
-        btn.textContent = "⋮";
-      }
     }
 
     function openMenuOrAdmin() {
@@ -1180,42 +861,28 @@
       }
       document.getElementById("pinInput").value = "";
       document.getElementById("pinModal").classList.add("open");
-      setTimeout(() => document.getElementById("pinInput").focus(), 50);
     }
-
-    function closePinModal() {
-      document.getElementById("pinModal").classList.remove("open");
-    }
-
+    function closePinModal() { document.getElementById("pinModal").classList.remove("open"); }
     function verifyAdminPin() {
-      const entered = document.getElementById("pinInput").value.trim();
-      if (entered === ADMIN_PIN) {
+      if (document.getElementById("pinInput").value.trim() === ADMIN_PIN) {
         isAdminLoggedIn = true;
-        try { sessionStorage.setItem(STORAGE_ADMIN_AUTH, "1"); } catch (e) {}
         closePinModal();
-        syncAdminUi();
-        showToast("🔐 Yetkili girişi başarılı");
+        document.getElementById("adminDrawer").classList.add("open");
+        document.getElementById("menuBtn").classList.add("admin-active");
+        document.getElementById("menuBtn").textContent = "✓";
+        showToast("🔐 Yetkili girişi açıldı");
       } else {
-        showToast("❌ Hatalı yetkili şifresi");
+        showToast("❌ Hatalı PIN");
       }
     }
-
     function logoutAdmin() {
       isAdminLoggedIn = false;
-      try { sessionStorage.removeItem(STORAGE_ADMIN_AUTH); } catch (e) {}
-      syncAdminUi();
-      showToast("Yetkili oturumu kapatıldı");
+      document.getElementById("adminDrawer").classList.remove("open");
+      document.getElementById("menuBtn").classList.remove("admin-active");
+      document.getElementById("menuBtn").textContent = "⋮";
     }
 
-    function wipeAllJobsAdmin() {
-      if (!isAdminLoggedIn) {
-        openMenuOrAdmin();
-        return;
-      }
-      if (!confirm("Tüm iş emirleri ve işlenen kayıtlar ortak veritabanından kalıcı olarak sıfırlansın mı?")) return;
-      jobsList = [];
-      processedMap = {};
-      lastSavedAt = Date.now();
-      try {
-        localStorage.removeItem(STORAGE_JOBS);
-        localStorage.removeItem(STORAGE_PROCESSED);
+    initFirebaseServer();
+  </script>
+</body>
+</html>
