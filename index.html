@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Edirne Sayaç Saha Rehberi</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     body { background-color: #0b1120; color: #f8fafc; min-height: 100vh; padding-bottom: 48px; }
@@ -53,30 +54,43 @@
       margin-bottom: 12px;
     }
 
-    .pdf-box {
+    .upload-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .upload-box {
       background-color: #0f172a;
       border: 2px dashed #10b981;
       border-radius: 12px;
-      padding: 14px 12px;
+      padding: 12px 10px;
       text-align: center;
     }
-    .pdf-title {
-      font-size: 13px;
+    .upload-box.excel-box {
+      border-color: #3b82f6;
+    }
+    .upload-title {
+      font-size: 12px;
       font-weight: 800;
       color: #a7f3d0;
       margin-bottom: 6px;
       display: block;
+      line-height: 1.3;
+    }
+    .upload-box.excel-box .upload-title {
+      color: #93c5fd;
     }
     .file-input {
       width: 100%;
       color: #e2e8f0;
-      font-size: 12px;
+      font-size: 11px;
     }
     .scan-status {
       font-size: 12px;
       color: #6ee7b7;
       font-weight: 700;
-      margin-top: 8px;
+      margin-top: 10px;
+      text-align: center;
       min-height: 18px;
     }
 
@@ -270,17 +284,29 @@
 
   <div class="container">
     <div class="card">
-      <div class="pdf-box">
-        <label class="pdf-title" for="pdfFileInput">📂 PDF Seç (Otomatik Tarar ve Kaydeder)</label>
-        <input
-          type="file"
-          id="pdfFileInput"
-          class="file-input"
-          accept=".pdf,application/pdf"
-          onchange="handlePdfFileSelect(event)"
-        />
-        <div class="scan-status" id="pdfScanStatus"></div>
+      <div class="upload-grid">
+        <div class="upload-box">
+          <label class="upload-title" for="pdfFileInput">📄 PDF Seç<br>(Otomatik Tarar)</label>
+          <input
+            type="file"
+            id="pdfFileInput"
+            class="file-input"
+            accept=".pdf,application/pdf"
+            onchange="handlePdfFileSelect(event)"
+          />
+        </div>
+        <div class="upload-box excel-box">
+          <label class="upload-title" for="excelFileInput">📊 Excel Seç<br>(.xlsx / .xls / .csv)</label>
+          <input
+            type="file"
+            id="excelFileInput"
+            class="file-input"
+            accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+            onchange="handleExcelFileSelect(event)"
+          />
+        </div>
       </div>
+      <div class="scan-status" id="scanStatus"></div>
     </div>
 
     <div class="card">
@@ -328,43 +354,21 @@
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
     }
 
-    (function hydrateJobs() {
-      const FULL_DATA = [
-        ["EDI-1-2000010188","EDİRNE MERKEZ","MERKEZ","1.MURAT","2000010188","Monofaze","LUN-40093226","1.MURAT MAH HASIM ISCAN SOK. NO: 18 DAIRE: MERKEZ/EDIRNE"],
-        ["EDI-2-2000630061","EDİRNE MERKEZ","MERKEZ","1.MURAT","2000630061","Monofaze","BYL-271450612","1.MURAT MAH. 20._ SK. ÇAKIR-3 APARTMANI BLOK NO: 8 İÇ KAPI NO: Z11 MERKEZ / EDİRNE"],
-        ["EDI-3-2000637825","EDİRNE MERKEZ","MERKEZ","1.MURAT","2000637825","Monofaze","LUN-18662948","1. MURAT MAH. İLHAMİ ERTEM CAD. DISKAPINO:28 NECDET/DAIRENO:DÜKKAN:11"],
-        ["EDI-4-2000660002","EDİRNE MERKEZ","MERKEZ","1.MURAT","2000660002","Monofaze","BYL-20514396","1.MURAT MAH. 43. SK. - SİTESİ - BLOK NO: 2 İÇ KAPI NO: 11 MERKEZ / EDİRNE"],
-        ["EDI-5-2000664213","EDİRNE MERKEZ","MERKEZ","1.MURAT","2000664213","Monofaze","LUN-103084068","1.MURAT MAH ILHAMI ERTEM SOK. NO: 28 NECDET ÖZER APT. DAIRE:A MERKEZ/EDIRNE"],
-        ["EDI-6-2000665722","EDİRNE MERKEZ","MERKEZ","1.MURAT","2000665722","Trifaze","BYL-40137757","1. MURAT MAH. 44. SK. NO:7 ZEYNEP TAŞ-2 APT. ASANSÖR"],
-        ["EDI-7-2000671434","EDİRNE MERKEZ","MERKEZ","1.MURAT","2000671434","Trifaze","LUN-302316380","ZÜBEYDE HANIM CAD. FIRAT SİT. C BL. DÜKKAN:2 VESTEL SERVİSİ EDIRNE"],
-        ["EDI-8-2001144760","EDİRNE MERKEZ","MERKEZ","1.MURAT","2001144760","Monofaze","LUN-101830242","1.MURAT MAH ZÜBEYDE HANIM SOK. NO: 11 B FIRAT SITESI B BLOK DAIRE:9 MERKEZ/EDIRNE"],
-        ["EDI-9-2001301993","EDİRNE MERKEZ","MERKEZ","1.MURAT","2001301993","Monofaze","LUN-103084152","1.MURAT MAH. 42. SK. NO: 19A İÇ KAPI NO: 1 MERKEZ / EDİRNE"],
-        ["EDI-10-2001407480","EDİRNE MERKEZ","MERKEZ","1.MURAT","2001407480","Monofaze","LUN-40038358","1.MURAT MAH. İLHAMİ ERTEM CAD. NO: 28 İÇ KAPI NO: 3 MERKEZ / EDİRNE"]
-      ];
-      window.BASE_IS_EMIRLERI = FULL_DATA.map(r => ({
-        id: r[0], ilce: r[1], bolge: r[2], mahalle: r[3], tesisat: r[4], tip: r[5], seri: r[6], adres: r[7]
-      }));
-    })();
-
-    const STORAGE_PROCESSED = "tredas_edirne_islenen_v3";
-    const STORAGE_CUSTOM_JOBS = "tredas_edirne_ozel_isler_v3";
-    const DB_NAME = "TredasEdirneSahaDB_v3";
+    const STORAGE_PROCESSED = "tredas_edirne_sifir_islenen_v1";
+    const STORAGE_JOBS = "tredas_edirne_sifir_isler_v1";
+    const DB_NAME = "TredasEdirneSifirDB_v1";
     const STORE_PROCESSED = "processedJobs";
-    const STORE_CUSTOM = "customJobs";
+    const STORE_JOBS = "jobs";
 
     let processedMap = {};
-    let customJobs = [];
+    let jobsList = [];
     let currentRegion = "ALL";
     let currentPhase = "ALL";
-
-    function getAllJobs() {
-      return [...customJobs, ...(window.BASE_IS_EMIRLERI || [])];
-    }
 
     function saveAllData() {
       try {
         localStorage.setItem(STORAGE_PROCESSED, JSON.stringify(processedMap));
-        localStorage.setItem(STORAGE_CUSTOM_JOBS, JSON.stringify(customJobs));
+        localStorage.setItem(STORAGE_JOBS, JSON.stringify(jobsList));
       } catch (e) {}
 
       if (window.indexedDB) {
@@ -374,8 +378,8 @@
           if (!db.objectStoreNames.contains(STORE_PROCESSED)) {
             db.createObjectStore(STORE_PROCESSED, { keyPath: "id" });
           }
-          if (!db.objectStoreNames.contains(STORE_CUSTOM)) {
-            db.createObjectStore(STORE_CUSTOM, { keyPath: "id" });
+          if (!db.objectStoreNames.contains(STORE_JOBS)) {
+            db.createObjectStore(STORE_JOBS, { keyPath: "id" });
           }
         };
         req.onsuccess = (e) => {
@@ -385,10 +389,10 @@
           s1.clear();
           Object.entries(processedMap).forEach(([id, info]) => s1.put({ id, ...info }));
 
-          const tx2 = db.transaction(STORE_CUSTOM, "readwrite");
-          const s2 = tx2.objectStore(STORE_CUSTOM);
+          const tx2 = db.transaction(STORE_JOBS, "readwrite");
+          const s2 = tx2.objectStore(STORE_JOBS);
           s2.clear();
-          customJobs.forEach(j => s2.put(j));
+          jobsList.forEach(j => s2.put(j));
         };
       }
     }
@@ -397,8 +401,8 @@
       try {
         const pRaw = localStorage.getItem(STORAGE_PROCESSED);
         if (pRaw) processedMap = JSON.parse(pRaw) || {};
-        const cRaw = localStorage.getItem(STORAGE_CUSTOM_JOBS);
-        if (cRaw) customJobs = JSON.parse(cRaw) || [];
+        const jRaw = localStorage.getItem(STORAGE_JOBS);
+        if (jRaw) jobsList = JSON.parse(jRaw) || [];
       } catch (e) {}
 
       if (window.indexedDB) {
@@ -408,15 +412,15 @@
           if (!db.objectStoreNames.contains(STORE_PROCESSED)) {
             db.createObjectStore(STORE_PROCESSED, { keyPath: "id" });
           }
-          if (!db.objectStoreNames.contains(STORE_CUSTOM)) {
-            db.createObjectStore(STORE_CUSTOM, { keyPath: "id" });
+          if (!db.objectStoreNames.contains(STORE_JOBS)) {
+            db.createObjectStore(STORE_JOBS, { keyPath: "id" });
           }
         };
         req.onsuccess = (e) => {
           const db = e.target.result;
-          const tx = db.transaction([STORE_PROCESSED, STORE_CUSTOM], "readonly");
+          const tx = db.transaction([STORE_PROCESSED, STORE_JOBS], "readonly");
           const r1 = tx.objectStore(STORE_PROCESSED).getAll();
-          const r2 = tx.objectStore(STORE_CUSTOM).getAll();
+          const r2 = tx.objectStore(STORE_JOBS).getAll();
           tx.oncomplete = () => {
             let changed = false;
             (r1.result || []).forEach(item => {
@@ -425,10 +429,10 @@
                 changed = true;
               }
             });
-            const existingIds = new Set(customJobs.map(j => j.id));
+            const existingIds = new Set(jobsList.map(j => j.id));
             (r2.result || []).forEach(job => {
               if (!existingIds.has(job.id)) {
-                customJobs.push(job);
+                jobsList.push(job);
                 changed = true;
               }
             });
@@ -488,11 +492,11 @@
       return /trifaze|3\s*faz|üç\s*faz/i.test(text) ? "Trifaze" : "Monofaze";
     }
 
-    function parseSingleChunk(chunk) {
+    function parseSingleChunk(chunk, sourcePrefix) {
       const cleaned = chunk.replace(/\s+/g, " ").trim();
       if (!cleaned) return null;
 
-      const tesisatMatch = cleaned.match(/\b(\d{7,15})\b/);
+      const tesisatMatch = cleaned.match(/\b(\d{6,16})\b/);
       if (!tesisatMatch) return null;
       const tesisat = tesisatMatch[1];
 
@@ -500,7 +504,7 @@
       const seri = seriMatch ? seriMatch[1].toLocaleUpperCase("tr").replace(/\s+/g, "-") : "BİLİNMİYOR";
 
       return {
-        id: "PDF-" + Date.now() + "-" + tesisat + "-" + Math.random().toString(36).slice(2, 6),
+        id: sourcePrefix + "-" + Date.now() + "-" + tesisat + "-" + Math.random().toString(36).slice(2, 6),
         ilce: detectIlce(cleaned),
         bolge: detectBolge(cleaned),
         mahalle: detectMahalle(cleaned),
@@ -509,6 +513,27 @@
         seri,
         adres: cleaned
       };
+    }
+
+    function addParsedChunks(chunks, sourcePrefix) {
+      const existingKeys = new Set(jobsList.map(j => j.tesisat + "|" + j.seri));
+      let addedCount = 0;
+
+      for (const chunk of chunks) {
+        const parsed = parseSingleChunk(chunk, sourcePrefix);
+        if (!parsed) continue;
+        const dedupKey = parsed.tesisat + "|" + parsed.seri;
+        if (existingKeys.has(dedupKey)) continue;
+        existingKeys.add(dedupKey);
+        jobsList.unshift(parsed);
+        addedCount++;
+      }
+
+      saveAllData();
+      populateIlceDropdown();
+      populateMahalleDropdown();
+      renderList();
+      return addedCount;
     }
 
     async function extractTextFromPdfFile(file) {
@@ -544,7 +569,7 @@
 
     async function handlePdfFileSelect(event) {
       const file = event.target.files && event.target.files[0];
-      const statusEl = document.getElementById("pdfScanStatus");
+      const statusEl = document.getElementById("scanStatus");
       if (!file) return;
 
       statusEl.textContent = "⏳ PDF taranıyor...";
@@ -557,9 +582,9 @@
         for (const line of lines) {
           const trimmed = line.trim();
           if (!trimmed) continue;
-          const multiMatches = trimmed.match(/\b\d{7,15}\b/g);
+          const multiMatches = trimmed.match(/\b\d{6,16}\b/g);
           if (multiMatches && multiMatches.length > 1) {
-            trimmed.split(/(?=\b\d{7,15}\b)/).forEach(p => {
+            trimmed.split(/(?=\b\d{6,16}\b)/).forEach(p => {
               if (p.trim()) chunks.push(p.trim());
             });
           } else {
@@ -567,33 +592,56 @@
           }
         }
 
-        const existingKeys = new Set(getAllJobs().map(j => j.tesisat + "|" + j.seri));
-        let addedCount = 0;
-
-        for (const chunk of chunks) {
-          const parsed = parseSingleChunk(chunk);
-          if (!parsed) continue;
-          const dedupKey = parsed.tesisat + "|" + parsed.seri;
-          if (existingKeys.has(dedupKey)) continue;
-          existingKeys.add(dedupKey);
-          customJobs.unshift(parsed);
-          addedCount++;
-        }
-
-        saveAllData();
-        populateIlceDropdown();
-        populateMahalleDropdown();
-        renderList();
-
+        const addedCount = addParsedChunks(chunks, "PDF");
         if (addedCount > 0) {
-          statusEl.textContent = "✅ " + addedCount + " kayıt PDF'den kaydedildi.";
-          showToast("✓ " + addedCount + " kayıt kaydedildi");
+          statusEl.textContent = "✅ PDF'den " + addedCount + " kayıt eklendi.";
+          showToast("✓ " + addedCount + " kayıt eklendi");
         } else {
-          statusEl.textContent = "⚠️ Yeni kayıt bulunamadı.";
+          statusEl.textContent = "⚠️ PDF tarandı; eklenecek yeni kayıt bulunamadı.";
           showToast("Yeni kayıt bulunamadı");
         }
       } catch (err) {
         statusEl.textContent = "❌ PDF okunamadı.";
+      } finally {
+        event.target.value = "";
+      }
+    }
+
+    async function handleExcelFileSelect(event) {
+      const file = event.target.files && event.target.files[0];
+      const statusEl = document.getElementById("scanStatus");
+      if (!file) return;
+
+      statusEl.textContent = "⏳ Excel dosyası taranıyor...";
+
+      try {
+        if (!window.XLSX) {
+          throw new Error("Excel okuyucu yüklenemedi.");
+        }
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: "array" });
+        const chunks = [];
+
+        workbook.SheetNames.forEach(sheetName => {
+          const sheet = workbook.Sheets[sheetName];
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "" });
+          rows.forEach(row => {
+            if (!Array.isArray(row)) return;
+            const joined = row.map(cell => String(cell || "").trim()).filter(Boolean).join(" | ");
+            if (joined) chunks.push(joined);
+          });
+        });
+
+        const addedCount = addParsedChunks(chunks, "XLS");
+        if (addedCount > 0) {
+          statusEl.textContent = "✅ Excel'den " + addedCount + " kayıt eklendi.";
+          showToast("✓ " + addedCount + " kayıt eklendi");
+        } else {
+          statusEl.textContent = "⚠️ Excel tarandı; eklenecek yeni kayıt bulunamadı.";
+          showToast("Yeni kayıt bulunamadı");
+        }
+      } catch (err) {
+        statusEl.textContent = "❌ Excel dosyası okunamadı.";
       } finally {
         event.target.value = "";
       }
@@ -624,7 +672,7 @@
     function populateIlceDropdown() {
       const sel = document.getElementById("ilceSelect");
       const prev = sel.value;
-      const ilceler = [...new Set(getAllJobs().map(j => j.ilce))].sort((a, b) => a.localeCompare(b, "tr"));
+      const ilceler = [...new Set(jobsList.map(j => j.ilce))].sort((a, b) => a.localeCompare(b, "tr"));
       sel.innerHTML = '<option value="ALL">Tüm İlçeler</option>';
       ilceler.forEach(il => {
         const opt = document.createElement("option");
@@ -644,7 +692,7 @@
       const sel = document.getElementById("mahalleSelect");
       const prev = sel.value;
       const selectedIlce = document.getElementById("ilceSelect").value;
-      const filtered = getAllJobs().filter(j => {
+      const filtered = jobsList.filter(j => {
         if (selectedIlce !== "ALL" && j.ilce !== selectedIlce) return false;
         if (currentRegion !== "ALL" && j.bolge !== currentRegion) return false;
         return true;
@@ -661,13 +709,12 @@
     }
 
     function renderList() {
-      const allJobs = getAllJobs();
       const selectedIlce = document.getElementById("ilceSelect").value;
       const selectedMahalle = document.getElementById("mahalleSelect").value;
       const query = document.getElementById("searchInput").value.trim().toLocaleLowerCase("tr");
 
-      const total = allJobs.length;
-      const done = allJobs.filter(j => Boolean(processedMap[j.id])).length;
+      const total = jobsList.length;
+      const done = jobsList.filter(j => Boolean(processedMap[j.id])).length;
       const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
       document.getElementById("doneCount").textContent = done;
@@ -675,7 +722,7 @@
       document.getElementById("progressPct").textContent = "%" + pct;
       document.getElementById("progressFill").style.width = pct + "%";
 
-      const visible = allJobs.filter(item => {
+      const visible = jobsList.filter(item => {
         if (processedMap[item.id]) return false;
         if (selectedIlce !== "ALL" && item.ilce !== selectedIlce) return false;
         if (currentRegion !== "ALL" && item.bolge !== currentRegion) return false;
@@ -692,7 +739,7 @@
 
       const listEl = document.getElementById("jobList");
       if (visible.length === 0) {
-        listEl.innerHTML = '<div class="empty-state">🎉 Bu filtrede bekleyen iş kalmadı!</div>';
+        listEl.innerHTML = '<div class="empty-state">📂 Henüz kayıt yok veya bu filtrede bekleyen iş kalmadı. Yukarıdan PDF veya Excel seçebilirsin.</div>';
         return;
       }
 
