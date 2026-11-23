@@ -237,10 +237,10 @@
     }
     #sahaMap {
       width: 100%;
-      height: 320px;
+      height: 340px;
       border-radius: 14px;
       border: 1px solid #263244;
-      background-color: #0f172a;
+      background-color: #1e293b;
       z-index: 1;
     }
 
@@ -570,7 +570,7 @@
           <input type="text" id="manIlce" class="mini-input" placeholder="İlçe (Örn: SÜLOĞLU)" />
           <input type="text" id="manMahalle" class="mini-input" placeholder="Mahalle / Köy" />
         </div>
-        <input type="text" id="manAdres" class="mini-input" placeholder="Açık Adres (Sokak, No, Köy/Mahalle)" />
+        <input type="text" id="manAdres" class="mini-input" placeholder="Sokak ve No (Örn: HASIM ISCAN SOK. NO: 18)" />
         <select id="manTip" class="mini-input">
           <option value="Monofaze">Monofaze</option>
           <option value="Trifaze">Trifaze</option>
@@ -615,7 +615,7 @@
     <div class="card map-wrapper" id="mapSection">
       <div class="map-toolbar">
         <button class="btn-gps" type="button" onclick="locateUserOnMap()">📍 Uzaklıkları Hesapla</button>
-        <span class="map-hint" id="gpsStatusText">Konumuna göre mesafeleri gösterir</span>
+        <span class="map-hint" id="gpsStatusText">Mahalle, sokak ve no ile konum gösterir</span>
       </div>
       <div id="sahaMap"></div>
       <div class="distance-box" id="distanceBox">
@@ -665,14 +665,14 @@
     }
 
     const ADMIN_PIN = "1923";
-    const STORAGE_PROCESSED = "tredas_edirne_v10_islenen";
-    const STORAGE_JOBS = "tredas_edirne_v10_isler";
-    const STORAGE_ADMIN_AUTH = "tredas_edirne_v10_admin";
-    const DB_NAME = "TredasEdirneSahaDB_v10";
+    const STORAGE_PROCESSED = "tredas_edirne_v11_islenen";
+    const STORAGE_JOBS = "tredas_edirne_v11_isler";
+    const STORAGE_ADMIN_AUTH = "tredas_edirne_v11_admin";
+    const DB_NAME = "TredasEdirneSahaDB_v11";
     const STORE_PROCESSED = "processedJobs";
     const STORE_JOBS = "jobs";
-    const CACHE_NAME = "tredas-edirne-vault-v10";
-    const CACHE_KEY = "/__tredas_edirne_state_v10.json";
+    const CACHE_NAME = "tredas-edirne-vault-v11";
+    const CACHE_KEY = "/__tredas_edirne_state_v11.json";
 
     let processedMap = {};
     let jobsList = [];
@@ -834,20 +834,20 @@
         if (mahNorm && mahNorm !== "GENEL") {
           const mahHash = hashString(ilceNorm + "_" + mahNorm);
           const angle = ((mahHash % 360) * Math.PI) / 180;
-          const dist = 0.012 + ((mahHash % 100) / 100) * 0.025;
+          const dist = 0.015 + ((mahHash % 100) / 100) * 0.045;
           base = [
             base[0] + Math.sin(angle) * dist,
-            base[1] + Math.cos(angle) * dist * 1.2
+            base[1] + Math.cos(angle) * dist * 1.25
           ];
         }
       }
 
-      const itemHash = hashString(String(item.tesisat || item.id || ""));
+      const itemHash = hashString(String(item.tesisat || item.id || "") + "_" + String(item.adres || ""));
       const jitterAngle = ((itemHash % 360) * Math.PI) / 180;
-      const jitterRadius = 0.0004 + (((itemHash >> 8) % 100) / 100) * 0.0018;
+      const jitterRadius = 0.001 + (((itemHash >> 8) % 100) / 100) * 0.006;
       return [
         base[0] + Math.sin(jitterAngle) * jitterRadius,
-        base[1] + Math.cos(jitterAngle) * jitterRadius * 1.15
+        base[1] + Math.cos(jitterAngle) * jitterRadius * 1.2
       ];
     }
 
@@ -870,9 +870,9 @@
     function ensureLeafletMap() {
       if (leafletMap || !window.L) return;
       leafletMap = L.map("sahaMap", { zoomControl: true }).setView([41.6771, 26.5557], 11);
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
-        attribution: "© OpenStreetMap © CARTO"
+        attribution: "© OpenStreetMap"
       }).addTo(leafletMap);
       markersLayer = L.layerGroup().addTo(leafletMap);
     }
@@ -891,7 +891,7 @@
         setTimeout(() => {
           if (leafletMap) leafletMap.invalidateSize();
           renderList();
-        }, 60);
+        }, 80);
       } else {
         mapSec.classList.remove("open");
         btnList.classList.add("active");
@@ -937,27 +937,27 @@
       const refPoint = userCoords || EDIRNE_KNOWN_COORDS["EDIRNE MERKEZ"];
 
       const enriched = visibleItems.map(item => {
-        const coords = resolveItemCoordinates(item);
+        const cleanAdres = formatMahalleSokakNo(item);
+        const coords = resolveItemCoordinates({ ...item, adres: cleanAdres });
         const meters = haversineMeters(refPoint[0], refPoint[1], coords[0], coords[1]);
-        return { item, coords, meters };
+        return { item, cleanAdres, coords, meters };
       }).sort((a, b) => a.meters - b.meters);
 
       distTitle.textContent = userCoords
         ? "📏 Konumuna Göre Uzaklık (Yakından Uzağa)"
-        : "📏 Edirne Merkeze Göre Tahmini Uzaklık";
+        : "📏 Edirne Merkeze Göre Uzaklık";
 
       if (enriched.length === 0) {
         distList.innerHTML = '<div style="font-size:12px;color:#94a3b8;">Gösterilecek bekleyen iş yok.</div>';
       } else {
-        distList.innerHTML = enriched.slice(0, 8).map(({ item, meters }) => {
-          const cleanAdres = cleanAddressText(item.adres || "", item.tesisat || "", item.seri || "");
+        distList.innerHTML = enriched.slice(0, 8).map(({ item, cleanAdres, meters }) => {
           const mapQuery = buildGoogleMapsQuery({ ...item, adres: cleanAdres });
           const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
           return `
             <div class="distance-item">
               <div class="distance-info">
-                <div class="distance-loc">${item.mahalle} • Tesisat ${item.tesisat}</div>
-                <div class="distance-addr">${cleanAdres}</div>
+                <div class="distance-loc">${cleanAdres}</div>
+                <div class="distance-addr">Tesisat: ${item.tesisat} • ${item.ilce}</div>
               </div>
               <div class="distance-actions">
                 <span class="dist-badge">${formatDistance(meters)}</span>
@@ -973,9 +973,8 @@
       markersLayer.clearLayers();
       const bounds = [];
 
-      enriched.slice(0, 120).forEach(({ item, coords, meters }) => {
+      enriched.slice(0, 120).forEach(({ item, cleanAdres, coords, meters }) => {
         bounds.push(coords);
-        const cleanAdres = cleanAddressText(item.adres || "", item.tesisat || "", item.seri || "");
         const mapQuery = buildGoogleMapsQuery({ ...item, adres: cleanAdres });
         const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
 
@@ -989,9 +988,8 @@
 
         marker.bindPopup(`
           <div style="font-size:12px;line-height:1.45;">
-            <strong>${item.mahalle}</strong> (${formatDistance(meters)})<br>
-            <span style="color:#94a3b8;">Tesisat: ${item.tesisat} • ${item.tip}</span><br>
-            <span>${cleanAdres}</span>
+            <strong>${cleanAdres}</strong><br>
+            <span style="color:#94a3b8;">${item.ilce} • ${formatDistance(meters)}</span>
             <a class="popup-gmap-btn" href="${mapsUrl}" target="_blank" rel="noopener">Google Haritalar'da Aç</a>
           </div>
         `);
@@ -1066,7 +1064,7 @@
         localStorage.removeItem(STORAGE_JOBS + "_ts");
       } catch (e) {}
       try {
-        window.name = JSON.stringify({ __tredas_v10: true, ts: lastSavedAt, jobsList: [], processedMap: {} });
+        window.name = JSON.stringify({ __tredas_v11: true, ts: lastSavedAt, jobsList: [], processedMap: {} });
       } catch (e) {}
       writeCacheVault({ ts: lastSavedAt, jobsList: [], processedMap: {} });
       if (window.indexedDB) {
@@ -1095,7 +1093,7 @@
           if (!job || !job.id) continue;
           const sanitized = {
             ...job,
-            adres: cleanAddressText(job.adres || "", job.tesisat || "", job.seri || "")
+            adres: formatMahalleSokakNo(job)
           };
           if (!existingMap.has(sanitized.id)) {
             jobsList.push(sanitized);
@@ -1154,7 +1152,7 @@
       } catch (e) {}
 
       try {
-        window.name = JSON.stringify({ __tredas_v10: true, ...snapshot });
+        window.name = JSON.stringify({ __tredas_v11: true, ...snapshot });
       } catch (e) {}
 
       writeCacheVault(snapshot);
@@ -1208,7 +1206,7 @@
       if (window.name) {
         try {
           const nameObj = JSON.parse(window.name);
-          if (nameObj && nameObj.__tredas_v10) {
+          if (nameObj && nameObj.__tredas_v11) {
             if (mergeStateIntoMemory(nameObj.jobsList, nameObj.processedMap, Number(nameObj.ts || 0))) {
               anyChanged = true;
             }
@@ -1257,7 +1255,7 @@
       if (jobsList.length > 0 || anyChanged) {
         jobsList.forEach(j => {
           j.bolge = detectBolge((j.adres || "") + " " + (j.mahalle || "") + " " + (j.ilce || ""), j.mahalle);
-          j.adres = cleanAddressText(j.adres || "", j.tesisat || "", j.seri || "");
+          j.adres = formatMahalleSokakNo(j);
         });
         saveAllData();
         populateIlceDropdown();
@@ -1346,47 +1344,67 @@
       return out;
     }
 
-    function cleanAddressText(rawChunk, tesisat, seri) {
-      let addr = stripMeterSerials(rawChunk, seri)
+    function formatMahalleSokakNo(item) {
+      const tesisat = (item && item.tesisat) || "";
+      const seri = (item && item.seri) || "";
+      const mahalle = (item && item.mahalle) || "";
+      const bolge = (item && item.bolge) || "MERKEZ";
+
+      let raw = stripMeterSerials(item && item.adres ? item.adres : "", seri)
         .replace(/\s*\|\s*/g, " ")
         .replace(/^\s*\d+\s*(?:sayaç|sayac|adet|no\.?|kayıt)\b[:\-\s]*/i, "")
         .replace(/\b\d+\s*(?:sayaç|sayac)\b/gi, " ")
+        .replace(/\b(?:iç\s*kapı(?:\s*no)?|daire(?:\s*no)?|kat|blok(?:\s*no)?|apartmanı|apt\.?|site(?:si)?|merkez\s*\/\s*edirne|merkez\/edirne)\b[^,;]*/gi, " ")
+        .replace(/\b(?:koyun\s*kendisi|köyün\s*kendisi)\b/gi, " ")
         .replace(/\s+/g, " ")
         .trim();
 
       if (tesisat) {
-        addr = addr.replace(new RegExp("\\b" + tesisat + "\\b", "g"), " ");
+        raw = raw.replace(new RegExp("\\b" + tesisat + "\\b", "g"), " ");
       }
 
-      addr = addr
+      // Dış kapı / bina No çıkar
+      const noMatch = raw.match(/\b(?:NO|NUMARA)\s*[:.#-]?\s*([A-Z0-9çğıöşü/-]{1,8})\b/i);
+      const noPart = noMatch ? ("NO: " + trUpper(noMatch[1])) : "";
+
+      // Sokak veya Cadde bilgisini çıkar
+      const sokCadMatch = raw.match(/([A-ZÇĞİÖŞÜ0-9._\- ]{2,35}?\b(?:SOK\.?|SOKAĞI|SOKAGI|CAD\.?|CADDESİ|CADDESI|BULVAR|BULVARI|MEVKİİ|MEVKII)\b)/i);
+      let sokakPart = "";
+      if (sokCadMatch && sokCadMatch[1]) {
+        sokakPart = trUpper(sokCadMatch[1])
+          .replace(new RegExp("^\\b" + normalizeKey(mahalle).replace(/\s+/g, "\\s+") + "\\b", "i"), "")
+          .replace(/\b(?:MAH\.?|MAHALLESİ|KÖYÜ|KÖY|MERKEZ)\b/gi, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      let mahPart = "";
+      if (mahalle && mahalle !== "GENEL") {
+        mahPart = bolge === "KOY" ? (mahalle + " KÖYÜ") : (mahalle + " MAH.");
+      }
+
+      const pieces = [];
+      if (mahPart) pieces.push(mahPart);
+      if (sokakPart) pieces.push(sokakPart);
+      if (noPart) pieces.push(noPart);
+
+      if (pieces.length > 0) {
+        return pieces.join(", ").replace(/\s*,\s*,+/g, ", ").trim();
+      }
+
+      return raw
         .replace(/\b(monofaze|trifaze|3\s*faz|üç\s*faz)\b/gi, " ")
-        .replace(/\s+([,.;:/])/g, "$1")
-        .replace(/([,.;:/])\s*([,.;:/])+/g, "$1")
-        .replace(/^\s*[,;:\-|/]+\s*|\s*[,;:\-|/]+\s*$/g, "")
         .replace(/\s+/g, " ")
         .trim();
-
-      return addr || rawChunk.replace(/\s+/g, " ").trim();
     }
 
     function buildGoogleMapsQuery(item) {
-      let q = stripMeterSerials(item.adres || "", item.seri || "")
-        .replace(/^\s*\d+\s*(?:sayaç|sayac|adet|no\.?|kayıt)\b[:\-\s]*/i, "")
-        .replace(/\b\d+\s*(?:sayaç|sayac)\b/gi, " ")
-        .replace(/\b(?:iç\s*kapı(?:\s*no)?|daire(?:\s*no)?|kat|blok(?:\s*no)?|asansör|bodrum|zemin)\s*[:.#-]?\s*[a-z0-9çğıöşü_-]+/gi, " ")
-        .replace(/\b(koyun\s*kendisi|köyün\s*kendisi)\b/gi, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      const normQ = normalizeKey(q);
-      const normMah = item.mahalle && item.mahalle !== "GENEL" ? normalizeKey(item.mahalle) : "";
+      const baseAddr = formatMahalleSokakNo(item);
+      const normQ = normalizeKey(baseAddr);
       const normIlce = item.ilce ? normalizeKey(item.ilce) : "";
 
       const parts = [];
-      if (q) parts.push(q);
-      if (normMah && !normQ.includes(normMah)) {
-        parts.push(item.bolge === "KOY" ? (item.mahalle + " Köyü") : (item.mahalle + " Mah."));
-      }
+      if (baseAddr) parts.push(baseAddr);
       if (normIlce && !normQ.includes(normIlce)) {
         parts.push(item.ilce);
       }
@@ -1413,7 +1431,7 @@
       const ilce = detectIlce(cleaned);
       const bolge = detectBolge(cleaned, mahalle);
       const tip = detectTip(cleaned);
-      const adres = cleanAddressText(cleaned, tesisat, seri);
+      const adres = formatMahalleSokakNo({ adres: cleaned, tesisat, seri, mahalle, bolge });
 
       return {
         id: sourcePrefix + "-" + tesisat + "-" + seri,
@@ -1440,14 +1458,14 @@
       const tip = document.getElementById("manTip").value;
 
       if (!tesisat || !rawAdres) {
-        showToast("Tesisat No ve Adres gerekli");
+        showToast("Tesisat No ve Sokak/No gerekli");
         return;
       }
 
       const existingNames = [...new Set(jobsList.map(j => j.mahalle))];
       const mahalle = rawMah ? unifyLocationName(rawMah, existingNames) : detectMahalle(rawAdres, existingNames);
       const bolge = detectBolge(rawAdres + " " + rawMah, mahalle);
-      const adres = cleanAddressText(rawAdres, tesisat, seri);
+      const adres = formatMahalleSokakNo({ adres: rawAdres, tesisat, seri, mahalle, bolge });
 
       const newItem = {
         id: "MAN-" + tesisat + "-" + Date.now().toString(36),
@@ -1703,7 +1721,7 @@
       }
 
       listEl.innerHTML = visible.map(item => {
-        const cleanAdres = cleanAddressText(item.adres || "", item.tesisat || "", item.seri || "");
+        const cleanAdres = formatMahalleSokakNo(item);
         const mapQuery = buildGoogleMapsQuery({ ...item, adres: cleanAdres });
         const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
         const yerEtiketi = item.bolge === "KOY" ? (item.mahalle + " KÖYÜ") : item.mahalle;
