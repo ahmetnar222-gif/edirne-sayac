@@ -37,7 +37,7 @@
     .container {
       max-width: 980px;
       margin: 0 auto;
-      padding: 10px 10px 64px;
+      padding: 10px 10px 68px;
     }
 
     .topbar {
@@ -53,7 +53,7 @@
       position: sticky;
       top: 6px;
       z-index: 900;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
     }
 
     .brand-row {
@@ -494,7 +494,7 @@
           📄 PDF Yükle
           <input type="file" id="pdfInput" accept=".pdf" hidden />
         </label>
-        <button id="repairDbBtn" class="btn btn-warning">🧹 Sunucuyu Düzenle</button>
+        <button id="repairDbBtn" class="btn btn-warning">🤖 Tam Yetkili AI Düzenle</button>
         <button id="showCompletedToggle" class="btn btn-secondary">✓ Tamamlananlar</button>
         <button id="clearAllBtn" class="btn btn-danger">🗑️ Tümünü Sil</button>
       </div>
@@ -583,7 +583,7 @@
   <div id="menuModal" class="modal-backdrop">
     <div class="modal-card">
       <h3 style="margin-top:0;">Yetkili Girişi</h3>
-      <p style="font-size:13px; color:var(--text-muted);">Excel/PDF yükleme ve sunucu düzenleme için PIN kodunu girin.</p>
+      <p style="font-size:13px; color:var(--text-muted);">Excel/PDF yükleme ve tam yetkili AI düzenleme için PIN kodunu girin.</p>
       <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN (1923)" style="margin-bottom:10px;" />
       <div style="display:flex; gap:8px;">
         <button id="pinSubmitBtn" class="btn btn-primary" style="flex:1;">Giriş</button>
@@ -608,8 +608,20 @@
     };
 
     const DB_PATH = "edirne_saha_v1";
+    const LOCAL_CACHE_KEY = "tredas_saha_hafiza_v1";
     const ADMIN_PIN = "1923";
     const PAGE_SIZE = 40;
+
+    const AI_AUTHORITY = {
+      name: "TREDAŞ Saha Tam Yetkili AI",
+      fullAccess: true,
+      autoCleanData: true,
+      autoDeduplicate: true,
+      autoResolveGeo: true,
+      autoSyncCache: true,
+      autoSyncServer: true,
+      autoRefreshUI: true
+    };
 
     const DISTRICTS = {
       "Edirne Merkez": { il: "Edirne", ilce: "Merkez", coords: [41.6771, 26.5557] },
@@ -939,6 +951,175 @@
       }
       return { lat: 41.6771, lng: 26.5557 };
     }
+
+    // AI_MOTORU_BASLANGIC
+    function saveToLocalCache(jobsObj) {
+      if (!AI_AUTHORITY.autoSyncCache) return;
+      try {
+        localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify({
+          savedAt: Date.now(),
+          authority: AI_AUTHORITY.name,
+          count: Object.keys(jobsObj).length,
+          jobs: jobsObj
+        }));
+      } catch (e) {
+        console.warn("Hafıza kayıt uyarısı:", e);
+      }
+    }
+
+    function loadFromLocalCache() {
+      try {
+        const raw = localStorage.getItem(LOCAL_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.jobs && typeof parsed.jobs === "object") {
+          return parsed.jobs;
+        }
+      } catch (e) {
+        console.warn("Hafıza okuma uyarısı:", e);
+      }
+      return null;
+    }
+
+    function aiPickColumn(row, keywords) {
+      if (!row || typeof row !== "object") return "";
+      for (const k of Object.keys(row)) {
+        const nk = asciiKey(k);
+        if (keywords.some(kw => nk.includes(asciiKey(kw)))) {
+          const val = String(row[k] ?? "").trim();
+          if (val) return val;
+        }
+      }
+      return "";
+    }
+
+    function aiCompleteSingleRecord(raw, key) {
+      const base = normalizeRecord(raw, key);
+      const rawText = [
+        raw.address, raw.rawAddress, raw.adres, raw.ADRES,
+        raw.settlement, raw.neighborhood, raw.district, raw.aboneAdi, raw.streetOnly
+      ].filter(Boolean).join(" | ");
+
+      let tesisatNo = base.tesisatNo;
+      let seriNo = base.seriNo;
+      if (!tesisatNo) {
+        const mTes = rawText.match(/\b(\d{8,12})\b/);
+        if (mTes) tesisatNo = mTes[1];
+      }
+      if (!seriNo) {
+        const mSer = rawText.match(/\b([A-Z]{2,5}[-_ ]?\d{5,12})\b/i);
+        if (mSer) seriNo = mSer[1].toUpperCase();
+      }
+
+      const district = DISTRICTS[base.district] ? base.district : detectDistrict(rawText);
+      const sett = resolveSettlement(`${base.settlement} ${raw.settlement || ""}`, `${base.address} ${rawText}`, district);
+      const category = sett.category === "KOY" ? "KOY" : "MAHALLE";
+
+      const mNorm = asciiKey(`${base.meterType} ${rawText}`);
+      const meterType = (mNorm.includes("tri") || mNorm.includes("3 faz") || mNorm.includes("trifaze")) ? "TRI" : "MONO";
+
+      const address = cleanAddress(base.streetOnly || base.address, district, sett.settlement);
+
+      const candidate = {
+        ...base,
+        id: String(raw.id || key),
+        tesisatNo,
+        seriNo,
+        district,
+        category,
+        settlement: sett.settlement,
+        baseKey: sett.baseKey,
+        address,
+        meterType
+      };
+      const [lat, lng] = getCoords(candidate);
+      const displayTitle = tesisatNo ? `Tesisat: ${tesisatNo}` : (seriNo ? `Sayaç: ${seriNo}` : `${sett.settlement} Kaydı`);
+
+      return { ...candidate, displayTitle, lat, lng };
+    }
+
+    function aiDeduplicateAndClean(items) {
+      const cleaned = [];
+      const seen = new Set();
+
+      (items || []).forEach((item, idx) => {
+        if (!item || typeof item !== "object") return;
+        const rec = aiCompleteSingleRecord(item, item.id || `ai_${idx + 1}`);
+        const hasIdentity = Boolean(rec.tesisatNo || rec.seriNo || rec.streetOnly || rec.settlement);
+        if (!hasIdentity) return;
+
+        if (AI_AUTHORITY.autoDeduplicate) {
+          const sig = asciiKey(
+            rec.tesisatNo
+              ? `tes_${rec.tesisatNo}_${rec.seriNo}`
+              : `${rec.district}_${rec.settlement}_${rec.address}_${rec.meterType}`
+          );
+          if (seen.has(sig)) {
+            const existingIdx = cleaned.findIndex(c => c._sig === sig);
+            if (existingIdx !== -1 && rec.completed) {
+              cleaned[existingIdx].completed = true;
+              cleaned[existingIdx].completedAt = rec.completedAt || Date.now();
+            }
+            return;
+          }
+          rec._sig = sig;
+          seen.add(sig);
+        }
+
+        cleaned.push(rec);
+      });
+
+      return cleaned.map(({ _sig, ...rest }) => rest);
+    }
+
+    let aiCycleLock = false;
+    let lastServerPushHash = "";
+
+    function autonomousAIController(rawList, opts = {}) {
+      const { syncServer = AI_AUTHORITY.autoSyncServer, reason = "otonom döngü", resetPaging = false } = opts;
+      if (!AI_AUTHORITY.fullAccess || aiCycleLock) return;
+      aiCycleLock = true;
+
+      try {
+        const cleanList = AI_AUTHORITY.autoCleanData ? aiDeduplicateAndClean(rawList) : (rawList || []);
+        const payload = {};
+        cleanList.forEach((j, idx) => {
+          const safeId = String(j.id || `job_${idx + 1}`).replace(/[.#$/\[\]]/g, "_").slice(0, 120);
+          payload[safeId] = { ...j, id: safeId };
+        });
+
+        allJobs = Object.values(payload);
+        saveToLocalCache(payload);
+
+        if (AI_AUTHORITY.autoRefreshUI) {
+          populateFilters();
+          applyFilters(resetPaging);
+          if (activeTab === "map") renderMap(false);
+        }
+
+        if (syncServer && allJobs.length > 0) {
+          const digest = `${allJobs.length}_${allJobs.filter(x => x.completed).length}_${allJobs[0]?.id || ""}`;
+          if (digest !== lastServerPushHash) {
+            lastServerPushHash = digest;
+            set(ref(db, `${DB_PATH}/jobs`), payload)
+              .then(() => {
+                el.adminStatus.textContent = `🤖 Tam Yetkili AI (${reason}): ${allJobs.length} kayıt hafızaya ve sunucuya işlendi.`;
+              })
+              .catch(err => {
+                el.adminStatus.textContent = `🤖 Tam Yetkili AI (${reason}): ${allJobs.length} kayıt hafızada hazır (Sunucu: ${err.message})`;
+              });
+          }
+        } else if (allJobs.length > 0) {
+          el.adminStatus.textContent = `🤖 Tam Yetkili AI aktif: ${allJobs.length} kayıt hafızada hazır.`;
+        }
+      } finally {
+        aiCycleLock = false;
+      }
+    }
+
+    window.__runFullAI = (overrideServerSync = true) => {
+      autonomousAIController(allJobs, { syncServer: Boolean(overrideServerSync), reason: "manuel tam yetki", resetPaging: false });
+    };
 
     function renderDistrictBreakdown() {
       const pool = allJobs.filter(j => {
@@ -1305,19 +1486,9 @@
     el.repairDbBtn.addEventListener("click", async () => {
       try {
         if (!allJobs.length) { el.adminStatus.textContent = "Düzenlenecek kayıt yok."; return; }
-        el.adminStatus.textContent = "Sunucudaki kayıtlar düzenleniyor...";
-        const payload = {};
-        allJobs.forEach(j => {
-          const k = String(j.id).replace(/[.#$/\[\]]/g, "_");
-          payload[k] = {
-            id: k, tesisatNo: j.tesisatNo, seriNo: j.seriNo, aboneAdi: j.displayTitle,
-            district: j.district, category: j.category, settlement: j.settlement,
-            address: j.address, rawAddress: j.streetOnly, meterType: j.meterType,
-            completed: j.completed, completedAt: j.completedAt || null
-          };
-        });
-        await set(ref(db, `${DB_PATH}/jobs`), payload);
-        el.adminStatus.textContent = `✅ ${allJobs.length} kayıt sunucuda düzenlendi.`;
+        el.adminStatus.textContent = "🤖 Tam Yetkili AI sunucudaki tüm kayıtları temizleyip düzenliyor...";
+        lastServerPushHash = "";
+        autonomousAIController(allJobs, { syncServer: true, reason: "tam yetkili temizlik", resetPaging: false });
       } catch (e) { el.adminStatus.textContent = "❌ Hata: " + e.message; }
     });
 
@@ -1330,48 +1501,62 @@
     el.clearAllBtn.addEventListener("click", async () => {
       try {
         if (!confirm("Tüm kayıtlar silinsin mi?")) return;
+        localStorage.removeItem(LOCAL_CACHE_KEY);
         await remove(ref(db, `${DB_PATH}/jobs`));
+        allJobs = [];
+        lastServerPushHash = "";
+        populateFilters();
+        applyFilters(true);
         el.adminStatus.textContent = "Tüm kayıtlar silindi.";
       } catch (e) { el.adminStatus.textContent = "❌ Hata: " + e.message; }
     });
 
     async function pushRows(rows) {
-      if (!rows.length) { el.adminStatus.textContent = "Dosyada kayıt bulunamadı."; return; }
-      const payload = {};
-      rows.forEach((r, i) => {
-        const id = String(r.id || `job_${Date.now()}_${i}`).replace(/[.#$/\[\]]/g, "_");
-        payload[id] = {
-          id, tesisatNo: r.tesisatNo, seriNo: r.seriNo, aboneAdi: r.displayTitle,
-          district: r.district, category: r.category, settlement: r.settlement,
-          address: r.address, rawAddress: r.streetOnly, meterType: r.meterType, completed: false
-        };
-      });
-      await set(ref(db, `${DB_PATH}/jobs`), payload);
-      el.adminStatus.textContent = `✅ ${rows.length} kayıt sunucuya aktarıldı.`;
+      if (!rows || !rows.length) {
+        el.adminStatus.textContent = "Dosyada kayıt bulunamadı.";
+        return;
+      }
+      el.adminStatus.textContent = `🤖 Tam Yetkili AI ${rows.length} satırı tek seferde okuyup düzenliyor...`;
+      lastServerPushHash = "";
+      autonomousAIController(rows, { syncServer: true, reason: "dosya yükleme", resetPaging: true });
     }
 
     el.excelInput.addEventListener("change", async e => {
       const file = e.target.files[0];
       if (!file) return;
       try {
-        el.adminStatus.textContent = "Excel okunuyor...";
+        el.adminStatus.textContent = "🤖 AI Excel dosyasındaki tüm sayfaları tek seferde okuyor...";
         const buf = await file.arrayBuffer();
-        const wb = XLSX.read(buf, { type: "array" });
-        const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" });
-        const mapped = json.map((row, i) => normalizeRecord({
-          id: `xl_${i + 1}_${row["Tesisat No"] || row["Seri No"] || Date.now()}`,
-          tesisatNo: row["Tesisat No"] || row["TESİSAT NO"] || row["tesisatNo"] || "",
-          seriNo: row["Seri No"] || row["SERİ NO"] || row["seriNo"] || "",
-          aboneAdi: row["Abone Adı"] || row["Ünvan"] || row["aboneAdi"] || "",
-          address: row["Adres"] || row["ADRES"] || row["address"] || "",
-          settlement: row["Mahalle"] || row["Köy"] || row["settlement"] || "",
-          district: row["İlçe"] || row["İLÇE"] || row["district"] || "",
-          meterType: row["Sayaç Tipi"] || row["meterType"] || "",
-          completed: false
-        }, `xl_${i + 1}`));
-        await pushRows(mapped);
+        const wb = XLSX.read(buf, { type: "array", cellDates: true });
+        const collected = [];
+
+        for (const sheetName of wb.SheetNames) {
+          const sheet = wb.Sheets[sheetName];
+          const json = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
+          const nonEmpty = json.filter(row => Object.values(row).some(v => String(v ?? "").trim() !== ""));
+
+          nonEmpty.forEach((row, i) => {
+            const tesisatNo = aiPickColumn(row, ["tesisat", "installation", "abone no", "sayac no"]);
+            const seriNo = aiPickColumn(row, ["seri", "serial", "sayaç seri", "sayac seri"]);
+            const aboneAdi = aiPickColumn(row, ["abone", "unvan", "ünvan", "musteri", "müşteri", "ad soyad"]);
+            const address = aiPickColumn(row, ["adres", "address", "sokak", "cadde", "acik adres", "açık adres"]);
+            const settlement = aiPickColumn(row, ["mahalle", "koy", "köy", "yerlesim", "yerleşim", "mah"]);
+            const district = aiPickColumn(row, ["ilce", "ilçe", "district"]);
+            const meterType = aiPickColumn(row, ["sayac tipi", "sayaç tipi", "faz", "tip", "meter"]);
+            const fallback = address || Object.values(row).map(v => String(v ?? "").trim()).filter(Boolean).join(" | ");
+
+            collected.push({
+              id: `xl_${sheetName}_${i + 1}_${tesisatNo || "t"}_${seriNo || "s"}_${Date.now()}`,
+              tesisatNo, seriNo, aboneAdi,
+              address: fallback, settlement, district, meterType,
+              completed: false
+            });
+          });
+        }
+
+        await pushRows(collected);
       } catch (err) {
-        el.adminStatus.textContent = "❌ Excel hatası: " + err.message;
+        el.adminStatus.textContent = "❌ AI Excel hatası: " + err.message;
       } finally { e.target.value = ""; }
     });
 
@@ -1379,7 +1564,7 @@
       const file = e.target.files[0];
       if (!file) return;
       try {
-        el.adminStatus.textContent = "PDF okunuyor...";
+        el.adminStatus.textContent = "🤖 AI PDF dosyasını okuyor...";
         pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
         const buf = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
@@ -1392,23 +1577,42 @@
             if (t.length > 12) lines.push(t);
           });
         }
-        const mapped = lines.slice(0, 2500).map((line, i) => normalizeRecord({ id: `pdf_${i + 1}_${Date.now()}`, address: line, completed: false }, `pdf_${i + 1}`));
+        const mapped = lines.slice(0, 3000).map((line, i) => ({
+          id: `pdf_${i + 1}_${Date.now()}`,
+          address: line,
+          completed: false
+        }));
         await pushRows(mapped);
       } catch (err) {
-        el.adminStatus.textContent = "❌ PDF hatası: " + err.message;
+        el.adminStatus.textContent = "❌ AI PDF hatası: " + err.message;
       } finally { e.target.value = ""; }
     });
 
+    const cachedJobs = loadFromLocalCache();
+    if (cachedJobs && Object.keys(cachedJobs).length > 0) {
+      autonomousAIController(Object.values(cachedJobs), { syncServer: false, reason: "yerel hafıza", resetPaging: true });
+    }
+
     onValue(ref(db, "/"), snap => {
       el.syncStatus.className = "sync-status sync-ok";
-      el.syncStatus.textContent = "🟢 Sunucu Bağlı";
-      allJobs = extractJobs(snap.val());
-      populateFilters();
-      applyFilters(false);
+      el.syncStatus.textContent = "🟢 Sunucu Bağlı • Tam Yetkili AI";
+
+      const serverJobs = extractJobs(snap.val());
+      if (serverJobs.length > 0) {
+        autonomousAIController(serverJobs, { syncServer: false, reason: "canlı sunucu", resetPaging: false });
+      } else if (!allJobs.length) {
+        allJobs = [];
+        populateFilters();
+        applyFilters(false);
+      }
     }, err => {
       el.syncStatus.className = "sync-status sync-err";
-      el.syncStatus.textContent = "❌ Bağlantı Hatası";
-      el.adminStatus.textContent = err.message;
+      el.syncStatus.textContent = "❌ Bağlantı Hatası (AI Hafıza)";
+      if (allJobs.length > 0) {
+        el.adminStatus.textContent = `🤖 AI Hafıza Modu: Sunucu bağlantısı olmadan ${allJobs.length} kayıt ekranda.`;
+      } else {
+        el.adminStatus.textContent = err.message;
+      }
     });
   </script>
 </body>
