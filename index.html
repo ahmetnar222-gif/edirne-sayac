@@ -194,10 +194,11 @@
       line-height: 1.5;
     }
 
-    .info-line { margin-bottom: 2px; }
+    .info-line { margin-bottom: 4px; }
     .info-line:last-child { margin-bottom: 0; color: var(--text-muted); font-size: 12px; }
+    .info-label { color: #fbbf24; font-weight: 700; }
 
-    .job-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .job-actions { display: grid; grid-template-columns: 1fr; gap: 8px; }
 
     .btn {
       border: 1px solid var(--border);
@@ -315,7 +316,7 @@
           <option value="ALL">Tüm Mahalle / Köyler</option>
         </select>
 
-        <input id="searchInput" type="text" placeholder="Tesisat No, Seri No, Mahalle veya Köy ara..." />
+        <input id="searchInput" type="text" placeholder="Tesisat No, Seri No, Mahalle, Köy veya Açık Adres ara..." />
       </div>
 
       <div class="controls-row">
@@ -434,7 +435,8 @@
       "buyukkaristiran": "Büyükkarıştıran", "kavakkoy": "Kavakköy", "kaynarca": "Kaynarca",
       "abalar": "Abalar", "buyukdoganca": "Büyükdoğanca", "copkoy": "Çöpköy",
       "avariz": "Avarız", "degirmenyeni": "Değirmenyeni", "kemal": "Kemal",
-      "haciisa": "Hacıisa", "varos": "Varoş", "balaban": "Balaban", "mescit": "Mescit"
+      "haciisa": "Hacıisa", "varos": "Varoş", "balaban": "Balaban", "mescit": "Mescit",
+      "kosenciftligi": "Köşençiftliği", "kösenciftligi": "Köşençiftliği"
     };
 
     const KOYLER = new Set([
@@ -443,7 +445,8 @@
       "orhaniye", "uzgac", "ahirkoy", "karakasim", "haciumur", "yenimuhacir",
       "begendik", "kuplu", "subasi", "kircasalih", "igneada", "kiyikoy",
       "ahmetbey", "evrensekiz", "buyukkaristiran", "kavakkoy", "kaynarca", "abalar",
-      "buyukdoganca", "copkoy", "avariz", "degirmenyeni", "kemal", "balaban", "mescit"
+      "buyukdoganca", "copkoy", "avariz", "degirmenyeni", "kemal", "balaban", "mescit",
+      "kosenciftligi", "kösenciftligi"
     ]);
 
     const trLower = s => (s || "").toString().toLocaleLowerCase("tr-TR").trim();
@@ -459,8 +462,8 @@
 
     function stripNoiseFromSettlementName(str, districtIlce) {
       let clean = String(str || "")
-        .replace(/\b\d{6,14}\b/g, " ")
-        .replace(/\b(lun|byl|mak|sayac|sayaç|sok|sk|no|daire|diskapino|dışkapıno|hayat|köyün kendisi|koyun kendisi|koy ici|köy içi|merkez|genel|mahallesi|mah\.?|mh\.?|köyü|koyu|köy|koy|beldesi|belde|belediyesi|belediye|edirne|kırklareli|kirklareli)\b/gi, " ")
+        .replace(/\b\d+\b/g, " ")
+        .replace(/\b(lun|byl|mak|sayac|sayaç|monofaze|trifaze|mono|tri|faz|sok|sk|no|daire|diskapino|dışkapıno|hayat|köyün kendisi|koyun kendisi|koy ici|köy içi|merkez|genel|mahallesi|mah\.?|mh\.?|köyü|koyu|köy|koy|beldesi|belde|belediyesi|belediye|edirne|kırklareli|kirklareli)\b/gi, " ")
         .replace(/[|/\\\-–—.,:;]+/g, " ")
         .replace(/\s+/g, " ")
         .trim();
@@ -511,8 +514,8 @@
         cat = (KOYLER.has(matchedKey) || hasExplicitKoy) ? "KOY" : "MAHALLE";
       } else {
         let cand = String(rawSett || "");
-        const kM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]+?)\s*(?:Köyü|Köy|Beldesi|Belde|Belediyesi)/i);
-        const mM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]+?)\s*(?:Mahallesi|Mah\.?|Mh\.?)/i);
+        const kM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü\s]+?)\s*(?:Köyü|Köy|Beldesi|Belde|Belediyesi)/i);
+        const mM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü\s]+?)\s*(?:Mahallesi|Mah\.?|Mh\.?)/i);
 
         if (kM && asciiKey(kM[1]) !== districtNorm) { cat = "KOY"; cand = kM[1]; }
         else if (mM && asciiKey(mM[1]) !== districtNorm) { cat = "MAHALLE"; cand = mM[1]; }
@@ -543,20 +546,44 @@
         : { category: "MAHALLE", settlement: `${base} Mah.` };
     }
 
-    function extractStreetLine(rawText, settlement) {
-      const mSok = rawText.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]{2,28}?\s*(?:Sk\.?|Sok\.?|Sokak|Cd\.?|Cad\.?|Cadde)\s*(?:No[:\s]*[A-Za-z0-9/-]+)?)/i);
+    function extractOpenAddress(rawText, settlement, districtKey) {
+      const districtMeta = DISTRICTS[districtKey] || { il: "Edirne", ilce: districtKey };
+      const cleanedRaw = String(rawText || "")
+        .replace(/\b\d{7,14}\b/g, " ")
+        .replace(/\b(lun|byl|mak|sayac|sayaç|monofaze|trifaze|mono|tri|faz|köyün kendisi|koyun kendisi|koy ici|köy içi|diskapino[:\s]*hayat|dışkapıno[:\s]*hayat|hayat)\b/gi, " ")
+        .replace(/\|+/g, ", ")
+        .replace(/\s*,\s*/g, ", ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const parts = [];
+      if (settlement) parts.push(settlement);
+
+      const mSok = cleanedRaw.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]{2,36}?\s*(?:Sk\.?|Sok\.?|Sokak|Cd\.?|Cad\.?|Cadde|Blv\.?|Bulvarı)\s*(?:No[:\s]*[A-Za-z0-9/-]+)?(?:\s*(?:Daire|D\.?|Kat|Apt\.?)[:\s]*[A-Za-z0-9/-]+)?)/i);
       if (mSok) {
-        const cleaned = properTr(
-          mSok[1]
-            .replace(/\b(lun|byl|mak|sayac|sayaç|diskapino|dışkapıno|hayat)\b/gi, " ")
-            .replace(/\s+/g, " ")
-            .trim()
-        );
-        if (cleaned.length >= 3 && asciiKey(cleaned) !== asciiKey(settlement)) {
-          return cleaned;
+        const sokClean = properTr(mSok[1].replace(/\s+/g, " ").trim());
+        if (sokClean.length >= 3 && asciiKey(sokClean) !== asciiKey(settlement)) {
+          parts.push(sokClean);
         }
+      } else {
+        const mNo = cleanedRaw.match(/\b(?:No|Sok\.?\s*No|Cad\.?\s*No)[:\s]*([A-Za-z0-9/-]{1,12})\b/i);
+        if (mNo) parts.push(`No: ${mNo[1]}`);
       }
-      return "";
+
+      const cityLine = `${districtMeta.ilce} / ${districtMeta.il}`;
+      if (!parts.some(p => asciiKey(p).includes(asciiKey(districtMeta.ilce)))) {
+        parts.push(cityLine);
+      }
+
+      const deduped = [];
+      parts.forEach(p => {
+        const k = asciiKey(p);
+        if (p && !deduped.some(existing => asciiKey(existing) === k)) {
+          deduped.push(p);
+        }
+      });
+
+      return deduped.join(", ");
     }
 
     function normalizeRecord(raw, key) {
@@ -585,7 +612,7 @@
         district
       );
 
-      const streetLine = extractStreetLine(rawText, sett.settlement);
+      const openAddress = extractOpenAddress(rawText, sett.settlement, district);
       const mNorm = asciiKey(`${raw.meterType || raw["Sayaç Tipi"] || ""} ${rawText}`);
       const meterType = (mNorm.includes("tri") || mNorm.includes("3 faz") || mNorm.includes("trifaze")) ? "TRI" : "MONO";
       const rawTitle = String(raw.aboneAdi || raw.customerName || raw["Abone Adı"] || "").trim();
@@ -594,11 +621,6 @@
         : (seriNo ? `Sayaç: ${seriNo}` : (rawTitle ? properTr(rawTitle) : `${sett.settlement} Kaydı`));
 
       const districtMeta = DISTRICTS[district] || { il: "Edirne", ilce: district };
-      const cleanAddress = [
-        sett.settlement,
-        streetLine,
-        `${districtMeta.ilce} / ${districtMeta.il}`
-      ].filter(Boolean).join(", ");
 
       return {
         id: String(raw.id || key),
@@ -609,8 +631,7 @@
         il: districtMeta.il,
         category: sett.category,
         settlement: sett.settlement,
-        streetLine,
-        cleanAddress,
+        openAddress,
         meterType,
         completed: Boolean(raw.completed),
         completedAt: raw.completedAt || null
@@ -839,10 +860,13 @@
       const sPool = pool.filter(j => selectedDistrict === "ALL" || j.district === selectedDistrict);
       const uniqueMap = new Map();
       sPool.forEach(j => {
-        const cleanLabel = String(j.settlement || "").replace(/^\d+\s+/, "").trim();
-        if (!cleanLabel) return;
-        const k = asciiKey(cleanLabel);
-        if (!uniqueMap.has(k)) uniqueMap.set(k, cleanLabel);
+        const cleanLabel = stripNoiseFromSettlementName(j.settlement, (DISTRICTS[j.district] || {}).ilce);
+        const formatted = cleanLabel
+          ? (j.category === "KOY" ? `${properTr(cleanLabel)} Köyü` : `${properTr(cleanLabel)} Mah.`)
+          : "";
+        if (!formatted) return;
+        const k = asciiKey(formatted);
+        if (!uniqueMap.has(k)) uniqueMap.set(k, formatted);
       });
 
       const settlements = Array.from(uniqueMap.values()).sort((a, b) => a.localeCompare(b, "tr"));
@@ -865,7 +889,7 @@
         if (selectedDistrict !== "ALL" && j.district !== selectedDistrict) return false;
         if (selectedSettlement !== "ALL" && asciiKey(j.settlement) !== asciiKey(selectedSettlement)) return false;
         if (selectedMeter !== "ALL" && j.meterType !== selectedMeter) return false;
-        if (q && !asciiKey(`${j.tesisatNo} ${j.seriNo} ${j.district} ${j.settlement}`).includes(q)) return false;
+        if (q && !asciiKey(`${j.tesisatNo} ${j.seriNo} ${j.district} ${j.settlement} ${j.openAddress || ""}`).includes(q)) return false;
         return true;
       });
 
@@ -895,11 +919,6 @@
       ? `<span class="tag tag-koy">🌾 Köy</span>`
       : `<span class="tag tag-mahalle">🏙️ Mahalle</span>`;
 
-    function getMapsUrl(job) {
-      const queryText = job.cleanAddress || `${job.settlement}, ${job.district} / ${job.il || "Edirne"}`;
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(queryText)}`;
-    }
-
     function renderList() {
       if (!filteredJobs.length) {
         el.jobsContainer.innerHTML = `<div class="empty-box">Seçili filtrelere uygun kayıt bulunamadı.</div>`;
@@ -911,9 +930,7 @@
 
       el.jobsContainer.innerHTML = slice.map(j => {
         const meterLabel = j.meterType === "TRI" ? "Trifaze Sayaç" : "Monofaze Sayaç";
-        const line2 = j.streetLine ? `${j.streetLine} • ${meterLabel}` : meterLabel;
-        const line3 = `${j.district} / ${j.il || "Edirne"}`;
-        const mapsUrl = getMapsUrl(j);
+        const addressText = j.openAddress || `${j.settlement}, ${j.district} / ${j.il || "Edirne"}`;
 
         return `
           <article class="job-card">
@@ -926,12 +943,10 @@
               <strong>${j.settlement}</strong> (${j.district}) • ${j.meterType === "TRI" ? "Trifaze" : "Monofaze"}
             </div>
             <div class="job-info-box">
-              <div class="info-line"><strong>${j.settlement}</strong></div>
-              <div class="info-line">${line2}</div>
-              <div class="info-line">${line3}</div>
+              <div class="info-line"><span class="info-label">Açık Adres:</span> ${addressText}</div>
+              <div class="info-line">${meterLabel} • ${j.district} / ${j.il || "Edirne"}</div>
             </div>
             <div class="job-actions">
-              <a class="btn btn-primary" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">🧭 Git</a>
               <button class="btn ${j.completed ? "btn-secondary" : "btn-success"}" onclick="window.__toggleJob('${j.id}', ${!j.completed})">
                 ${j.completed ? "↩️ Bekleyene Al" : "✓ İşi Tamamla"}
               </button>
