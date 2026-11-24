@@ -223,13 +223,8 @@
       margin-bottom: 10px;
     }
 
-    .err-card {
-      border-color: rgba(239, 68, 68, 0.55);
-    }
-
-    .done-fault-card {
-      border-color: rgba(16, 185, 129, 0.55);
-    }
+    .err-card { border-color: rgba(239, 68, 68, 0.55); }
+    .done-fault-card { border-color: rgba(16, 185, 129, 0.55); }
 
     .job-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
     .job-title { font-size: 14px; font-weight: 800; color: #fbbf24; }
@@ -791,17 +786,30 @@
       };
     }
 
+    function pickFlexible(row, keys) {
+      if (!row || typeof row !== "object") return "";
+      for (const k of Object.keys(row)) {
+        const ak = asciiKey(k);
+        if (keys.some(target => ak === asciiKey(target) || ak.includes(asciiKey(target)))) {
+          const val = String(row[k] ?? "").trim();
+          if (val) return val;
+        }
+      }
+      return "";
+    }
+
     function classifyFaultRow(row) {
-      const tesisatNo = String(row["Tesisat"] || row["tesisatNo"] || "").trim();
-      const personel = String(row["PERSONEL"] || row["PERSONEL.1"] || row["personel"] || "Bilinmeyen Personel").trim();
-      const ilRaw = String(row["İL"] || row["il"] || "").trim();
-      const planGrubu = String(row["PLANLAMA GRUBU2"] || row["planGrubu"] || ilRaw || "Genel").trim();
-      const rawAddress = String(row["Adres"] || row["rawAddress"] || "").trim();
-      const modemSeri = String(row["MODEM SERİ NO"] || row["modemSeri"] || "").trim();
-      const modemMarka = String(row["MODEM MARKA"] || row["modemMarka"] || "").trim();
-      const sayacMarka = String(row["SAYAÇ MARKA "] || row["SAYAÇ MARKA"] || row["sayacMarka"] || "").trim();
-      const sayacSeri = String(row["SAYAÇ SERİ NO2"] || row["sayacSeri"] || "").trim();
-      const durumNotu = String(row["Sütun1"] || row["durumNotu"] || "").trim();
+      const tesisatNo = pickFlexible(row, ["tesisat", "tesisatNo", "abone", "sozlesme", "numara"]) || "";
+      const personel = pickFlexible(row, ["personel", "ekip", "gorevli", "okuyucu", "saha"]) || "Bilinmeyen Personel";
+      const ilRaw = pickFlexible(row, ["il", "sehir"]) || "";
+      const planGrubu = pickFlexible(row, ["planlama", "planGrubu", "grup", "ilce", "bolge"]) || ilRaw || "Genel";
+      const rawAddress = pickFlexible(row, ["adres", "rawAddress", "mahalle", "koy", "sokak", "cadde"])
+        || Object.values(row).map(v => String(v ?? "").trim()).filter(Boolean).join(" • ");
+      const modemSeri = pickFlexible(row, ["modem seri", "modemSeri", "modem no"]) || "";
+      const modemMarka = pickFlexible(row, ["modem marka", "modemMarka"]) || "";
+      const sayacMarka = pickFlexible(row, ["sayac marka", "sayaç marka", "sayacMarka", "marka"]) || "";
+      const sayacSeri = pickFlexible(row, ["sayac seri", "sayaç seri", "sayacSeri", "seri"]) || "";
+      const durumNotu = pickFlexible(row, ["sutun1", "durum", "ariza", "aciklama", "not", "sebep", "hata"]) || "";
 
       const flags = [];
       if (!/\b(?:MAH|KÖY|KOY)\b/i.test(rawAddress)) flags.push("MISSING_SETTLEMENT");
@@ -810,7 +818,7 @@
       if (durumNotu) flags.push("METER_ERR");
 
       return {
-        id: String(row.id || `fault_${tesisatNo}_${personel}_${Date.now()}`).replace(/[.#$/\[\]]/g, "_"),
+        id: String(row.id || `fault_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`).replace(/[.#$/\[\]]/g, "_"),
         tesisatNo,
         personel,
         ilRaw,
@@ -1019,28 +1027,12 @@
       el.faultCompletedSubCount.textContent = completedFaults.length;
     }
 
-    function dedupeFaultRows(rows) {
-      const seen = new Set();
-      const out = [];
-      for (const item of rows) {
-        const key = `${asciiKey(item.tesisatNo)}|${asciiKey(item.rawAddress)}|${asciiKey(item.personel)}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        out.push(item);
-      }
-      return out;
-    }
-
     function setFaultItems(rows, syncToFirebase = false) {
-      const classified = rows
-        .map((r, i) => r.flags ? r : classifyFaultRow({ ...r, id: r.id || `f_${i + 1}` }))
-        .filter(f => {
-          const tes = String(f.tesisatNo || "").trim();
-          const addr = String(f.rawAddress || "").trim();
-          return tes.length >= 4 || addr.length >= 6;
-        });
+      const classified = (rows || [])
+        .map((r, i) => r.flags ? r : classifyFaultRow({ ...r, id: r.id || `f_${i + 1}_${Date.now()}` }))
+        .filter(f => String(f.rawAddress || "").trim().length > 0 || String(f.tesisatNo || "").trim().length > 0);
 
-      allFaults = dedupeFaultRows(classified);
+      allFaults = classified;
       saveFaultCache(allFaults);
       updateFaultBadges();
       populateFaultFilters();
@@ -1048,7 +1040,7 @@
 
       if (syncToFirebase && allFaults.length > 0) {
         const obj = {};
-        allFaults.slice(0, 2500).forEach((item, idx) => {
+        allFaults.slice(0, 1500).forEach((item, idx) => {
           obj[item.id || `f_${idx + 1}`] = item;
         });
         set(ref(db, `${DB_PATH}/fault_addresses`), obj).catch(() => {});
@@ -1272,15 +1264,23 @@
         el.adminStatus.textContent = "⏳ Hatalı adres Excel dosyası okunuyor...";
         const buf = await file.arrayBuffer();
         const wb = XLSX.read(buf, { type: "array", raw: false });
-        const targetSheet = wb.SheetNames.includes("Liste") ? "Liste" : wb.SheetNames[0];
-        const rows = XLSX.utils.sheet_to_json(wb.Sheets[targetSheet], { defval: "", raw: false });
-        const mapped = rows
-          .map((r, i) => classifyFaultRow({ ...r, id: `fl_${i + 1}_${Date.now()}` }))
-          .filter(f => String(f.tesisatNo || "").trim() !== "" || String(f.rawAddress || "").trim() !== "");
-        setFaultItems(mapped, true);
+        const collected = [];
+
+        for (const sheetName of wb.SheetNames) {
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: "", raw: false });
+          for (let i = 0; i < rows.length; i++) {
+            const r = rows[i];
+            const hasVal = Object.values(r).some(v => String(v ?? "").trim() !== "");
+            if (!hasVal) continue;
+            collected.push(classifyFaultRow({ ...r, id: `fl_${sheetName}_${i + 1}_${Date.now()}` }));
+          }
+        }
+
+        const merged = [...collected, ...allFaults];
+        setFaultItems(merged, true);
         switchModule("FAULT");
         switchFaultSubTab("ACTIVE");
-        el.adminStatus.textContent = `✅ Hatalı adres listesi yüklendi: ${allFaults.length} kayıt.`;
+        el.adminStatus.textContent = `✅ Yeni ${collected.length} hatalı kayıt eklendi (Toplam: ${allFaults.length}).`;
       } catch (err) {
         el.adminStatus.textContent = "❌ Hatalı adres Excel hatası: " + err.message;
       } finally {
