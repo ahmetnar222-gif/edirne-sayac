@@ -60,6 +60,7 @@
       font-size: 11px;
       padding: 5px 7px;
       border-radius: 8px;
+      flex-shrink: 0;
     }
     .app-title { font-size: 14px; font-weight: 800; margin: 0; }
     .sub-status { font-size: 11px; color: #34d399; font-weight: 700; }
@@ -72,6 +73,35 @@
       font-size: 12px;
       font-weight: 800;
       white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .menu-btn {
+      background: var(--bg-soft);
+      color: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      width: 36px;
+      height: 36px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .admin-box {
+      border: 1px solid rgba(245, 158, 11, 0.55);
+      background: rgba(245, 158, 11, 0.08);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
     }
 
     .module-switch {
@@ -106,15 +136,9 @@
       margin-bottom: 10px;
     }
 
-    .upload-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
     .filter-stack { display: flex; flex-direction: column; gap: 8px; }
 
-    select, input[type="text"] {
+    select, input[type="text"], input[type="password"] {
       width: 100%;
       background: var(--bg-input);
       color: #ffffff;
@@ -237,13 +261,18 @@
         <span class="badge-tredas">TREDAŞ</span>
         <div>
           <h1 class="app-title">Saha & Hatalı Adres Okuyucu</h1>
-          <div class="sub-status">📊 Salt Okunur Excel Modu (Dosyaya Yazılmaz)</div>
+          <div class="sub-status">🔒 Kilitli Yetkili Yükleme • Salt Okunur Excel</div>
         </div>
       </div>
       <div id="topCounter" class="stats-pill">0 Kayıt</div>
+      <button id="menuBtn" class="menu-btn" title="Yetkili Girişi">⋮</button>
     </header>
 
-    <section class="card">
+    <section id="adminPanel" class="admin-box hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+        <strong>🔐 YETKİLİ PANELİ (KİLİT AÇIK)</strong>
+        <button id="lockAdminBtn" class="btn btn-secondary" style="padding:5px 10px; font-size:12px;">🔒 Kilitle</button>
+      </div>
       <div class="upload-grid">
         <label class="btn btn-primary" style="cursor:pointer;">
           📊 Saha Excel Oku
@@ -254,7 +283,7 @@
           <input type="file" id="faultExcelInput" accept=".xlsx,.xls,.csv" hidden />
         </label>
       </div>
-      <div id="readStatus" class="status-note">Excel dosyasını seçin (ör. BULUS_OSOS_KONTROL_DUZENLENMIS_v2.xlsx).</div>
+      <div id="readStatus" class="status-note">Excel dosyası seçildiğinde yalnızca tarayıcıda okunur; dosyaya yazılmaz.</div>
     </section>
 
     <div class="module-switch">
@@ -296,6 +325,21 @@
     </div>
   </div>
 
+  <!-- Kilit / PIN Penceresi -->
+  <div id="pinModal" class="modal-backdrop">
+    <div class="modal-card">
+      <h3 style="margin-top:0;">🔒 Yetkili Kilit Girişi</h3>
+      <p style="font-size:13px; color:var(--text-muted);">Excel okuma/yükleme panelini açmak için PIN girin.</p>
+      <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN Kodu" style="margin-bottom:10px;" />
+      <div style="display:flex; gap:8px;">
+        <button id="pinSubmitBtn" class="btn btn-primary" style="flex:1;">Kilidi Aç</button>
+        <button id="pinCloseBtn" class="btn btn-secondary" style="flex:1;">İptal</button>
+      </div>
+      <div id="pinError" style="color:var(--danger); font-size:12px; margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- Tamamlama Nedeni Penceresi -->
   <div id="reasonModal" class="modal-backdrop">
     <div class="modal-card">
       <h3 style="margin-top:0;">Tamamlandı — Neden Seç</h3>
@@ -315,7 +359,10 @@
   </div>
 
   <script>
+    const ADMIN_PIN = "1923";
     const PAGE_SIZE = 40;
+
+    let isUnlocked = false;
     let sahaRows = [];
     let filteredSaha = [];
     let sahaLimit = PAGE_SIZE;
@@ -330,6 +377,14 @@
 
     const el = {
       topCounter: document.getElementById("topCounter"),
+      menuBtn: document.getElementById("menuBtn"),
+      pinModal: document.getElementById("pinModal"),
+      pinInput: document.getElementById("pinInput"),
+      pinSubmitBtn: document.getElementById("pinSubmitBtn"),
+      pinCloseBtn: document.getElementById("pinCloseBtn"),
+      pinError: document.getElementById("pinError"),
+      adminPanel: document.getElementById("adminPanel"),
+      lockAdminBtn: document.getElementById("lockAdminBtn"),
       readStatus: document.getElementById("readStatus"),
       sahaExcelInput: document.getElementById("sahaExcelInput"),
       faultExcelInput: document.getElementById("faultExcelInput"),
@@ -361,6 +416,44 @@
       reasonConfirmBtn: document.getElementById("reasonConfirmBtn"),
       reasonCancelBtn: document.getElementById("reasonCancelBtn")
     };
+
+    function openLockModal() {
+      el.pinError.textContent = "";
+      el.pinInput.value = "";
+      el.pinModal.classList.add("open");
+      el.pinInput.focus();
+    }
+
+    function lockPanel() {
+      isUnlocked = false;
+      el.adminPanel.classList.add("hidden");
+    }
+
+    el.menuBtn.addEventListener("click", () => {
+      if (isUnlocked) {
+        el.adminPanel.classList.toggle("hidden");
+      } else {
+        openLockModal();
+      }
+    });
+
+    el.pinCloseBtn.addEventListener("click", () => el.pinModal.classList.remove("open"));
+
+    el.pinSubmitBtn.addEventListener("click", () => {
+      if (el.pinInput.value.trim() === ADMIN_PIN) {
+        isUnlocked = true;
+        el.pinModal.classList.remove("open");
+        el.adminPanel.classList.remove("hidden");
+      } else {
+        el.pinError.textContent = "PIN hatalı.";
+      }
+    });
+
+    el.pinInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") el.pinSubmitBtn.click();
+    });
+
+    el.lockAdminBtn.addEventListener("click", lockPanel);
 
     const norm = s => (s || "").toString().toLocaleLowerCase("tr-TR")
       .replace(/ı/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u")
@@ -453,7 +546,7 @@
       });
 
       if (!filteredSaha.length) {
-        el.sahaContainer.innerHTML = `<div class="empty-box">Saha kaydı yok. Yukarıdan "Saha Excel Oku" ile Excel seçin.</div>`;
+        el.sahaContainer.innerHTML = `<div class="empty-box">Saha kaydı yok. Sağ üstteki ⋮ kilit menüsünden PIN girip Excel okutun.</div>`;
         el.sahaMoreBtn.classList.add("hidden");
         return;
       }
@@ -596,6 +689,7 @@
     });
 
     el.sahaExcelInput.addEventListener("change", async e => {
+      if (!isUnlocked) { openLockModal(); e.target.value = ""; return; }
       const file = e.target.files[0];
       if (!file) return;
       try {
@@ -612,6 +706,7 @@
     });
 
     el.faultExcelInput.addEventListener("change", async e => {
+      if (!isUnlocked) { openLockModal(); e.target.value = ""; return; }
       const file = e.target.files[0];
       if (!file) return;
       try {
