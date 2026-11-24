@@ -742,7 +742,7 @@
       if (durumNotu) flags.push("METER_ERR");
 
       return {
-        id: String(row.id || `fault_${tesisatNo}_${personel}`).replace(/[.#$/\[\]]/g, "_"),
+        id: String(row.id || `fault_${tesisatNo}_${personel}_${Date.now()}`).replace(/[.#$/\[\]]/g, "_"),
         tesisatNo,
         personel,
         ilRaw,
@@ -896,6 +896,20 @@
       }
     }
 
+    window.__completeFault = async (id) => {
+      allFaults = allFaults.filter(item => item.id !== id);
+      saveFaultCache(allFaults);
+      el.faultBadgeCount.textContent = allFaults.length;
+      populateFaultFilters();
+      applyFaultFilters(false);
+
+      try {
+        await remove(ref(db, `${DB_PATH}/fault_addresses/${id}`));
+      } catch (e) {
+        console.warn("Sunucu silme uyarısı:", e);
+      }
+    };
+
     function populateFaultFilters() {
       const persons = Array.from(new Set(allFaults.map(f => f.personel))).sort((a, b) => a.localeCompare(b, "tr"));
       el.faultPersonSelect.innerHTML = `<option value="ALL">Tüm Personeller (${persons.length})</option>` +
@@ -918,7 +932,7 @@
       const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "tr"));
 
       if (!sorted.length) {
-        el.faultPersonPills.innerHTML = `<span class="status-note" style="margin:0;">Hatalı adres kaydı yüklenmedi.</span>`;
+        el.faultPersonPills.innerHTML = `<span class="status-note" style="margin:0;">Hatalı adres kaydı kalmadı veya yüklenmedi.</span>`;
         return;
       }
 
@@ -984,6 +998,9 @@
               <div class="info-line"><span class="info-label">Ham Adres:</span> ${f.rawAddress || "-"}</div>
               ${f.durumNotu ? `<div class="info-line"><span class="info-label">Durum / Arıza:</span> ${f.durumNotu}</div>` : ""}
             </div>
+            <div class="job-actions">
+              <button class="btn btn-success" onclick="window.__completeFault('${f.id}')">✓ Tamamlandı</button>
+            </div>
           </article>
         `;
       }).join("");
@@ -1024,7 +1041,6 @@
       }
     });
 
-    // --- Mevcut Saha Listesi Fonksiyonları ---
     function saveToLocalCache(jobsObj) {
       try {
         localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify({
@@ -1355,6 +1371,7 @@
         localStorage.removeItem(LOCAL_CACHE_KEY);
         localStorage.removeItem(FAULT_CACHE_KEY);
         await remove(ref(db, `${DB_PATH}/jobs`));
+        await remove(ref(db, `${DB_PATH}/fault_addresses`));
         allJobs = [];
         allFaults = [];
         lastServerPushHash = "";
