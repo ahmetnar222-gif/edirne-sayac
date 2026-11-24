@@ -173,11 +173,29 @@
     }
     .chip-btn.active { background: rgba(59, 130, 246, 0.28); color: #ffffff; border-color: var(--accent-2); }
 
+    .split-groups {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 640px) {
+      .split-groups { grid-template-columns: 1fr; }
+    }
+
+    .sub-panel {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 9px;
+      max-height: 185px;
+      overflow-y: auto;
+    }
+
     .group-header-title { font-size: 13px; font-weight: 800; color: #fbbf24; margin-bottom: 6px; }
     .district-pills { display: flex; flex-wrap: wrap; gap: 6px; }
 
     .d-pill {
-      background: var(--bg-input);
+      background: var(--bg-card);
       color: var(--text-muted);
       border: 1px solid var(--border);
       border-radius: 999px;
@@ -187,6 +205,7 @@
       cursor: pointer;
     }
     .d-pill.active { background: rgba(16, 185, 129, 0.22); color: #ffffff; border-color: var(--success); }
+    .d-pill.mah-pill.active { background: rgba(59, 130, 246, 0.25); border-color: var(--accent-2); }
 
     .reason-grid {
       display: grid;
@@ -414,9 +433,19 @@
         </div>
       </section>
 
+      <!-- MAHALLE MAHALLE VE KÖY KÖY AYRI AYRI LİSTE -->
       <section id="categorySubGroupCard" class="card">
-        <div id="subGroupTitle" class="group-header-title">🏙️ Mahalleler & 🌾 Köyler — İlçe Dağılımı</div>
-        <div id="districtBreakdownPills" class="district-pills"></div>
+        <div class="split-groups">
+          <div id="mahalleSplitBox" class="sub-panel">
+            <div id="mahalleSplitTitle" class="group-header-title">🏙️ Mahalleler</div>
+            <div id="mahalleSplitPills" class="district-pills"></div>
+          </div>
+
+          <div id="koySplitBox" class="sub-panel">
+            <div id="koySplitTitle" class="group-header-title">🌾 Köyler</div>
+            <div id="koySplitPills" class="district-pills"></div>
+          </div>
+        </div>
       </section>
 
       <section class="card">
@@ -949,8 +978,12 @@
       settlementSelect: document.getElementById("settlementSelect"),
       searchInput: document.getElementById("searchInput"),
       sortSelect: document.getElementById("sortSelect"),
-      subGroupTitle: document.getElementById("subGroupTitle"),
-      districtBreakdownPills: document.getElementById("districtBreakdownPills"),
+      mahalleSplitBox: document.getElementById("mahalleSplitBox"),
+      koySplitBox: document.getElementById("koySplitBox"),
+      mahalleSplitTitle: document.getElementById("mahalleSplitTitle"),
+      koySplitTitle: document.getElementById("koySplitTitle"),
+      mahalleSplitPills: document.getElementById("mahalleSplitPills"),
+      koySplitPills: document.getElementById("koySplitPills"),
       filteredCountLabel: document.getElementById("filteredCountLabel"),
       percentLabel: document.getElementById("percentLabel"),
       progressFill: document.getElementById("progressFill"),
@@ -1474,36 +1507,77 @@
       }
     }
 
-    function renderDistrictBreakdown() {
+    function formatSettlementLabel(j) {
+      const cleanLabel = stripNoiseFromSettlementName(j.settlement, (DISTRICTS[j.district] || {}).ilce);
+      if (!cleanLabel) return "";
+      return j.category === "KOY" ? `${properTr(cleanLabel)} Köyü` : `${properTr(cleanLabel)} Mah.`;
+    }
+
+    function renderSplitSettlements() {
       const pool = allJobs.filter(j => {
         if (!showCompleted && j.completed) return false;
-        if (selectedCat !== "ALL" && j.category !== selectedCat) return false;
+        if (selectedDistrict !== "ALL" && j.district !== selectedDistrict) return false;
         if (selectedMeter !== "ALL" && j.meterType !== selectedMeter) return false;
         return true;
       });
 
-      const counts = new Map();
-      pool.forEach(j => counts.set(j.district, (counts.get(j.district) || 0) + 1));
-      const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "tr"));
+      const mahMap = new Map();
+      const koyMap = new Map();
 
-      const catLabel = selectedCat === "MAHALLE" ? "🏙️ Mahalleler" : selectedCat === "KOY" ? "🌾 Köyler" : "🏙️ Mahalleler & 🌾 Köyler";
-      el.subGroupTitle.textContent = `${catLabel} — İlçe Bazlı İşler (${pool.length})`;
+      pool.forEach(j => {
+        const label = formatSettlementLabel(j);
+        if (!label) return;
+        const key = asciiKey(label);
+        if (j.category === "KOY") {
+          const prev = koyMap.get(key) || { label, count: 0 };
+          prev.count += 1;
+          koyMap.set(key, prev);
+        } else {
+          const prev = mahMap.get(key) || { label, count: 0 };
+          prev.count += 1;
+          mahMap.set(key, prev);
+        }
+      });
 
-      if (!sorted.length) {
-        el.districtBreakdownPills.innerHTML = `<span class="status-note" style="margin:0;">Kayıt bulunamadı.</span>`;
-        return;
+      const mahList = Array.from(mahMap.values()).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "tr"));
+      const koyList = Array.from(koyMap.values()).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "tr"));
+
+      const mahTotal = mahList.reduce((acc, x) => acc + x.count, 0);
+      const koyTotal = koyList.reduce((acc, x) => acc + x.count, 0);
+
+      el.mahalleSplitTitle.textContent = `🏙️ Mahalleler (${mahList.length} Mah. • ${mahTotal} İş)`;
+      el.koySplitTitle.textContent = `🌾 Köyler (${koyList.length} Köy • ${koyTotal} İş)`;
+
+      el.mahalleSplitBox.classList.toggle("hidden", selectedCat === "KOY");
+      el.koySplitBox.classList.toggle("hidden", selectedCat === "MAHALLE");
+
+      if (!mahList.length) {
+        el.mahalleSplitPills.innerHTML = `<span class="status-note" style="margin:0;">Mahalle kaydı yok.</span>`;
+      } else {
+        el.mahalleSplitPills.innerHTML = mahList.map(item => {
+          const isSel = selectedSettlement !== "ALL" && asciiKey(selectedSettlement) === asciiKey(item.label);
+          return `<button class="d-pill mah-pill ${isSel ? "active" : ""}" onclick="window.__quickSettlement('MAHALLE', '${item.label.replace(/'/g, "\\'")}')">${item.label} (${item.count})</button>`;
+        }).join("");
       }
 
-      const allPill = `<button class="d-pill ${selectedDistrict === "ALL" ? "active" : ""}" onclick="window.__quickDistrict('ALL')">Tümü (${pool.length})</button>`;
-      const pills = sorted.map(([d, cnt]) =>
-        `<button class="d-pill ${selectedDistrict === d ? "active" : ""}" onclick="window.__quickDistrict('${d.replace(/'/g, "\\'")}')">${d} (${cnt})</button>`
-      ).join("");
-      el.districtBreakdownPills.innerHTML = allPill + pills;
+      if (!koyList.length) {
+        el.koySplitPills.innerHTML = `<span class="status-note" style="margin:0;">Köy kaydı yok.</span>`;
+      } else {
+        el.koySplitPills.innerHTML = koyList.map(item => {
+          const isSel = selectedSettlement !== "ALL" && asciiKey(selectedSettlement) === asciiKey(item.label);
+          return `<button class="d-pill ${isSel ? "active" : ""}" onclick="window.__quickSettlement('KOY', '${item.label.replace(/'/g, "\\'")}')">${item.label} (${item.count})</button>`;
+        }).join("");
+      }
     }
 
-    window.__quickDistrict = (d) => {
-      selectedDistrict = d;
-      selectedSettlement = "ALL";
+    window.__quickSettlement = (cat, label) => {
+      selectedCat = cat;
+      document.querySelectorAll(".cat-btn").forEach(b => b.classList.toggle("active", b.dataset.cat === cat));
+      if (selectedSettlement !== "ALL" && asciiKey(selectedSettlement) === asciiKey(label)) {
+        selectedSettlement = "ALL";
+      } else {
+        selectedSettlement = label;
+      }
       populateFilters();
       applyFilters(true);
     };
@@ -1524,10 +1598,7 @@
       const sPool = pool.filter(j => selectedDistrict === "ALL" || j.district === selectedDistrict);
       const uniqueMap = new Map();
       sPool.forEach(j => {
-        const cleanLabel = stripNoiseFromSettlementName(j.settlement, (DISTRICTS[j.district] || {}).ilce);
-        const formatted = cleanLabel
-          ? (j.category === "KOY" ? `${properTr(cleanLabel)} Köyü` : `${properTr(cleanLabel)} Mah.`)
-          : "";
+        const formatted = formatSettlementLabel(j);
         if (!formatted) return;
         const k = asciiKey(formatted);
         if (!uniqueMap.has(k)) uniqueMap.set(k, formatted);
@@ -1537,10 +1608,10 @@
       const ph = selectedCat === "KOY" ? "Tüm Köyler" : selectedCat === "MAHALLE" ? "Tüm Mahalleler" : "Tüm Mahalle / Köyler";
       el.settlementSelect.innerHTML = `<option value="ALL">${ph} (${settlements.length})</option>` +
         settlements.map(s => `<option value="${s}">${s}</option>`).join("");
-      if (!settlements.includes(selectedSettlement)) selectedSettlement = "ALL";
+      if (!settlements.some(s => asciiKey(s) === asciiKey(selectedSettlement))) selectedSettlement = "ALL";
       el.settlementSelect.value = selectedSettlement;
 
-      renderDistrictBreakdown();
+      renderSplitSettlements();
     }
 
     function applyFilters(resetPaging = true) {
@@ -1564,7 +1635,7 @@
       }
 
       filteredJobs = list;
-      renderDistrictBreakdown();
+      renderSplitSettlements();
       updateCounters();
       renderList();
     }
