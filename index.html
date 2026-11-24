@@ -282,15 +282,30 @@
     .info-line:last-child { margin-bottom: 0; color: var(--text-muted); font-size: 12px; }
     .info-label { color: #fbbf24; font-weight: 700; }
     .reason-label { color: #34d399; font-weight: 800; }
+    .web-label { color: #60a5fa; font-weight: 800; }
 
-    .job-actions { display: grid; grid-template-columns: 1fr; gap: 8px; }
-    .fault-card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .web-result-box {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(96, 165, 250, 0.45);
+      font-size: 12px;
+      color: #e2e8f0;
+      line-height: 1.45;
+    }
+
+    .job-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .fault-card-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    @media (max-width: 560px) {
+      .fault-card-actions { grid-template-columns: 1fr; }
+    }
 
     .btn {
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 13px;
+      padding: 10px 10px;
+      font-size: 12.5px;
       font-weight: 800;
       cursor: pointer;
       text-align: center;
@@ -298,10 +313,11 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 5px;
     }
 
     .btn-primary { background: var(--accent-2); border-color: var(--accent-2); color: #ffffff; }
+    .btn-info { background: rgba(59, 130, 246, 0.22); border-color: #60a5fa; color: #dbeafe; }
     .btn-success { background: var(--success); border-color: var(--success); color: #062118; }
     .btn-secondary { background: var(--bg-soft); color: #ffffff; }
     .btn-warning { background: var(--accent); border-color: var(--accent); color: #111827; }
@@ -397,7 +413,7 @@
       <div id="adminStatus" class="status-note"></div>
     </div>
 
-    <!-- MODÜL 1: SAHA İŞ LİSTESİ (Harita / Git Butonu Yok) -->
+    <!-- MODÜL 1: SAHA İŞ LİSTESİ (Harita / Git Butonu Yok, İnternette Araştır Var) -->
     <div id="sahaModule">
       <section class="card">
         <div class="cat-grid">
@@ -433,7 +449,6 @@
         </div>
       </section>
 
-      <!-- MAHALLE MAHALLE VE KÖY KÖY AYRI AYRI LİSTE -->
       <section id="categorySubGroupCard" class="card">
         <div class="split-groups">
           <div id="mahalleSplitBox" class="sub-panel">
@@ -589,6 +604,26 @@
     const ADMIN_PIN = "1923";
     const PAGE_SIZE = 40;
     const RETENTION_MS = 30 * 24 * 60 * 60 * 1000; // 1 ay (30 gün)
+
+    const DISTRICT_CENTERS = {
+      "Edirne Merkez": { lat: 41.6771, lon: 26.5557 },
+      "Keşan": { lat: 40.8559, lon: 26.6303 },
+      "Uzunköprü": { lat: 41.2686, lon: 26.6894 },
+      "İpsala": { lat: 40.9167, lon: 26.3833 },
+      "Havsa": { lat: 41.5500, lon: 26.8167 },
+      "Meriç": { lat: 41.1889, lon: 26.4167 },
+      "Enez": { lat: 40.7250, lon: 26.0833 },
+      "Süloğlu": { lat: 41.7667, lon: 26.9000 },
+      "Lalapaşa": { lat: 41.8389, lon: 26.7361 },
+      "Kırklareli Merkez": { lat: 41.7333, lon: 27.2167 },
+      "Lüleburgaz": { lat: 41.4056, lon: 27.3569 },
+      "Babaeski": { lat: 41.4333, lon: 27.0917 },
+      "Vize": { lat: 41.5736, lon: 27.7667 },
+      "Pınarhisar": { lat: 41.6222, lon: 27.5139 },
+      "Demirköy": { lat: 41.8222, lon: 27.7583 },
+      "Pehlivanköy": { lat: 41.3500, lon: 27.1833 },
+      "Kofçaz": { lat: 41.9333, lon: 27.1833 }
+    };
 
     const DISTRICTS = {
       "Edirne Merkez": { il: "Edirne", ilce: "Merkez" },
@@ -897,6 +932,91 @@
         : `${f.planGrubu || ""} ${fallbackIl}`.trim();
       return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
     }
+
+    // Canlı İnternet Araştırma (Nominatim + Wikipedia)
+    const webResearchCache = new Map();
+
+    function computeDirectionFromCenter(lat, lon, districtKey) {
+      const center = DISTRICT_CENTERS[districtKey] || DISTRICT_CENTERS["Edirne Merkez"];
+      const dLat = lat - center.lat;
+      const dLon = lon - center.lon;
+      const distKm = Math.round(Math.hypot(dLat * 111, dLon * 84) * 10) / 10;
+      if (distKm < 0.8) return `${districtKey} merkezine çok yakın (~${distKm} km)`;
+      const ns = dLat >= 0.004 ? "Kuzey" : (dLat <= -0.004 ? "Güney" : "");
+      const ew = dLon >= 0.005 ? "Doğu" : (dLon <= -0.005 ? "Batı" : "");
+      const dir = `${ns}${ew}` || "Merkez civarı";
+      return `${districtKey} merkezinin ${dir} yönünde (~${distKm} km)`;
+    }
+
+    window.__researchOnWeb = async (boxId, queryText, districtKey) => {
+      const box = document.getElementById(boxId);
+      if (!box) return;
+      box.classList.remove("hidden");
+
+      const cacheKey = asciiKey(`${queryText} ${districtKey}`);
+      if (webResearchCache.has(cacheKey)) {
+        box.innerHTML = webResearchCache.get(cacheKey);
+        return;
+      }
+
+      box.innerHTML = `🌐 İnternette araştırılıyor: <strong>${queryText}</strong>...`;
+
+      const cleanedQuery = String(queryText || "")
+        .replace(/\b\d{7,14}\b/g, " ")
+        .replace(/-\s*-/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const fallbackIl = /kirklareli/i.test(asciiKey(`${districtKey} ${cleanedQuery}`)) ? "Kırklareli" : "Edirne";
+      const fullQuery = `${cleanedQuery} ${districtKey || ""} ${fallbackIl}`.trim();
+
+      try {
+        const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=1&q=${encodeURIComponent(fullQuery)}`;
+        const nomResp = await fetch(nomUrl, { headers: { "Accept-Language": "tr" } });
+        const nomData = nomResp.ok ? await nomResp.json() : [];
+
+        let locSummary = "Harita/adres verisi bulunamadı.";
+        let sideText = "";
+
+        if (Array.isArray(nomData) && nomData.length > 0) {
+          const hit = nomData[0];
+          const addr = hit.address || {};
+          const foundSub = addr.suburb || addr.neighbourhood || addr.village || addr.town || addr.city_district || "";
+          const foundDist = addr.county || addr.town || addr.city || "";
+          const foundProv = addr.state || addr.province || "";
+          const lat = parseFloat(hit.lat);
+          const lon = parseFloat(hit.lon);
+          if (Number.isFinite(lat) && Number.isFinite(lon)) {
+            sideText = computeDirectionFromCenter(lat, lon, districtKey);
+          }
+          locSummary = `Doğrulanan Adres: <strong>${hit.display_name}</strong>` +
+            (foundSub || foundDist || foundProv ? ` <span style="color:#cbd5e1;">(${[foundSub, foundDist, foundProv].filter(Boolean).join(" / ")})</span>` : "");
+        }
+
+        const topicTerm = (cleanedQuery.split(",")[0] || cleanedQuery).trim();
+        let wikiText = "";
+        if (topicTerm) {
+          const wikiUrl = `https://tr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topicTerm)}`;
+          const wikiResp = await fetch(wikiUrl);
+          if (wikiResp.ok) {
+            const wikiJson = await wikiResp.json();
+            if (wikiJson && wikiJson.extract) {
+              wikiText = wikiJson.extract.slice(0, 220) + (wikiJson.extract.length > 220 ? "..." : "");
+            }
+          }
+        }
+
+        const html = `
+          <div><span class="web-label">🌐 İnternet Sonucu:</span> ${locSummary}</div>
+          ${sideText ? `<div style="margin-top:3px;"><span class="info-label">🧭 Ne Tarafta:</span> ${sideText}</div>` : ""}
+          ${wikiText ? `<div style="margin-top:3px; color:#cbd5e1;"><span class="reason-label">ℹ️ Bilgi:</span> ${wikiText}</div>` : ""}
+        `;
+        webResearchCache.set(cacheKey, html);
+        box.innerHTML = html;
+      } catch (err) {
+        box.innerHTML = `<span style="color:#f87171;">⚠️ İnternet sorgusu yapılamadı:</span> ${err.message}`;
+      }
+    };
 
     function extractJobs(snapVal) {
       if (!snapVal) return [];
@@ -1330,7 +1450,7 @@
       }
 
       const slice = filteredFaults.slice(0, faultVisibleLimit);
-      el.faultJobsContainer.innerHTML = slice.map(f => {
+      el.faultJobsContainer.innerHTML = slice.map((f, idx) => {
         const flagLabels = (f.flags || []).map(fl => {
           if (fl === "MISSING_SETTLEMENT") return "Mah/Köy Eksik";
           if (fl === "IL_AS_DISTRICT") return "İl=İlçe";
@@ -1339,6 +1459,9 @@
           return fl;
         }).join(" • ");
         const mapsUrl = buildFaultMapsLink(f);
+        const webBoxId = `web_fault_${f.id}_${idx}`;
+        const safeQuery = (f.rawAddress || `${f.planGrubu} ${f.ilRaw}`).replace(/'/g, "\\'");
+        const safeGrp = (f.planGrubu || f.ilRaw || "Edirne Merkez").replace(/'/g, "\\'");
 
         return `
           <article class="job-card err-card">
@@ -1354,9 +1477,11 @@
             <div class="job-info-box">
               <div class="info-line"><span class="info-label">Ham Adres:</span> ${f.rawAddress || "-"}</div>
               ${f.durumNotu ? `<div class="info-line"><span class="info-label">Durum / Arıza:</span> ${f.durumNotu}</div>` : ""}
+              <div id="${webBoxId}" class="web-result-box hidden"></div>
             </div>
             <div class="fault-card-actions">
               <a class="btn btn-primary" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">🗺️ Adrese Git</a>
+              <button class="btn btn-info" onclick="window.__researchOnWeb('${webBoxId}', '${safeQuery}', '${safeGrp}')">🌐 Araştır</button>
               <button class="btn btn-success" onclick="window.__openFaultReasonModal('${f.id}')">✓ Tamamlandı</button>
             </div>
           </article>
@@ -1663,9 +1788,12 @@
 
       const slice = filteredJobs.slice(0, visibleLimit);
 
-      el.jobsContainer.innerHTML = slice.map(j => {
+      el.jobsContainer.innerHTML = slice.map((j, idx) => {
         const meterLabel = j.meterType === "TRI" ? "Trifaze Sayaç" : "Monofaze Sayaç";
         const addressText = j.openAddress || `${j.settlement}, ${j.district} / ${j.il || "Edirne"}`;
+        const webBoxId = `web_saha_${j.id}_${idx}`;
+        const safeQuery = `${j.settlement} ${addressText}`.replace(/'/g, "\\'");
+        const safeDist = (j.district || "Edirne Merkez").replace(/'/g, "\\'");
 
         return `
           <article class="job-card">
@@ -1680,8 +1808,10 @@
             <div class="job-info-box">
               <div class="info-line"><span class="info-label">Açık Adres:</span> ${addressText}</div>
               <div class="info-line">${meterLabel} • ${j.district} / ${j.il || "Edirne"}</div>
+              <div id="${webBoxId}" class="web-result-box hidden"></div>
             </div>
             <div class="job-actions">
+              <button class="btn btn-info" onclick="window.__researchOnWeb('${webBoxId}', '${safeQuery}', '${safeDist}')">🌐 İnternette Araştır</button>
               <button class="btn ${j.completed ? "btn-secondary" : "btn-success"}" onclick="window.__toggleJob('${j.id}', ${!j.completed})">
                 ${j.completed ? "↩️ Bekleyene Al" : "✓ İşi Tamamla"}
               </button>
