@@ -191,10 +191,13 @@
       padding: 9px 11px;
       margin-bottom: 10px;
       word-break: break-word;
-      font-weight: 600;
+      line-height: 1.5;
     }
 
-    .job-actions { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .info-line { margin-bottom: 2px; }
+    .info-line:last-child { margin-bottom: 0; color: var(--text-muted); font-size: 12px; }
+
+    .job-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
     .btn {
       border: 1px solid var(--border);
@@ -419,7 +422,8 @@
       "sehsuvarbey": "Şehsuvarbey", "karakas": "Karakaş", "yayla": "Yayla", "demirtas": "Demirtaş",
       "akalar": "Akalar", "berber": "Berber", "cumhuriyet": "Cumhuriyet", "kocahidir": "Kocahıdır",
       "durak": "Durak", "8 kasim": "8 Kasım", "genclik": "Gençlik", "siteler": "Siteler",
-      "yenimahalle": "Yeni", "yeni": "Yeni", "tayakadin": "Tayakadın", "yenikadin": "Yenikadın",
+      "yenimahalle": "Yeni", "yeni": "Yeni", "gaziomerbey": "Gaziömerbey", "buyuk cami": "Büyük Cami",
+      "eriklis": "Erikli", "erikli": "Erikli", "tayakadin": "Tayakadın", "yenikadin": "Yenikadın",
       "kadin": "Yenikadın", "eskikadin": "Eskikadın", "sazlidere": "Sazlıdere", "kopru": "Köprü",
       "bosnakoy": "Bosnaköy", "bosna": "Bosnaköy", "demirkoy": "Demirköy", "suakacagi": "Suakacağı",
       "kayapa": "Kayapa", "kemalkoy": "Kemalköy", "buyukdolluk": "Büyükdöllük",
@@ -439,7 +443,7 @@
       "orhaniye", "uzgac", "ahirkoy", "karakasim", "haciumur", "yenimuhacir",
       "begendik", "kuplu", "subasi", "kircasalih", "igneada", "kiyikoy",
       "ahmetbey", "evrensekiz", "buyukkaristiran", "kavakkoy", "kaynarca", "abalar",
-      "buyukdoganca", "copkoy", "avariz", "degirmenyeni", "kemal", "balaban"
+      "buyukdoganca", "copkoy", "avariz", "degirmenyeni", "kemal", "balaban", "mescit"
     ]);
 
     const trLower = s => (s || "").toString().toLocaleLowerCase("tr-TR").trim();
@@ -451,6 +455,20 @@
     function properTr(s) {
       return trLower(s).replace(/\s+/g, " ").split(" ").filter(Boolean)
         .map(w => w.charAt(0).toLocaleUpperCase("tr-TR") + w.slice(1)).join(" ").trim();
+    }
+
+    function stripNoiseFromSettlementName(str, districtIlce) {
+      let clean = String(str || "")
+        .replace(/\b\d{6,14}\b/g, " ")
+        .replace(/\b(lun|byl|mak|sayac|sayaç|sok|sk|no|daire|diskapino|dışkapıno|hayat|köyün kendisi|koyun kendisi|koy ici|köy içi|merkez|genel|mahallesi|mah\.?|mh\.?|köyü|koyu|köy|koy|beldesi|belde|belediyesi|belediye|edirne|kırklareli|kirklareli)\b/gi, " ")
+        .replace(/[|/\\\-–—.,:;]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      if (districtIlce && asciiKey(clean) === asciiKey(districtIlce)) {
+        return "";
+      }
+      return clean;
     }
 
     function detectDistrict(text) {
@@ -470,10 +488,13 @@
       const districtMeta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
       const districtNorm = asciiKey(districtMeta.ilce);
 
+      const hasExplicitKoy = /\bkoy\b|\bkoyu\b|\bköyü\b|\bköyün\b|\bkoyun\b|\bbeldesi\b|\bbelediyesi\b/i.test(norm);
+      const hasExplicitMah = /\bmahallesi\b|\bmah\b|\bmh\b/i.test(norm);
+
       let matchedKey = null;
       for (const k of Object.keys(NAMES).sort((a, b) => b.length - a.length)) {
         if (k === "kadin" && (norm.includes("yenikadin") || norm.includes("eskikadin") || norm.includes("tayakadin"))) continue;
-        if (districtNorm && districtNorm !== "merkez" && k === districtNorm && !new RegExp(`\\b${k}\\s+(mah|mahallesi|koy|koyu|koyü)\\b`).test(norm)) {
+        if (districtNorm && districtNorm !== "merkez" && k === districtNorm && !hasExplicitKoy && !hasExplicitMah) {
           continue;
         }
         if (new RegExp(`(^|[^a-z0-9])${k.replace(/\./g, "\\.")}([^a-z0-9]|$)`).test(norm)) {
@@ -487,7 +508,7 @@
 
       if (matchedKey) {
         base = NAMES[matchedKey] || "";
-        cat = KOYLER.has(matchedKey) ? "KOY" : "MAHALLE";
+        cat = (KOYLER.has(matchedKey) || hasExplicitKoy) ? "KOY" : "MAHALLE";
       } else {
         let cand = String(rawSett || "");
         const kM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]+?)\s*(?:Köyü|Köy|Beldesi|Belde|Belediyesi)/i);
@@ -496,34 +517,46 @@
         if (kM && asciiKey(kM[1]) !== districtNorm) { cat = "KOY"; cand = kM[1]; }
         else if (mM && asciiKey(mM[1]) !== districtNorm) { cat = "MAHALLE"; cand = mM[1]; }
 
-        if ((/\bkoyu\b|\bkoy\b|\bköyü\b|\bbeldesi\b|\bbelediyesi\b/i.test(norm)) && !/\bmah\b|\bmahallesi\b/i.test(norm)) {
+        if (hasExplicitKoy && !hasExplicitMah) {
           cat = "KOY";
         }
 
-        cand = cand
-          .replace(/\b(mahallesi|mah\.?|mh\.?|köyü|koyu|köy|koy|beldesi|belde|belediyesi|belediye|edirne|kırklareli|kirklareli|merkez|genel|köyün kendisi|köy içi)\b/gi, " ")
-          .replace(/[|/\\\-–—.,]+/g, " ")
-          .replace(/\s+/g, " ")
-          .trim();
+        const cleanedCand = stripNoiseFromSettlementName(cand, districtMeta.ilce);
+        const cKey = asciiKey(cleanedCand);
 
-        const cKey = asciiKey(cand);
         if (NAMES[cKey]) {
-          matchedKey = cKey;
           base = NAMES[cKey] || "";
-          cat = KOYLER.has(cKey) ? "KOY" : "MAHALLE";
-        } else if (cand.length >= 2 && !/^\d+$/.test(cand) && cKey !== districtNorm) {
-          base = properTr(cand);
+          cat = (KOYLER.has(cKey) || hasExplicitKoy) ? "KOY" : "MAHALLE";
+        } else if (cleanedCand.length >= 2 && !/^\d+$/.test(cleanedCand)) {
+          base = properTr(cleanedCand);
         } else {
           base = `${districtMeta.ilce} Merkez`;
         }
       }
 
-      base = String(base || "").replace(/\s+(Mah\.?|Mahallesi|Köyü|Koyu|Köy)$/i, "").trim();
+      base = stripNoiseFromSettlementName(base, districtMeta.ilce);
       if (!base) base = `${districtMeta.ilce} Merkez`;
+      else base = properTr(base);
 
       return cat === "KOY"
         ? { category: "KOY", settlement: `${base} Köyü` }
         : { category: "MAHALLE", settlement: `${base} Mah.` };
+    }
+
+    function extractStreetLine(rawText, settlement) {
+      const mSok = rawText.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]{2,28}?\s*(?:Sk\.?|Sok\.?|Sokak|Cd\.?|Cad\.?|Cadde)\s*(?:No[:\s]*[A-Za-z0-9/-]+)?)/i);
+      if (mSok) {
+        const cleaned = properTr(
+          mSok[1]
+            .replace(/\b(lun|byl|mak|sayac|sayaç|diskapino|dışkapıno|hayat)\b/gi, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+        );
+        if (cleaned.length >= 3 && asciiKey(cleaned) !== asciiKey(settlement)) {
+          return cleaned;
+        }
+      }
+      return "";
     }
 
     function normalizeRecord(raw, key) {
@@ -552,6 +585,7 @@
         district
       );
 
+      const streetLine = extractStreetLine(rawText, sett.settlement);
       const mNorm = asciiKey(`${raw.meterType || raw["Sayaç Tipi"] || ""} ${rawText}`);
       const meterType = (mNorm.includes("tri") || mNorm.includes("3 faz") || mNorm.includes("trifaze")) ? "TRI" : "MONO";
       const rawTitle = String(raw.aboneAdi || raw.customerName || raw["Abone Adı"] || "").trim();
@@ -559,14 +593,24 @@
         ? `Tesisat: ${tesisatNo}`
         : (seriNo ? `Sayaç: ${seriNo}` : (rawTitle ? properTr(rawTitle) : `${sett.settlement} Kaydı`));
 
+      const districtMeta = DISTRICTS[district] || { il: "Edirne", ilce: district };
+      const cleanAddress = [
+        sett.settlement,
+        streetLine,
+        `${districtMeta.ilce} / ${districtMeta.il}`
+      ].filter(Boolean).join(", ");
+
       return {
         id: String(raw.id || key),
         tesisatNo,
         seriNo,
         displayTitle,
         district,
+        il: districtMeta.il,
         category: sett.category,
         settlement: sett.settlement,
+        streetLine,
+        cleanAddress,
         meterType,
         completed: Boolean(raw.completed),
         completedAt: raw.completedAt || null
@@ -731,14 +775,14 @@
             lastServerPushHash = digest;
             set(ref(db, `${DB_PATH}/jobs`), payload)
               .then(() => {
-                el.adminStatus.textContent = `✅ (${reason}): ${allJobs.length} kayıt düzenlendi ve sunucuya kaydedildi.`;
+                el.adminStatus.textContent = `✅ (${reason}): ${allJobs.length} kayıt temizlendi ve sunucuya kaydedildi.`;
               })
               .catch(err => {
-                el.adminStatus.textContent = `✅ (${reason}): ${allJobs.length} kayıt hafızada hazır (Sunucu: ${err.message})`;
+                el.adminStatus.textContent = `✅ (${reason}): ${allJobs.length} kayıt temizlenip hafızaya alındı (Sunucu: ${err.message})`;
               });
           }
         } else if (allJobs.length > 0) {
-          el.adminStatus.textContent = `✅ ${allJobs.length} kayıt hazır.`;
+          el.adminStatus.textContent = `✅ ${allJobs.length} kayıt temiz ve hazır.`;
         }
       } finally {
         aiCycleLock = false;
@@ -793,7 +837,15 @@
       el.districtSelect.value = selectedDistrict;
 
       const sPool = pool.filter(j => selectedDistrict === "ALL" || j.district === selectedDistrict);
-      const settlements = Array.from(new Set(sPool.map(j => j.settlement).filter(Boolean))).sort((a, b) => a.localeCompare(b, "tr"));
+      const uniqueMap = new Map();
+      sPool.forEach(j => {
+        const cleanLabel = String(j.settlement || "").replace(/^\d+\s+/, "").trim();
+        if (!cleanLabel) return;
+        const k = asciiKey(cleanLabel);
+        if (!uniqueMap.has(k)) uniqueMap.set(k, cleanLabel);
+      });
+
+      const settlements = Array.from(uniqueMap.values()).sort((a, b) => a.localeCompare(b, "tr"));
       const ph = selectedCat === "KOY" ? "Tüm Köyler" : selectedCat === "MAHALLE" ? "Tüm Mahalleler" : "Tüm Mahalle / Köyler";
       el.settlementSelect.innerHTML = `<option value="ALL">${ph} (${settlements.length})</option>` +
         settlements.map(s => `<option value="${s}">${s}</option>`).join("");
@@ -811,7 +863,7 @@
         if (!showCompleted && j.completed) return false;
         if (selectedCat !== "ALL" && j.category !== selectedCat) return false;
         if (selectedDistrict !== "ALL" && j.district !== selectedDistrict) return false;
-        if (selectedSettlement !== "ALL" && j.settlement !== selectedSettlement) return false;
+        if (selectedSettlement !== "ALL" && asciiKey(j.settlement) !== asciiKey(selectedSettlement)) return false;
         if (selectedMeter !== "ALL" && j.meterType !== selectedMeter) return false;
         if (q && !asciiKey(`${j.tesisatNo} ${j.seriNo} ${j.district} ${j.settlement}`).includes(q)) return false;
         return true;
@@ -843,6 +895,11 @@
       ? `<span class="tag tag-koy">🌾 Köy</span>`
       : `<span class="tag tag-mahalle">🏙️ Mahalle</span>`;
 
+    function getMapsUrl(job) {
+      const queryText = job.cleanAddress || `${job.settlement}, ${job.district} / ${job.il || "Edirne"}`;
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(queryText)}`;
+    }
+
     function renderList() {
       if (!filteredJobs.length) {
         el.jobsContainer.innerHTML = `<div class="empty-box">Seçili filtrelere uygun kayıt bulunamadı.</div>`;
@@ -852,26 +909,36 @@
 
       const slice = filteredJobs.slice(0, visibleLimit);
 
-      el.jobsContainer.innerHTML = slice.map(j => `
-        <article class="job-card">
-          <div class="job-top">
-            <div class="job-title">${j.displayTitle}</div>
-            ${catTag(j.category)}
-          </div>
-          <div class="job-meta">
-            ${j.seriNo ? `Seri: <strong>${j.seriNo}</strong> • ` : ""}
-            <strong>${j.settlement}</strong> (${j.district}) • ${j.meterType === "TRI" ? "Trifaze" : "Monofaze"}
-          </div>
-          <div class="job-info-box">
-            ${j.district} • ${j.settlement} • ${j.meterType === "TRI" ? "Trifaze Sayaç" : "Monofaze Sayaç"}
-          </div>
-          <div class="job-actions">
-            <button class="btn ${j.completed ? "btn-secondary" : "btn-success"}" onclick="window.__toggleJob('${j.id}', ${!j.completed})">
-              ${j.completed ? "↩️ Bekleyene Al" : "✓ İşi Tamamla"}
-            </button>
-          </div>
-        </article>
-      `).join("");
+      el.jobsContainer.innerHTML = slice.map(j => {
+        const meterLabel = j.meterType === "TRI" ? "Trifaze Sayaç" : "Monofaze Sayaç";
+        const line2 = j.streetLine ? `${j.streetLine} • ${meterLabel}` : meterLabel;
+        const line3 = `${j.district} / ${j.il || "Edirne"}`;
+        const mapsUrl = getMapsUrl(j);
+
+        return `
+          <article class="job-card">
+            <div class="job-top">
+              <div class="job-title">${j.displayTitle}</div>
+              ${catTag(j.category)}
+            </div>
+            <div class="job-meta">
+              ${j.seriNo ? `Seri: <strong>${j.seriNo}</strong> • ` : ""}
+              <strong>${j.settlement}</strong> (${j.district}) • ${j.meterType === "TRI" ? "Trifaze" : "Monofaze"}
+            </div>
+            <div class="job-info-box">
+              <div class="info-line"><strong>${j.settlement}</strong></div>
+              <div class="info-line">${line2}</div>
+              <div class="info-line">${line3}</div>
+            </div>
+            <div class="job-actions">
+              <a class="btn btn-primary" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">🧭 Git</a>
+              <button class="btn ${j.completed ? "btn-secondary" : "btn-success"}" onclick="window.__toggleJob('${j.id}', ${!j.completed})">
+                ${j.completed ? "↩️ Bekleyene Al" : "✓ İşi Tamamla"}
+              </button>
+            </div>
+          </article>
+        `;
+      }).join("");
 
       if (filteredJobs.length > visibleLimit) {
         el.loadMoreWrap.classList.remove("hidden");
@@ -942,7 +1009,7 @@
     el.repairDbBtn.addEventListener("click", async () => {
       try {
         if (!allJobs.length) { el.adminStatus.textContent = "Düzenlenecek kayıt yok."; return; }
-        el.adminStatus.textContent = "⏳ Kayıtlar düzenleniyor...";
+        el.adminStatus.textContent = "⏳ Kayıtlar yeniden temizleniyor...";
         lastServerPushHash = "";
         syncCollection(allJobs, { syncServer: true, reason: "kayıt düzenleme", resetPaging: false });
       } catch (e) { el.adminStatus.textContent = "❌ Hata: " + e.message; }
@@ -972,9 +1039,9 @@
         el.adminStatus.textContent = "Dosyada kayıt bulunamadı.";
         return;
       }
-      el.adminStatus.textContent = `⏳ ${rows.length} satır okunuyor...`;
+      el.adminStatus.textContent = `⏳ ${rows.length} satır temizlenip yükleniyor...`;
       lastServerPushHash = "";
-      syncCollection(rows, { syncServer: true, reason: "dosya yükleme", resetPaging: true });
+      syncCollection(rows, { syncServer: true, reason: "ilk yükleme temizliği", resetPaging: true });
     }
 
     el.excelInput.addEventListener("change", async e => {
@@ -1000,12 +1067,12 @@
             const meterType = pickColumn(row, ["sayac tipi", "sayaç tipi", "faz", "tip", "meter"]);
             const fallback = Object.values(row).map(v => String(v ?? "").trim()).filter(Boolean).join(" ");
 
-            collected.push({
+            collected.push(normalizeRecord({
               id: `xl_${sheetName}_${i + 1}_${tesisatNo || "t"}_${seriNo || "s"}_${Date.now()}`,
               tesisatNo, seriNo, aboneAdi,
               _rawSource: fallback, settlement, district, meterType,
               completed: false
-            });
+            }, `xl_${sheetName}_${i + 1}`));
           });
         }
 
@@ -1032,11 +1099,11 @@
             if (t.length > 6) lines.push(t);
           });
         }
-        const mapped = lines.slice(0, 3000).map((line, i) => ({
+        const mapped = lines.slice(0, 3000).map((line, i) => normalizeRecord({
           id: `pdf_${i + 1}_${Date.now()}`,
           _rawSource: line,
           completed: false
-        }));
+        }, `pdf_${i + 1}`));
         await pushRows(mapped);
       } catch (err) {
         el.adminStatus.textContent = "❌ PDF hatası: " + err.message;
