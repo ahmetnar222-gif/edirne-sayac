@@ -227,6 +227,10 @@
       border-color: rgba(239, 68, 68, 0.55);
     }
 
+    .done-fault-card {
+      border-color: rgba(16, 185, 129, 0.55);
+    }
+
     .job-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
     .job-title { font-size: 14px; font-weight: 800; color: #fbbf24; }
 
@@ -234,6 +238,7 @@
     .tag-mahalle { background: rgba(59, 130, 246, 0.25); color: #bfdbfe; }
     .tag-koy { background: rgba(16, 185, 129, 0.25); color: #a7f3d0; }
     .tag-err { background: rgba(239, 68, 68, 0.22); color: #fecaca; }
+    .tag-done { background: rgba(16, 185, 129, 0.22); color: #a7f3d0; }
 
     .job-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; word-break: break-word; }
 
@@ -252,6 +257,7 @@
     .info-line { margin-bottom: 4px; }
     .info-line:last-child { margin-bottom: 0; color: var(--text-muted); font-size: 12px; }
     .info-label { color: #fbbf24; font-weight: 700; }
+    .reason-label { color: #34d399; font-weight: 800; }
 
     .job-actions { display: grid; grid-template-columns: 1fr; gap: 8px; }
 
@@ -336,7 +342,7 @@
 
     <div class="module-switch">
       <button id="tabSahaBtn" class="module-btn active">📋 Saha İş Listesi</button>
-      <button id="tabFaultBtn" class="module-btn">⚠️ Hatalı Adres Listesi (<span id="faultBadgeCount">0</span>)</button>
+      <button id="tabFaultBtn" class="module-btn">⚠️ Hatalı Adres (<span id="faultBadgeCount">0</span>) • ✓ (<span id="completedFaultBadgeCount">0</span>)</button>
     </div>
 
     <div id="adminPanel" class="admin-box hidden">
@@ -425,44 +431,59 @@
 
     <!-- MODÜL 2: HATALI ADRES / OKUNAMAYAN TESİSATLAR BÖLÜMÜ -->
     <div id="faultModule" class="hidden">
-      <section class="card">
-        <div class="group-header-title">⚠️ Hatalı / Okunamayan Adres Kayıtları (Personel & Grup Bazlı)</div>
-        <div class="filter-stack">
-          <select id="faultPersonSelect">
-            <option value="ALL">Tüm Personeller</option>
-          </select>
+      <div class="module-switch">
+        <button id="faultActiveSubTabBtn" class="module-btn active">⚠️ Bekleyen Hatalı (<span id="faultActiveSubCount">0</span>)</button>
+        <button id="faultCompletedSubTabBtn" class="module-btn">✓ Tamamlananlar (<span id="faultCompletedSubCount">0</span>)</button>
+      </div>
 
-          <select id="faultGroupSelect">
-            <option value="ALL">Tüm Planlama Grupları / İlçeler</option>
-          </select>
+      <div id="faultActiveSection">
+        <section class="card">
+          <div class="group-header-title">⚠️ Hatalı / Okunamayan Adres Kayıtları (Personel & Grup Bazlı)</div>
+          <div class="filter-stack">
+            <select id="faultPersonSelect">
+              <option value="ALL">Tüm Personeller</option>
+            </select>
 
-          <select id="faultTypeSelect">
-            <option value="ALL">Tüm Hata / Durum Tipleri</option>
-            <option value="MISSING_SETTLEMENT">Mahalle / Köy Bilgisi Eksik</option>
-            <option value="IL_AS_DISTRICT">İl Alanında İlçe Yazılı</option>
-            <option value="DASH_OR_TRUNCATED">Eksik / Kesik / (- -) Adres</option>
-            <option value="METER_ERR">Modem / Sayaç Okuma Hatası</option>
-          </select>
+            <select id="faultGroupSelect">
+              <option value="ALL">Tüm Planlama Grupları / İlçeler</option>
+            </select>
 
-          <input id="faultSearchInput" type="text" placeholder="Tesisat, Personel, Adres veya Seri No ara..." />
+            <select id="faultTypeSelect">
+              <option value="ALL">Tüm Hata / Durum Tipleri</option>
+              <option value="MISSING_SETTLEMENT">Mahalle / Köy Bilgisi Eksik</option>
+              <option value="IL_AS_DISTRICT">İl Alanında İlçe Yazılı</option>
+              <option value="DASH_OR_TRUNCATED">Eksik / Kesik / (- -) Adres</option>
+              <option value="METER_ERR">Modem / Sayaç Okuma Hatası</option>
+            </select>
+
+            <input id="faultSearchInput" type="text" placeholder="Tesisat, Personel, Adres veya Seri No ara..." />
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="group-header-title">👷 Personel Bazlı Dağılım</div>
+          <div id="faultPersonPills" class="district-pills"></div>
+        </section>
+
+        <section class="card">
+          <div class="progress-header">
+            <span id="faultCountLabel">Listelenen Hatalı Kayıt: 0</span>
+            <span id="faultTotalLabel">Toplam: 0</span>
+          </div>
+        </section>
+
+        <div id="faultJobsContainer"></div>
+        <div id="faultLoadMoreWrap" class="hidden" style="margin-top:8px;">
+          <button id="faultLoadMoreBtn" class="btn btn-secondary" style="width:100%;">Daha Fazla Hatalı Kayıt Göster</button>
         </div>
-      </section>
+      </div>
 
-      <section class="card">
-        <div class="group-header-title">👷 Personel Bazlı Dağılım</div>
-        <div id="faultPersonPills" class="district-pills"></div>
-      </section>
-
-      <section class="card">
-        <div class="progress-header">
-          <span id="faultCountLabel">Listelenen Hatalı Kayıt: 0</span>
-          <span id="faultTotalLabel">Toplam: 0</span>
-        </div>
-      </section>
-
-      <div id="faultJobsContainer"></div>
-      <div id="faultLoadMoreWrap" class="hidden" style="margin-top:8px;">
-        <button id="faultLoadMoreBtn" class="btn btn-secondary" style="width:100%;">Daha Fazla Hatalı Kayıt Göster</button>
+      <div id="faultCompletedSection" class="hidden">
+        <section class="card">
+          <div class="group-header-title">✓ Tamamlanan Hatalı Kayıtlar ve Nedenleri</div>
+          <input id="completedFaultSearchInput" type="text" placeholder="Tesisat, Personel veya Neden (Sarı Mühür, Kablo Hatası...) ara..." />
+        </section>
+        <div id="completedFaultsContainer"></div>
       </div>
     </div>
   </div>
@@ -470,7 +491,7 @@
   <!-- Tamamlama Nedeni Seçim Penceresi -->
   <div id="faultReasonModal" class="modal-backdrop">
     <div class="modal-card">
-      <h3 style="margin-top:0;">Tamamlama Nedeni Seç</h3>
+      <h3 style="margin-top:0;">Tamamlandı — Neden Seç</h3>
       <p id="faultReasonTargetInfo" style="font-size:12px; color:var(--text-muted); margin-top:0;"></p>
       <div class="reason-grid">
         <button type="button" class="reason-option-btn" data-reason="Sarı Mühür">🟨 Sarı Mühür</button>
@@ -478,9 +499,9 @@
         <button type="button" class="reason-option-btn" data-reason="Hata Giderildi">✅ Hata Giderildi</button>
         <button type="button" class="reason-option-btn" data-reason="Sayaç / Modem Değişti">🔁 Sayaç / Modem Değişti</button>
       </div>
-      <input id="customReasonInput" type="text" placeholder="Farklı bir neden yazın (ör. Kapalı Kilit, Mühürsüz)..." style="margin-bottom:10px;" />
+      <input id="customReasonInput" type="text" placeholder="Neden yazın (ör. Sarı mühür var, Kablo hatası vardı)..." style="margin-bottom:10px;" />
       <div style="display:flex; gap:8px;">
-        <button id="confirmFaultReasonBtn" class="btn btn-success" style="flex:1;">Kaydet ve Sil</button>
+        <button id="confirmFaultReasonBtn" class="btn btn-success" style="flex:1;">Tamamla ve Sil</button>
         <button id="cancelFaultReasonBtn" class="btn btn-secondary" style="flex:1;">İptal</button>
       </div>
     </div>
@@ -516,6 +537,7 @@
     const DB_PATH = "edirne_saha_v1";
     const LOCAL_CACHE_KEY = "tredas_saha_hafiza_v1";
     const FAULT_CACHE_KEY = "tredas_hatali_adres_v1";
+    const COMPLETED_FAULTS_CACHE_KEY = "tredas_hatali_tamamlanan_v1";
     const ADMIN_PIN = "1923";
     const PAGE_SIZE = 40;
 
@@ -837,12 +859,14 @@
 
     // Hatalı adres modülü state
     let allFaults = [];
+    let completedFaults = [];
     let filteredFaults = [];
     let faultVisibleLimit = PAGE_SIZE;
     let selectedFaultPerson = "ALL";
     let selectedFaultGroup = "ALL";
     let selectedFaultType = "ALL";
     let faultSearchQuery = "";
+    let completedFaultSearchQuery = "";
     let pendingFaultId = null;
     let selectedCompletionReason = "";
 
@@ -852,8 +876,15 @@
       tabSahaBtn: document.getElementById("tabSahaBtn"),
       tabFaultBtn: document.getElementById("tabFaultBtn"),
       faultBadgeCount: document.getElementById("faultBadgeCount"),
+      completedFaultBadgeCount: document.getElementById("completedFaultBadgeCount"),
       sahaModule: document.getElementById("sahaModule"),
       faultModule: document.getElementById("faultModule"),
+      faultActiveSubTabBtn: document.getElementById("faultActiveSubTabBtn"),
+      faultCompletedSubTabBtn: document.getElementById("faultCompletedSubTabBtn"),
+      faultActiveSubCount: document.getElementById("faultActiveSubCount"),
+      faultCompletedSubCount: document.getElementById("faultCompletedSubCount"),
+      faultActiveSection: document.getElementById("faultActiveSection"),
+      faultCompletedSection: document.getElementById("faultCompletedSection"),
       menuBtn: document.getElementById("menuBtn"),
       menuModal: document.getElementById("menuModal"),
       pinInput: document.getElementById("pinInput"),
@@ -891,6 +922,8 @@
       faultJobsContainer: document.getElementById("faultJobsContainer"),
       faultLoadMoreWrap: document.getElementById("faultLoadMoreWrap"),
       faultLoadMoreBtn: document.getElementById("faultLoadMoreBtn"),
+      completedFaultSearchInput: document.getElementById("completedFaultSearchInput"),
+      completedFaultsContainer: document.getElementById("completedFaultsContainer"),
       faultReasonModal: document.getElementById("faultReasonModal"),
       faultReasonTargetInfo: document.getElementById("faultReasonTargetInfo"),
       customReasonInput: document.getElementById("customReasonInput"),
@@ -912,8 +945,25 @@
       }
     }
 
+    function switchFaultSubTab(sub) {
+      if (sub === "COMPLETED") {
+        el.faultCompletedSubTabBtn.classList.add("active");
+        el.faultActiveSubTabBtn.classList.remove("active");
+        el.faultCompletedSection.classList.remove("hidden");
+        el.faultActiveSection.classList.add("hidden");
+        renderCompletedFaults();
+      } else {
+        el.faultActiveSubTabBtn.classList.add("active");
+        el.faultCompletedSubTabBtn.classList.remove("active");
+        el.faultActiveSection.classList.remove("hidden");
+        el.faultCompletedSection.classList.add("hidden");
+      }
+    }
+
     el.tabSahaBtn.addEventListener("click", () => switchModule("SAHA"));
     el.tabFaultBtn.addEventListener("click", () => switchModule("FAULT"));
+    el.faultActiveSubTabBtn.addEventListener("click", () => switchFaultSubTab("ACTIVE"));
+    el.faultCompletedSubTabBtn.addEventListener("click", () => switchFaultSubTab("COMPLETED"));
 
     function saveFaultCache(list) {
       try {
@@ -932,10 +982,34 @@
       }
     }
 
+    function saveCompletedFaultsCache(list) {
+      try {
+        localStorage.setItem(COMPLETED_FAULTS_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), items: list }));
+      } catch (e) {}
+    }
+
+    function loadCompletedFaultsCache() {
+      try {
+        const raw = localStorage.getItem(COMPLETED_FAULTS_CACHE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed.items) ? parsed.items : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function updateFaultBadges() {
+      el.faultBadgeCount.textContent = allFaults.length;
+      el.completedFaultBadgeCount.textContent = completedFaults.length;
+      el.faultActiveSubCount.textContent = allFaults.length;
+      el.faultCompletedSubCount.textContent = completedFaults.length;
+    }
+
     function setFaultItems(rows, syncToFirebase = false) {
       allFaults = rows.map((r, i) => r.flags ? r : classifyFaultRow({ ...r, id: r.id || `f_${i + 1}` }));
       saveFaultCache(allFaults);
-      el.faultBadgeCount.textContent = allFaults.length;
+      updateFaultBadges();
       populateFaultFilters();
       applyFaultFilters(true);
 
@@ -983,20 +1057,68 @@
       }
 
       const idToRemove = pendingFaultId;
+      const targetItem = allFaults.find(item => item.id === idToRemove);
       pendingFaultId = null;
       el.faultReasonModal.classList.remove("open");
 
+      if (targetItem) {
+        const completedEntry = {
+          ...targetItem,
+          completionReason: reasonText,
+          completedAt: new Date().toLocaleString("tr-TR")
+        };
+        completedFaults = [completedEntry, ...completedFaults];
+        saveCompletedFaultsCache(completedFaults);
+        set(ref(db, `${DB_PATH}/completed_faults/${completedEntry.id}`), completedEntry).catch(() => {});
+      }
+
       allFaults = allFaults.filter(item => item.id !== idToRemove);
       saveFaultCache(allFaults);
-      el.faultBadgeCount.textContent = allFaults.length;
+      updateFaultBadges();
       populateFaultFilters();
       applyFaultFilters(false);
+      renderCompletedFaults();
 
       try {
         await remove(ref(db, `${DB_PATH}/fault_addresses/${idToRemove}`));
       } catch (e) {
         console.warn("Sunucu silme uyarısı:", e);
       }
+    });
+
+    function renderCompletedFaults() {
+      const q = asciiKey(completedFaultSearchQuery);
+      const list = completedFaults.filter(f => {
+        if (!q) return true;
+        return asciiKey(`${f.tesisatNo} ${f.personel} ${f.planGrubu} ${f.rawAddress} ${f.completionReason || ""} ${f.sayacSeri || ""}`).includes(q);
+      });
+
+      if (!list.length) {
+        el.completedFaultsContainer.innerHTML = `<div class="empty-box">Henüz tamamlanan hatalı kayıt yok.</div>`;
+        return;
+      }
+
+      el.completedFaultsContainer.innerHTML = list.map(f => `
+        <article class="job-card done-fault-card">
+          <div class="job-top">
+            <div class="job-title">Tesisat: ${f.tesisatNo || "-"} • ${f.personel}</div>
+            <span class="tag tag-done">✓ ${f.completionReason || "Tamamlandı"}</span>
+          </div>
+          <div class="job-meta">
+            Grup: <strong>${f.planGrubu}</strong>
+            ${f.completedAt ? ` • Tarih: <strong>${f.completedAt}</strong>` : ""}
+          </div>
+          <div class="job-info-box">
+            <div class="info-line"><span class="reason-label">Tamamlama Nedeni:</span> ${f.completionReason || "-"}</div>
+            <div class="info-line"><span class="info-label">Ham Adres:</span> ${f.rawAddress || "-"}</div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    el.completedFaultSearchInput.addEventListener("input", () => {
+      completedFaultSearchQuery = el.completedFaultSearchInput.value;
+      renderCompletedFaults();
     });
 
     function populateFaultFilters() {
@@ -1122,6 +1244,7 @@
           .map((r, i) => classifyFaultRow({ ...r, id: `fl_${i + 1}_${Date.now()}` }));
         setFaultItems(mapped, true);
         switchModule("FAULT");
+        switchFaultSubTab("ACTIVE");
         el.adminStatus.textContent = `✅ Hatalı adres listesi yüklendi: ${mapped.length} kayıt.`;
       } catch (err) {
         el.adminStatus.textContent = "❌ Hatalı adres Excel hatası: " + err.message;
@@ -1459,12 +1582,16 @@
         if (!confirm("Tüm kayıtlar silinsin mi?")) return;
         localStorage.removeItem(LOCAL_CACHE_KEY);
         localStorage.removeItem(FAULT_CACHE_KEY);
+        localStorage.removeItem(COMPLETED_FAULTS_CACHE_KEY);
         await remove(ref(db, `${DB_PATH}/jobs`));
         await remove(ref(db, `${DB_PATH}/fault_addresses`));
+        await remove(ref(db, `${DB_PATH}/completed_faults`));
         allJobs = [];
         allFaults = [];
+        completedFaults = [];
         lastServerPushHash = "";
         setFaultItems([], false);
+        renderCompletedFaults();
         populateFilters();
         applyFilters(true);
         el.adminStatus.textContent = "Tüm kayıtlar silindi.";
@@ -1557,6 +1684,13 @@
       setFaultItems(cachedFaults, false);
     }
 
+    const cachedCompletedFaults = loadCompletedFaultsCache();
+    if (cachedCompletedFaults.length > 0) {
+      completedFaults = cachedCompletedFaults;
+      updateFaultBadges();
+      renderCompletedFaults();
+    }
+
     onValue(ref(db, "/"), snap => {
       el.syncStatus.className = "sync-status sync-ok";
       el.syncStatus.textContent = "🟢 Sunucu Bağlı";
@@ -1576,6 +1710,17 @@
         const list = Object.values(faultObj).filter(x => x && typeof x === "object");
         if (list.length > 0) {
           setFaultItems(list, false);
+        }
+      }
+
+      const doneFaultObj = val?.completed_faults || val?.[DB_PATH]?.completed_faults;
+      if (doneFaultObj && typeof doneFaultObj === "object") {
+        const doneList = Object.values(doneFaultObj).filter(x => x && typeof x === "object");
+        if (doneList.length > 0) {
+          completedFaults = doneList;
+          saveCompletedFaultsCache(completedFaults);
+          updateFaultBadges();
+          renderCompletedFaults();
         }
       }
     }, err => {
