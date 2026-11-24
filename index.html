@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Edirne & Kırklareli Sayaç Saha Rehberi - TREDAŞ</title>
+  <title>TREDAŞ — Edirne & Kırklareli Saha Operasyon Paneli</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
@@ -12,11 +12,11 @@
       --bg-card: #111827;
       --bg-soft: #1e293b;
       --bg-input: #0f172a;
-      --border: #475569;
-      --text-main: #ffffff;
-      --text-muted: #cbd5e1;
+      --border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
       --accent: #f59e0b;
-      --accent-2: #3b82f6;
+      --accent-2: #2563eb;
       --success: #10b981;
       --danger: #ef4444;
     }
@@ -28,12 +28,12 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
       background: var(--bg-main);
       color: var(--text-main);
-      font-size: 14px;
-      line-height: 1.45;
+      font-size: 13.5px;
+      line-height: 1.4;
     }
 
     .container {
-      max-width: 980px;
+      max-width: 960px;
       margin: 0 auto;
       padding: 10px 10px 72px;
     }
@@ -45,13 +45,13 @@
       gap: 8px;
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 10px 12px;
+      border-radius: 12px;
+      padding: 9px 12px;
       margin-bottom: 10px;
       position: sticky;
       top: 6px;
       z-index: 900;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     }
 
     .brand-row { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
@@ -61,14 +61,15 @@
       color: #090d16;
       font-weight: 900;
       font-size: 11px;
-      padding: 5px 7px;
-      border-radius: 8px;
+      padding: 4px 7px;
+      border-radius: 6px;
       flex-shrink: 0;
+      letter-spacing: 0.3px;
     }
 
     .title-group { min-width: 0; }
-    .app-title { font-size: 14px; font-weight: 800; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sync-status { font-size: 11px; font-weight: 700; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .app-title { font-size: 13.5px; font-weight: 800; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sync-status { font-size: 11px; font-weight: 700; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sync-ok { color: #34d399; }
     .sync-err { color: #f87171; }
     .sync-busy { color: #fbbf24; }
@@ -76,8 +77,8 @@
     .stats-pill {
       background: var(--bg-soft);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 6px 9px;
+      border-radius: 8px;
+      padding: 5px 8px;
       font-size: 12px;
       font-weight: 800;
       white-space: nowrap;
@@ -88,10 +89,10 @@
       background: var(--bg-soft);
       color: #ffffff;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      width: 36px;
-      height: 36px;
-      font-size: 18px;
+      border-radius: 8px;
+      width: 34px;
+      height: 34px;
+      font-size: 17px;
       font-weight: 700;
       cursor: pointer;
       flex-shrink: 0;
@@ -108,15 +109,15 @@
       background: var(--bg-card);
       color: var(--text-muted);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px;
-      font-size: 13px;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 12.5px;
       font-weight: 800;
       cursor: pointer;
     }
 
     .module-btn.active {
-      background: rgba(245, 158, 11, 0.18);
+      background: rgba(245, 158, 11, 0.16);
       color: #fde68a;
       border-color: var(--accent);
     }
@@ -124,41 +125,56 @@
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px;
+      border-radius: 12px;
+      padding: 10px 12px;
       margin-bottom: 10px;
     }
 
-    .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+    .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
     .cat-btn {
       background: var(--bg-input);
       color: var(--text-muted);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 9px 6px;
+      border-radius: 8px;
+      padding: 7px 6px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
     }
-    .cat-btn.active { background: rgba(59, 130, 246, 0.25); color: #ffffff; border-color: var(--accent-2); }
+    .cat-btn.active { background: rgba(37, 99, 235, 0.25); color: #ffffff; border-color: #3b82f6; }
 
-    .filter-stack { display: flex; flex-direction: column; gap: 8px; }
+    .filter-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    @media (max-width: 560px) {
+      .filter-grid-2 { grid-template-columns: 1fr; }
+    }
 
     select, input[type="text"], input[type="password"], textarea {
       width: 100%;
       background: var(--bg-input);
       color: #ffffff;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 13px;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12.5px;
       outline: none;
       font-family: inherit;
     }
 
-    textarea { resize: vertical; min-height: 64px; }
+    textarea { resize: vertical; min-height: 62px; }
 
-    .controls-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 8px;
+    }
     .meter-row { display: flex; flex-wrap: wrap; gap: 6px; }
 
     .chip-btn {
@@ -166,17 +182,18 @@
       color: var(--text-muted);
       border: 1px solid var(--border);
       border-radius: 999px;
-      padding: 6px 12px;
-      font-size: 12px;
+      padding: 5px 11px;
+      font-size: 11.5px;
       font-weight: 700;
       cursor: pointer;
     }
-    .chip-btn.active { background: rgba(59, 130, 246, 0.28); color: #ffffff; border-color: var(--accent-2); }
+    .chip-btn.active { background: rgba(37, 99, 235, 0.28); color: #ffffff; border-color: #3b82f6; }
 
+    /* Derli Toplu Klasik Mahalle & Köy Kutuları */
     .split-groups {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 8px;
     }
     @media (max-width: 640px) {
       .split-groups { grid-template-columns: 1fr; }
@@ -185,127 +202,106 @@
     .sub-panel {
       background: var(--bg-input);
       border: 1px solid var(--border);
-      border-radius: 11px;
-      padding: 9px;
-      max-height: 185px;
+      border-radius: 10px;
+      padding: 8px;
+      max-height: 150px;
       overflow-y: auto;
     }
 
-    .group-header-title { font-size: 13px; font-weight: 800; color: #fbbf24; margin-bottom: 6px; }
-    .district-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .group-header-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #fbbf24;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .pill-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
 
     .d-pill {
       background: var(--bg-card);
       color: var(--text-muted);
       border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 6px 11px;
-      font-size: 12px;
+      border-radius: 7px;
+      padding: 4px 8px;
+      font-size: 11px;
       font-weight: 700;
       cursor: pointer;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .d-pill.active { background: rgba(16, 185, 129, 0.22); color: #ffffff; border-color: var(--success); }
-    .d-pill.mah-pill.active { background: rgba(59, 130, 246, 0.25); border-color: var(--accent-2); }
+    .d-pill.mah-pill.active { background: rgba(37, 99, 235, 0.28); color: #ffffff; border-color: #3b82f6; }
 
-    .reason-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      margin-bottom: 8px;
-    }
-
-    .reason-option-btn {
-      background: var(--bg-input);
-      color: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 8px 9px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: left;
-    }
-
-    .reason-option-btn.selected {
-      background: rgba(16, 185, 129, 0.22);
-      border-color: var(--success);
-      color: #a7f3d0;
-    }
-
-    .field-label {
-      display: block;
-      font-size: 12px;
-      font-weight: 700;
-      color: #fbbf24;
-      margin-bottom: 4px;
-    }
-
-    .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; margin-bottom: 6px; }
-    .progress-bar { width: 100%; height: 8px; background: var(--bg-input); border-radius: 999px; overflow: hidden; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-2), var(--success)); width: 0%; transition: width 0.25s ease; }
+    .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 800; margin-bottom: 5px; }
+    .progress-bar { width: 100%; height: 6px; background: var(--bg-input); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #2563eb, #10b981); width: 0%; transition: width 0.25s ease; }
 
     .job-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px;
-      margin-bottom: 10px;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
     }
 
-    .err-card { border-color: rgba(239, 68, 68, 0.55); }
-    .done-fault-card { border-color: rgba(16, 185, 129, 0.55); }
+    .err-card { border-color: rgba(239, 68, 68, 0.5); }
+    .done-fault-card { border-color: rgba(16, 185, 129, 0.5); }
 
-    .job-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
-    .job-title { font-size: 14px; font-weight: 800; color: #fbbf24; }
+    .job-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .job-title { font-size: 13.5px; font-weight: 800; color: #fbbf24; }
 
-    .tag { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
-    .tag-mahalle { background: rgba(59, 130, 246, 0.25); color: #bfdbfe; }
+    .tag { font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 999px; white-space: nowrap; }
+    .tag-mahalle { background: rgba(37, 99, 235, 0.25); color: #bfdbfe; }
     .tag-koy { background: rgba(16, 185, 129, 0.25); color: #a7f3d0; }
     .tag-err { background: rgba(239, 68, 68, 0.22); color: #fecaca; }
     .tag-done { background: rgba(16, 185, 129, 0.22); color: #a7f3d0; }
 
-    .job-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; word-break: break-word; }
+    .job-meta { font-size: 11.5px; color: var(--text-muted); margin-bottom: 7px; }
 
     .job-info-box {
-      font-size: 13px;
-      color: #ffffff;
+      font-size: 12.5px;
+      color: #f8fafc;
       background: var(--bg-input);
       border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 9px 11px;
-      margin-bottom: 10px;
-      word-break: break-word;
-      line-height: 1.5;
+      border-radius: 8px;
+      padding: 7px 9px;
+      margin-bottom: 8px;
+      line-height: 1.45;
     }
 
-    .info-line { margin-bottom: 4px; }
-    .info-line:last-child { margin-bottom: 0; color: var(--text-muted); font-size: 12px; }
+    .info-line { margin-bottom: 2px; }
+    .info-line:last-child { margin-bottom: 0; color: var(--text-muted); font-size: 11.5px; }
     .info-label { color: #fbbf24; font-weight: 700; }
     .reason-label { color: #34d399; font-weight: 800; }
     .web-label { color: #60a5fa; font-weight: 800; }
 
     .web-result-box {
-      margin-top: 8px;
-      padding: 8px 10px;
-      border-radius: 8px;
-      background: rgba(59, 130, 246, 0.12);
+      margin-top: 6px;
+      padding: 7px 9px;
+      border-radius: 7px;
+      background: rgba(37, 99, 235, 0.14);
       border: 1px solid rgba(96, 165, 250, 0.45);
-      font-size: 12px;
+      font-size: 11.5px;
       color: #e2e8f0;
-      line-height: 1.45;
+      line-height: 1.4;
     }
 
-    .job-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .job-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .fault-card-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-    @media (max-width: 560px) {
+    @media (max-width: 520px) {
       .fault-card-actions { grid-template-columns: 1fr; }
     }
 
     .btn {
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 10px;
-      font-size: 12.5px;
+      border-radius: 8px;
+      padding: 8px 9px;
+      font-size: 12px;
       font-weight: 800;
       cursor: pointer;
       text-align: center;
@@ -313,12 +309,12 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 5px;
+      gap: 4px;
     }
 
     .btn-primary { background: var(--accent-2); border-color: var(--accent-2); color: #ffffff; }
-    .btn-info { background: rgba(59, 130, 246, 0.22); border-color: #60a5fa; color: #dbeafe; }
-    .btn-success { background: var(--success); border-color: var(--success); color: #062118; }
+    .btn-info { background: rgba(37, 99, 235, 0.22); border-color: #60a5fa; color: #dbeafe; }
+    .btn-success { background: var(--success); border-color: var(--success); color: #052e16; }
     .btn-secondary { background: var(--bg-soft); color: #ffffff; }
     .btn-warning { background: var(--accent); border-color: var(--accent); color: #111827; }
     .btn-danger { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.55); color: #fecaca; }
@@ -326,13 +322,33 @@
     .admin-box {
       border: 1px solid rgba(245, 158, 11, 0.55);
       background: rgba(245, 158, 11, 0.08);
-      border-radius: 14px;
-      padding: 12px;
+      border-radius: 12px;
+      padding: 10px 12px;
       margin-bottom: 10px;
     }
 
-    .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; margin-top: 10px; }
-    .status-note { font-size: 12px; color: var(--text-muted); margin-top: 8px; word-break: break-word; }
+    .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 6px; margin-top: 8px; }
+    .status-note { font-size: 11.5px; color: var(--text-muted); margin-top: 6px; }
+
+    .reason-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+    .reason-option-btn {
+      background: var(--bg-input);
+      color: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: left;
+    }
+    .reason-option-btn.selected {
+      background: rgba(16, 185, 129, 0.22);
+      border-color: var(--success);
+      color: #a7f3d0;
+    }
+
+    .field-label { display: block; font-size: 11.5px; font-weight: 700; color: #fbbf24; margin-bottom: 3px; }
 
     .modal-backdrop {
       position: fixed;
@@ -341,29 +357,29 @@
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      padding: 14px;
       z-index: 1200;
     }
     .modal-backdrop.open { display: flex; }
 
     .modal-card {
       width: 100%;
-      max-width: 440px;
+      max-width: 430px;
       max-height: 92vh;
       overflow-y: auto;
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
+      border-radius: 14px;
+      padding: 14px;
     }
 
     .empty-box {
       border: 1px dashed var(--border);
-      border-radius: 14px;
-      padding: 22px 14px;
+      border-radius: 12px;
+      padding: 18px 12px;
       text-align: center;
       color: var(--text-muted);
-      font-size: 13px;
+      font-size: 12.5px;
     }
 
     .hidden { display: none !important; }
@@ -391,7 +407,7 @@
     <div id="adminPanel" class="admin-box hidden">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
         <strong>🔐 YETKİLİ PANELİ</strong>
-        <button id="logoutAdminBtn" class="btn btn-secondary" style="padding:5px 10px; font-size:12px;">Çıkış</button>
+        <button id="logoutAdminBtn" class="btn btn-secondary" style="padding:4px 9px; font-size:11.5px;">Çıkış</button>
       </div>
       <div class="admin-grid">
         <label class="btn btn-primary" style="cursor:pointer;">
@@ -406,14 +422,14 @@
           📄 PDF Yükle
           <input type="file" id="pdfInput" accept=".pdf" hidden />
         </label>
-        <button id="repairDbBtn" class="btn btn-secondary">🤖 Kayıtları Düzenle</button>
+        <button id="repairDbBtn" class="btn btn-secondary">🤖 Kayıtları Temizle & Düzenle</button>
         <button id="showCompletedToggle" class="btn btn-secondary">✓ Tamamlananlar</button>
         <button id="clearAllBtn" class="btn btn-danger">🗑️ Tümünü Sil</button>
       </div>
       <div id="adminStatus" class="status-note"></div>
     </div>
 
-    <!-- MODÜL 1: SAHA İŞ LİSTESİ (Harita / Git Butonu Yok, İnternette Araştır Var) -->
+    <!-- MODÜL 1: SAHA İŞ LİSTESİ -->
     <div id="sahaModule">
       <section class="card">
         <div class="cat-grid">
@@ -422,17 +438,16 @@
           <button class="cat-btn" data-cat="KOY">🌾 Köyler</button>
         </div>
 
-        <div class="filter-stack">
+        <div class="filter-grid-2">
           <select id="districtSelect">
             <option value="ALL">Tüm İlçeler</option>
           </select>
-
           <select id="settlementSelect">
             <option value="ALL">Tüm Mahalle / Köyler</option>
           </select>
-
-          <input id="searchInput" type="text" placeholder="Tesisat No, Seri No, Mahalle, Köy veya Açık Adres ara..." />
         </div>
+
+        <input id="searchInput" type="text" placeholder="Tesisat No, Seri No, Mahalle, Köy, Yol veya Adres ara..." />
 
         <div class="controls-row">
           <div class="meter-row">
@@ -441,7 +456,7 @@
             <button class="chip-btn" data-meter="TRI">Trifaze</button>
           </div>
 
-          <select id="sortSelect" style="width:auto; min-width:175px; padding:7px 10px; font-size:12px;">
+          <select id="sortSelect" style="width:auto; min-width:165px; padding:6px 9px; font-size:11.5px;">
             <option value="DEFAULT">Sırala: Varsayılan</option>
             <option value="SETTLEMENT">Sırala: Mahalle / Köy (A-Z)</option>
             <option value="TESISAT">Sırala: Tesisat No</option>
@@ -449,16 +464,21 @@
         </div>
       </section>
 
+      <!-- DERLİ TOPLU MAHALLE & KÖY PANELİ -->
       <section id="categorySubGroupCard" class="card">
         <div class="split-groups">
           <div id="mahalleSplitBox" class="sub-panel">
-            <div id="mahalleSplitTitle" class="group-header-title">🏙️ Mahalleler</div>
-            <div id="mahalleSplitPills" class="district-pills"></div>
+            <div class="group-header-title">
+              <span id="mahalleSplitTitle">🏙️ Mahalleler</span>
+            </div>
+            <div id="mahalleSplitPills" class="pill-wrap"></div>
           </div>
 
           <div id="koySplitBox" class="sub-panel">
-            <div id="koySplitTitle" class="group-header-title">🌾 Köyler</div>
-            <div id="koySplitPills" class="district-pills"></div>
+            <div class="group-header-title">
+              <span id="koySplitTitle">🌾 Köyler</span>
+            </div>
+            <div id="koySplitPills" class="pill-wrap"></div>
           </div>
         </div>
       </section>
@@ -490,21 +510,21 @@
 
       <div id="faultActiveSection">
         <section class="card">
-          <div class="group-header-title">👷 Personel Kategorileri (Hata Sayısıyla)</div>
-          <div id="faultPersonPills" class="district-pills"></div>
+          <div class="group-header-title"><span>👷 Personel Kategorileri (Hata Sayısıyla)</span></div>
+          <div id="faultPersonPills" class="pill-wrap"></div>
         </section>
 
         <section class="card">
-          <div class="group-header-title">⚠️ Hatalı / Okunamayan Adres Filtreleri</div>
-          <div class="filter-stack">
+          <div class="group-header-title"><span>⚠️ Hatalı / Okunamayan Adres Filtreleri</span></div>
+          <div class="filter-grid-2">
             <select id="faultPersonSelect">
               <option value="ALL">Tüm Personeller</option>
             </select>
-
             <select id="faultGroupSelect">
               <option value="ALL">Tüm Planlama Grupları / İlçeler</option>
             </select>
-
+          </div>
+          <div class="filter-grid-2">
             <select id="faultTypeSelect">
               <option value="ALL">Tüm Hata / Durum Tipleri</option>
               <option value="MISSING_SETTLEMENT">Mahalle / Köy Bilgisi Eksik</option>
@@ -512,7 +532,6 @@
               <option value="DASH_OR_TRUNCATED">Eksik / Kesik / (- -) Adres</option>
               <option value="METER_ERR">Modem / Sayaç Okuma Hatası</option>
             </select>
-
             <input id="faultSearchInput" type="text" placeholder="Tesisat, Personel, Adres veya Seri No ara..." />
           </div>
         </section>
@@ -532,7 +551,7 @@
 
       <div id="faultCompletedSection" class="hidden">
         <section class="card">
-          <div class="group-header-title">✓ Tamamlanan Hatalı Kayıtlar (1 Ay Sonra Otomatik Silinir)</div>
+          <div class="group-header-title"><span>✓ Tamamlanan Hatalı Kayıtlar (1 Ay Sonra Otomatik Silinir)</span></div>
           <input id="completedFaultSearchInput" type="text" placeholder="Tesisat, Yapan Kişi, Hata veya Not ara..." />
         </section>
         <div id="completedFaultsContainer"></div>
@@ -544,13 +563,13 @@
   <div id="faultReasonModal" class="modal-backdrop">
     <div class="modal-card">
       <h3 style="margin-top:0;">Tamamlandı — Hata ve Yapılan İşlem Notu</h3>
-      <p id="faultReasonTargetInfo" style="font-size:12px; color:var(--text-muted); margin-top:0;"></p>
+      <p id="faultReasonTargetInfo" style="font-size:11.5px; color:var(--text-muted); margin-top:0;"></p>
 
       <label class="field-label">Yapan Kişi / Ekip</label>
-      <input id="actorNameInput" type="text" placeholder="İşlemi yapan personel adı..." style="margin-bottom:8px;" />
+      <input id="actorNameInput" type="text" placeholder="İşlemi yapan personel adı..." style="margin-bottom:7px;" />
 
       <label class="field-label">Ne Hata Vardı?</label>
-      <input id="detectedErrorInput" type="text" placeholder="Örn: Adres eksikti / Modem sayaca erişemiyordu..." style="margin-bottom:8px;" />
+      <input id="detectedErrorInput" type="text" placeholder="Örn: Adres eksikti / Modem sayaca erişemiyordu..." style="margin-bottom:7px;" />
 
       <label class="field-label">Neden Yapıldı? (Hızlı Seçim)</label>
       <div class="reason-grid">
@@ -561,7 +580,7 @@
       </div>
 
       <label class="field-label">Neden Yapıldı / Açıklama Notu</label>
-      <textarea id="customReasonInput" placeholder="Detay not yazın (ne yapıldı, neden yapıldı)..." style="margin-bottom:10px;"></textarea>
+      <textarea id="customReasonInput" placeholder="Detay not yazın (ne yapıldı, neden yapıldı)..." style="margin-bottom:9px;"></textarea>
 
       <div style="display:flex; gap:8px;">
         <button id="confirmFaultReasonBtn" class="btn btn-success" style="flex:1;">Kaydet ve Tamamla</button>
@@ -573,7 +592,7 @@
   <div id="menuModal" class="modal-backdrop">
     <div class="modal-card">
       <h3 style="margin-top:0;">Yetkili Girişi</h3>
-      <p style="font-size:13px; color:var(--text-muted);">Excel/PDF yükleme ve kayıt düzenleme için PIN kodunu girin.</p>
+      <p style="font-size:12.5px; color:var(--text-muted);">Excel/PDF yükleme ve kayıt düzenleme için PIN kodunu girin.</p>
       <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN (1923)" style="margin-bottom:10px;" />
       <div style="display:flex; gap:8px;">
         <button id="pinSubmitBtn" class="btn btn-primary" style="flex:1;">Giriş</button>
@@ -603,47 +622,29 @@
     const COMPLETED_FAULTS_CACHE_KEY = "tredas_hatali_tamamlanan_v1";
     const ADMIN_PIN = "1923";
     const PAGE_SIZE = 40;
-    const RETENTION_MS = 30 * 24 * 60 * 60 * 1000; // 1 ay (30 gün)
+    const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 
     const DISTRICT_CENTERS = {
-      "Edirne Merkez": { lat: 41.6771, lon: 26.5557 },
-      "Keşan": { lat: 40.8559, lon: 26.6303 },
-      "Uzunköprü": { lat: 41.2686, lon: 26.6894 },
-      "İpsala": { lat: 40.9167, lon: 26.3833 },
-      "Havsa": { lat: 41.5500, lon: 26.8167 },
-      "Meriç": { lat: 41.1889, lon: 26.4167 },
-      "Enez": { lat: 40.7250, lon: 26.0833 },
-      "Süloğlu": { lat: 41.7667, lon: 26.9000 },
-      "Lalapaşa": { lat: 41.8389, lon: 26.7361 },
-      "Kırklareli Merkez": { lat: 41.7333, lon: 27.2167 },
-      "Lüleburgaz": { lat: 41.4056, lon: 27.3569 },
-      "Babaeski": { lat: 41.4333, lon: 27.0917 },
-      "Vize": { lat: 41.5736, lon: 27.7667 },
-      "Pınarhisar": { lat: 41.6222, lon: 27.5139 },
-      "Demirköy": { lat: 41.8222, lon: 27.7583 },
-      "Pehlivanköy": { lat: 41.3500, lon: 27.1833 },
-      "Kofçaz": { lat: 41.9333, lon: 27.1833 }
+      "Edirne Merkez": { lat: 41.6771, lon: 26.5557, il: "Edirne", ilce: "Merkez" },
+      "Keşan": { lat: 40.8559, lon: 26.6303, il: "Edirne", ilce: "Keşan" },
+      "Uzunköprü": { lat: 41.2686, lon: 26.6894, il: "Edirne", ilce: "Uzunköprü" },
+      "İpsala": { lat: 40.9167, lon: 26.3833, il: "Edirne", ilce: "İpsala" },
+      "Havsa": { lat: 41.5500, lon: 26.8167, il: "Edirne", ilce: "Havsa" },
+      "Meriç": { lat: 41.1889, lon: 26.4167, il: "Edirne", ilce: "Meriç" },
+      "Enez": { lat: 40.7250, lon: 26.0833, il: "Edirne", ilce: "Enez" },
+      "Süloğlu": { lat: 41.7667, lon: 26.9000, il: "Edirne", ilce: "Süloğlu" },
+      "Lalapaşa": { lat: 41.8389, lon: 26.7361, il: "Edirne", ilce: "Lalapaşa" },
+      "Kırklareli Merkez": { lat: 41.7333, lon: 27.2167, il: "Kırklareli", ilce: "Merkez" },
+      "Lüleburgaz": { lat: 41.4056, lon: 27.3569, il: "Kırklareli", ilce: "Lüleburgaz" },
+      "Babaeski": { lat: 41.4333, lon: 27.0917, il: "Kırklareli", ilce: "Babaeski" },
+      "Vize": { lat: 41.5736, lon: 27.7667, il: "Kırklareli", ilce: "Vize" },
+      "Pınarhisar": { lat: 41.6222, lon: 27.5139, il: "Kırklareli", ilce: "Pınarhisar" },
+      "Demirköy": { lat: 41.8222, lon: 27.7583, il: "Kırklareli", ilce: "Demirköy" },
+      "Pehlivanköy": { lat: 41.3500, lon: 27.1833, il: "Kırklareli", ilce: "Pehlivanköy" },
+      "Kofçaz": { lat: 41.9333, lon: 27.1833, il: "Kırklareli", ilce: "Kofçaz" }
     };
 
-    const DISTRICTS = {
-      "Edirne Merkez": { il: "Edirne", ilce: "Merkez" },
-      "Keşan": { il: "Edirne", ilce: "Keşan" },
-      "Uzunköprü": { il: "Edirne", ilce: "Uzunköprü" },
-      "İpsala": { il: "Edirne", ilce: "İpsala" },
-      "Havsa": { il: "Edirne", ilce: "Havsa" },
-      "Meriç": { il: "Edirne", ilce: "Meriç" },
-      "Enez": { il: "Edirne", ilce: "Enez" },
-      "Süloğlu": { il: "Edirne", ilce: "Süloğlu" },
-      "Lalapaşa": { il: "Edirne", ilce: "Lalapaşa" },
-      "Kırklareli Merkez": { il: "Kırklareli", ilce: "Merkez" },
-      "Lüleburgaz": { il: "Kırklareli", ilce: "Lüleburgaz" },
-      "Babaeski": { il: "Kırklareli", ilce: "Babaeski" },
-      "Vize": { il: "Kırklareli", ilce: "Vize" },
-      "Pınarhisar": { il: "Kırklareli", ilce: "Pınarhisar" },
-      "Demirköy": { il: "Kırklareli", ilce: "Demirköy" },
-      "Pehlivanköy": { il: "Kırklareli", ilce: "Pehlivanköy" },
-      "Kofçaz": { il: "Kırklareli", ilce: "Kofçaz" }
-    };
+    const DISTRICTS = DISTRICT_CENTERS;
 
     const NAMES = {
       "sukrupasa": "Şükrüpaşa", "saricapasa": "Sarıcapaşa", "sahin": "Şahin", "sinan": "Sinan",
@@ -672,7 +673,9 @@
       "abalar": "Abalar", "buyukdoganca": "Büyükdoğanca", "copkoy": "Çöpköy",
       "avariz": "Avarız", "degirmenyeni": "Değirmenyeni", "kemal": "Kemal",
       "haciisa": "Hacıisa", "varos": "Varoş", "balaban": "Balaban", "mescit": "Mescit",
-      "kosenciftligi": "Köşençiftliği", "kösenciftligi": "Köşençiftliği"
+      "kosenciftligi": "Köşençiftliği", "kösenciftligi": "Köşençiftliği",
+      "bayrambey": "Bayrambey", "muradiye": "Muradiye", "rizaefendi": "Rızaefendi",
+      "buyukevren": "Büyükevren", "yenikarpuzlu": "Yenikarpuzlu", "cakmak": "Çakmak"
     };
 
     const KOYLER = new Set([
@@ -682,7 +685,7 @@
       "begendik", "kuplu", "subasi", "kircasalih", "igneada", "kiyikoy",
       "ahmetbey", "evrensekiz", "buyukkaristiran", "kavakkoy", "kaynarca", "abalar",
       "buyukdoganca", "copkoy", "avariz", "degirmenyeni", "kemal", "balaban", "mescit",
-      "kosenciftligi", "kösenciftligi"
+      "kosenciftligi", "kösenciftligi", "buyukevren", "yenikarpuzlu"
     ]);
 
     const trLower = s => (s || "").toString().toLocaleLowerCase("tr-TR").trim();
@@ -696,6 +699,19 @@
         .map(w => w.charAt(0).toLocaleUpperCase("tr-TR") + w.slice(1)).join(" ").trim();
     }
 
+    // Tekrarlayan kelimeleri ve "Ü" gibi tek harfli kalıntıları temizler
+    function deduplicateWords(str) {
+      const tokens = String(str || "").trim().split(/\s+/).filter(Boolean);
+      const out = [];
+      for (const tok of tokens) {
+        if (tok.length === 1 && /^[A-ZÇĞİÖŞÜa-zçğıöşü]$/.test(tok)) continue;
+        const prev = out[out.length - 1];
+        if (prev && asciiKey(prev) === asciiKey(tok)) continue;
+        out.push(tok);
+      }
+      return out.join(" ");
+    }
+
     function stripNoiseFromSettlementName(str, districtIlce) {
       let clean = String(str || "")
         .replace(/\b\d+\b/g, " ")
@@ -704,21 +720,51 @@
         .replace(/\s+/g, " ")
         .trim();
 
+      clean = deduplicateWords(clean);
       if (districtIlce && asciiKey(clean) === asciiKey(districtIlce)) {
         return "";
       }
       return clean;
     }
 
+    // Adreste "A B yolu" gibi ifadelerde hangi ilçeye/merkeze daha yakınsa onu seçer
+    function resolveNearestDistrictFromRoad(text, fallbackDistrict) {
+      const norm = asciiKey(text || "");
+      const mRoad = norm.match(/\b([a-zçğıöşü]+)\s+([a-zçğıöşü]+)\s+yol[uü]?\b/);
+      const candidates = [];
+
+      for (const [key, meta] of Object.entries(DISTRICTS)) {
+        const ilceKey = asciiKey(meta.ilce);
+        if (ilceKey !== "merkez" && new RegExp(`(^|[^a-z0-9])${ilceKey}([^a-z0-9]|$)`).test(norm)) {
+          candidates.push(key);
+        }
+      }
+
+      if (mRoad) {
+        const aKey = asciiKey(mRoad[1]);
+        const bKey = asciiKey(mRoad[2]);
+        const matchA = Object.entries(DISTRICTS).find(([, m]) => asciiKey(m.ilce) === aKey);
+        const matchB = Object.entries(DISTRICTS).find(([, m]) => asciiKey(m.ilce) === bKey);
+        if (matchA && matchB) {
+          const cA = DISTRICT_CENTERS[matchA[0]];
+          const cB = DISTRICT_CENTERS[matchB[0]];
+          // Varsayılan/öncelikli ilçe merkezine veya ilk aday ilçeye göre daha yakın olanı seçer
+          const refCenter = DISTRICT_CENTERS[fallbackDistrict] || DISTRICT_CENTERS["Edirne Merkez"];
+          const dA = Math.hypot(cA.lat - refCenter.lat, cA.lon - refCenter.lon);
+          const dB = Math.hypot(cB.lat - refCenter.lat, cB.lon - refCenter.lon);
+          return dA <= dB ? matchA[0] : matchB[0];
+        }
+      }
+
+      if (candidates.length > 0) return candidates[0];
+      return fallbackDistrict;
+    }
+
     function detectDistrict(text) {
       const n = asciiKey(text || "");
       const isK = n.includes("kirklareli");
-      for (const [k, meta] of Object.entries(DISTRICTS)) {
-        if (meta.ilce === "Merkez") continue;
-        const dn = asciiKey(meta.ilce);
-        if (new RegExp(`(^|[^a-z0-9])${dn}([^a-z0-9]|$)`).test(n)) return k;
-      }
-      return isK ? "Kırklareli Merkez" : "Edirne Merkez";
+      const base = isK ? "Kırklareli Merkez" : "Edirne Merkez";
+      return resolveNearestDistrictFromRoad(text, base);
     }
 
     function resolveSettlement(rawSett, rawSrc, districtKey) {
@@ -795,9 +841,9 @@
       const parts = [];
       if (settlement) parts.push(settlement);
 
-      const mSok = cleanedRaw.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]{2,36}?\s*(?:Sk\.?|Sok\.?|Sokak|Cd\.?|Cad\.?|Cadde|Blv\.?|Bulvarı)\s*(?:No[:\s]*[A-Za-z0-9/-]+)?(?:\s*(?:Daire|D\.?|Kat|Apt\.?)[:\s]*[A-Za-z0-9/-]+)?)/i);
+      const mSok = cleanedRaw.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]{2,36}?\s*(?:Sk\.?|Sok\.?|Sokak|Cd\.?|Cad\.?|Cadde|Blv\.?|Bulvarı|Yolu?)\s*(?:No[:\s]*[A-Za-z0-9/-]+)?(?:\s*(?:Daire|D\.?|Kat|Apt\.?)[:\s]*[A-Za-z0-9/-]+)?)/i);
       if (mSok) {
-        const sokClean = properTr(mSok[1].replace(/\s+/g, " ").trim());
+        const sokClean = deduplicateWords(properTr(mSok[1].replace(/\s+/g, " ").trim()));
         if (sokClean.length >= 3 && asciiKey(sokClean) !== asciiKey(settlement)) {
           parts.push(sokClean);
         }
@@ -888,7 +934,7 @@
 
     function classifyFaultRow(row) {
       const tesisatNo = pickFlexible(row, ["tesisat", "abone", "sozlesme", "numara"]) || "";
-      const personel = pickFlexible(row, ["personel", "gorevli", "okuyucu", "saha"]) || "Bilinmeyen Personel";
+      const personel = deduplicateWords(pickFlexible(row, ["personel", "gorevli", "okuyucu", "saha"]) || "Bilinmeyen Personel");
       const ilRaw = pickFlexible(row, ["il", "sehir"]) || "";
       const planGrubu = pickFlexible(row, ["planlama", "grup", "ilce", "bolge"]) || ilRaw || "Genel";
       const rawAddress = pickFlexible(row, ["adres", "rawAddress", "mahalle", "koy", "sokak", "cadde"])
@@ -933,6 +979,7 @@
       return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
     }
 
+    // Aktif İnternet Araştırma (Nominatim + Wikipedia)
     const webResearchCache = new Map();
 
     function computeDirectionFromCenter(lat, lon, districtKey) {
@@ -940,7 +987,7 @@
       const dLat = lat - center.lat;
       const dLon = lon - center.lon;
       const distKm = Math.round(Math.hypot(dLat * 111, dLon * 84) * 10) / 10;
-      if (distKm < 0.8) return `${districtKey} merkezine çok yakın (~${distKm} km)`;
+      if (distKm < 0.8) return `${districtKey} merkezine yakın (~${distKm} km)`;
       const ns = dLat >= 0.004 ? "Kuzey" : (dLat <= -0.004 ? "Güney" : "");
       const ew = dLon >= 0.005 ? "Doğu" : (dLon <= -0.005 ? "Batı" : "");
       const dir = `${ns}${ew}` || "Merkez civarı";
@@ -960,11 +1007,13 @@
 
       box.innerHTML = `🌐 İnternette araştırılıyor: <strong>${queryText}</strong>...`;
 
-      const cleanedQuery = String(queryText || "")
-        .replace(/\b\d{7,14}\b/g, " ")
-        .replace(/-\s*-/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
+      const cleanedQuery = deduplicateWords(
+        String(queryText || "")
+          .replace(/\b\d{7,14}\b/g, " ")
+          .replace(/-\s*-/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+      );
 
       const fallbackIl = /kirklareli/i.test(asciiKey(`${districtKey} ${cleanedQuery}`)) ? "Kırklareli" : "Edirne";
       const fullQuery = `${cleanedQuery} ${districtKey || ""} ${fallbackIl}`.trim();
@@ -974,7 +1023,7 @@
         const nomResp = await fetch(nomUrl, { headers: { "Accept-Language": "tr" } });
         const nomData = nomResp.ok ? await nomResp.json() : [];
 
-        let locSummary = "Harita/adres verisi bulunamadı.";
+        let locSummary = "Harita/adres eşleşmesi bulunamadı.";
         let sideText = "";
 
         if (Array.isArray(nomData) && nomData.length > 0) {
@@ -988,7 +1037,7 @@
           if (Number.isFinite(lat) && Number.isFinite(lon)) {
             sideText = computeDirectionFromCenter(lat, lon, districtKey);
           }
-          locSummary = `Doğrulanan Adres: <strong>${hit.display_name}</strong>` +
+          locSummary = `Doğrulanan Konum: <strong>${hit.display_name}</strong>` +
             (foundSub || foundDist || foundProv ? ` <span style="color:#cbd5e1;">(${[foundSub, foundDist, foundProv].filter(Boolean).join(" / ")})</span>` : "");
         }
 
@@ -1000,15 +1049,15 @@
           if (wikiResp.ok) {
             const wikiJson = await wikiResp.json();
             if (wikiJson && wikiJson.extract) {
-              wikiText = wikiJson.extract.slice(0, 220) + (wikiJson.extract.length > 220 ? "..." : "");
+              wikiText = wikiJson.extract.slice(0, 200) + (wikiJson.extract.length > 200 ? "..." : "");
             }
           }
         }
 
         const html = `
           <div><span class="web-label">🌐 İnternet Sonucu:</span> ${locSummary}</div>
-          ${sideText ? `<div style="margin-top:3px;"><span class="info-label">🧭 Ne Tarafta:</span> ${sideText}</div>` : ""}
-          ${wikiText ? `<div style="margin-top:3px; color:#cbd5e1;"><span class="reason-label">ℹ️ Bilgi:</span> ${wikiText}</div>` : ""}
+          ${sideText ? `<div style="margin-top:2px;"><span class="info-label">🧭 Ne Tarafta:</span> ${sideText}</div>` : ""}
+          ${wikiText ? `<div style="margin-top:2px; color:#cbd5e1;"><span class="reason-label">ℹ️ Bilgi:</span> ${wikiText}</div>` : ""}
         `;
         webResearchCache.set(cacheKey, html);
         box.innerHTML = html;
@@ -1164,9 +1213,7 @@
     el.faultCompletedSubTabBtn.addEventListener("click", () => switchFaultSubTab("COMPLETED"));
 
     function saveFaultCache(list) {
-      try {
-        localStorage.setItem(FAULT_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), items: list }));
-      } catch (e) {}
+      try { localStorage.setItem(FAULT_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), items: list })); } catch (e) {}
     }
 
     function loadFaultCache() {
@@ -1175,22 +1222,17 @@
         if (!raw) return [];
         const parsed = JSON.parse(raw);
         return Array.isArray(parsed.items) ? parsed.items : [];
-      } catch (e) {
-        return [];
-      }
+      } catch (e) { return []; }
     }
 
     function saveCompletedFaultsCache(list) {
-      try {
-        localStorage.setItem(COMPLETED_FAULTS_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), items: list }));
-      } catch (e) {}
+      try { localStorage.setItem(COMPLETED_FAULTS_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), items: list })); } catch (e) {}
     }
 
     function purgeExpiredCompletedFaults(list) {
       const now = Date.now();
       const valid = [];
       const expiredIds = [];
-
       (list || []).forEach(item => {
         if (!item || typeof item !== "object") return;
         const ts = Number(item.completedAtMs || item.expiresAt - RETENTION_MS || 0);
@@ -1201,11 +1243,7 @@
           valid.push({ ...item, completedAtMs: ts || now, expiresAt: exp });
         }
       });
-
-      expiredIds.forEach(id => {
-        remove(ref(db, `${DB_PATH}/completed_faults/${id}`)).catch(() => {});
-      });
-
+      expiredIds.forEach(id => { remove(ref(db, `${DB_PATH}/completed_faults/${id}`)).catch(() => {}); });
       return valid;
     }
 
@@ -1218,9 +1256,7 @@
         const purged = purgeExpiredCompletedFaults(list);
         saveCompletedFaultsCache(purged);
         return purged;
-      } catch (e) {
-        return [];
-      }
+      } catch (e) { return []; }
     }
 
     function updateFaultBadges() {
@@ -1243,9 +1279,7 @@
 
       if (syncToFirebase && allFaults.length > 0) {
         const obj = {};
-        allFaults.slice(0, 1500).forEach((item, idx) => {
-          obj[item.id || `f_${idx + 1}`] = item;
-        });
+        allFaults.slice(0, 1500).forEach((item, idx) => { obj[item.id || `f_${idx + 1}`] = item; });
         set(ref(db, `${DB_PATH}/fault_addresses`), obj).catch(() => {});
       }
     }
@@ -1297,10 +1331,7 @@
       const detectedError = (el.detectedErrorInput.value || "").trim() || "Adres / okuma hatası";
       const reasonNote = (el.customReasonInput.value || selectedCompletionReason || "").trim();
 
-      if (!reasonNote) {
-        el.customReasonInput.focus();
-        return;
-      }
+      if (!reasonNote) { el.customReasonInput.focus(); return; }
 
       const idToRemove = pendingFaultId;
       const targetItem = allFaults.find(item => item.id === idToRemove);
@@ -1330,11 +1361,7 @@
       applyFaultFilters(false);
       renderCompletedFaults();
 
-      try {
-        await remove(ref(db, `${DB_PATH}/fault_addresses/${idToRemove}`));
-      } catch (e) {
-        console.warn("Sunucu silme uyarısı:", e);
-      }
+      try { await remove(ref(db, `${DB_PATH}/fault_addresses/${idToRemove}`)); } catch (e) {}
     });
 
     function formatRemainingText(expiresAt) {
@@ -1394,9 +1421,7 @@
       if (!counts.has(selectedFaultPerson)) selectedFaultPerson = "ALL";
       el.faultPersonSelect.value = selectedFaultPerson;
 
-      const groupPool = selectedFaultPerson === "ALL"
-        ? allFaults
-        : allFaults.filter(f => f.personel === selectedFaultPerson);
+      const groupPool = selectedFaultPerson === "ALL" ? allFaults : allFaults.filter(f => f.personel === selectedFaultPerson);
       const groups = Array.from(new Set(groupPool.map(f => f.planGrubu))).sort((a, b) => a.localeCompare(b, "tr"));
       el.faultGroupSelect.innerHTML = `<option value="ALL">Tüm Planlama Grupları / İlçeler (${groups.length})</option>` +
         groups.map(g => `<option value="${g}">${g}</option>`).join("");
@@ -1445,7 +1470,7 @@
 
     function renderFaultList() {
       if (!filteredFaults.length) {
-        el.faultJobsContainer.innerHTML = `<div class="empty-box">Hatalı adres listesinde kayıt bulunamadı. Yetkili panelinden hatalı adres Excel dosyasını yükleyebilirsin.</div>`;
+        el.faultJobsContainer.innerHTML = `<div class="empty-box">Hatalı adres listesinde kayıt bulunamadı.</div>`;
         el.faultLoadMoreWrap.classList.add("hidden");
         return;
       }
@@ -1511,7 +1536,6 @@
         const buf = await file.arrayBuffer();
         const wb = XLSX.read(buf, { type: "array", raw: false });
         const collected = [];
-
         const sheetsToRead = wb.SheetNames.includes("Liste") ? ["Liste"] : wb.SheetNames;
         for (const sheetName of sheetsToRead) {
           const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: "", raw: false });
@@ -1523,26 +1547,17 @@
             collected.push(classifyFaultRow({ ...r, id: `fl_${sheetName}_${i + 1}_${Date.now()}` }));
           }
         }
-
         setFaultItems(collected, true);
         switchModule("FAULT");
         switchFaultSubTab("ACTIVE");
         el.adminStatus.textContent = `✅ Hatalı adres listesi yüklendi: ${allFaults.length} kayıt.`;
       } catch (err) {
         el.adminStatus.textContent = "❌ Hatalı adres Excel hatası: " + err.message;
-      } finally {
-        e.target.value = "";
-      }
+      } finally { e.target.value = ""; }
     });
 
     function saveToLocalCache(jobsObj) {
-      try {
-        localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify({
-          savedAt: Date.now(),
-          count: Object.keys(jobsObj).length,
-          jobs: jobsObj
-        }));
-      } catch (e) {}
+      try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), count: Object.keys(jobsObj).length, jobs: jobsObj })); } catch (e) {}
     }
 
     function loadFromLocalCache() {
@@ -1671,39 +1686,31 @@
       const mahTotal = mahList.reduce((acc, x) => acc + x.count, 0);
       const koyTotal = koyList.reduce((acc, x) => acc + x.count, 0);
 
-      el.mahalleSplitTitle.textContent = `🏙️ Mahalleler (${mahList.length} Mah. • ${mahTotal} İş)`;
-      el.koySplitTitle.textContent = `🌾 Köyler (${koyList.length} Köy • ${koyTotal} İş)`;
+      el.mahalleSplitTitle.textContent = `🏙️ Mahalleler (${mahList.length} • ${mahTotal})`;
+      el.koySplitTitle.textContent = `🌾 Köyler (${koyList.length} • ${koyTotal})`;
 
       el.mahalleSplitBox.classList.toggle("hidden", selectedCat === "KOY");
       el.koySplitBox.classList.toggle("hidden", selectedCat === "MAHALLE");
 
-      if (!mahList.length) {
-        el.mahalleSplitPills.innerHTML = `<span class="status-note" style="margin:0;">Mahalle kaydı yok.</span>`;
-      } else {
-        el.mahalleSplitPills.innerHTML = mahList.map(item => {
-          const isSel = selectedSettlement !== "ALL" && asciiKey(selectedSettlement) === asciiKey(item.label);
-          return `<button class="d-pill mah-pill ${isSel ? "active" : ""}" onclick="window.__quickSettlement('MAHALLE', '${item.label.replace(/'/g, "\\'")}')">${item.label} (${item.count})</button>`;
-        }).join("");
-      }
+      el.mahalleSplitPills.innerHTML = mahList.length
+        ? mahList.map(item => {
+            const isSel = selectedSettlement !== "ALL" && asciiKey(selectedSettlement) === asciiKey(item.label);
+            return `<button class="d-pill mah-pill ${isSel ? "active" : ""}" onclick="window.__quickSettlement('MAHALLE', '${item.label.replace(/'/g, "\\'")}')">${item.label} (${item.count})</button>`;
+          }).join("")
+        : `<span class="status-note" style="margin:0;">Mahalle kaydı yok.</span>`;
 
-      if (!koyList.length) {
-        el.koySplitPills.innerHTML = `<span class="status-note" style="margin:0;">Köy kaydı yok.</span>`;
-      } else {
-        el.koySplitPills.innerHTML = koyList.map(item => {
-          const isSel = selectedSettlement !== "ALL" && asciiKey(selectedSettlement) === asciiKey(item.label);
-          return `<button class="d-pill ${isSel ? "active" : ""}" onclick="window.__quickSettlement('KOY', '${item.label.replace(/'/g, "\\'")}')">${item.label} (${item.count})</button>`;
-        }).join("");
-      }
+      el.koySplitPills.innerHTML = koyList.length
+        ? koyList.map(item => {
+            const isSel = selectedSettlement !== "ALL" && asciiKey(selectedSettlement) === asciiKey(item.label);
+            return `<button class="d-pill ${isSel ? "active" : ""}" onclick="window.__quickSettlement('KOY', '${item.label.replace(/'/g, "\\'")}')">${item.label} (${item.count})</button>`;
+          }).join("")
+        : `<span class="status-note" style="margin:0;">Köy kaydı yok.</span>`;
     }
 
     window.__quickSettlement = (cat, label) => {
       selectedCat = cat;
       document.querySelectorAll(".cat-btn").forEach(b => b.classList.toggle("active", b.dataset.cat === cat));
-      if (selectedSettlement !== "ALL" && asciiKey(selectedSettlement) === asciiKey(label)) {
-        selectedSettlement = "ALL";
-      } else {
-        selectedSettlement = label;
-      }
+      selectedSettlement = (selectedSettlement !== "ALL" && asciiKey(selectedSettlement) === asciiKey(label)) ? "ALL" : label;
       populateFilters();
       applyFilters(true);
     };
@@ -1812,7 +1819,7 @@
               <div id="${webBoxId}" class="web-result-box hidden"></div>
             </div>
             <div class="job-actions">
-              <button class="btn btn-info" onclick="window.__researchOnWeb('${webBoxId}', '${safeQuery}', '${safeDist}')">🌐 İnternette Araştır</button>
+              <button class="btn btn-info" onclick="window.__researchOnWeb('${webBoxId}', '${safeQuery}', '${safeDist}')">🌐 Araştır</button>
               <button class="btn ${j.completed ? "btn-secondary" : "btn-success"}" onclick="window.__toggleJob('${j.id}', ${!j.completed})">
                 ${j.completed ? "↩️ Bekleyene Al" : "✓ İşi Tamamla"}
               </button>
@@ -1832,9 +1839,7 @@
     window.__toggleJob = async (id, nextState) => {
       try {
         await update(ref(db, `${DB_PATH}/jobs/${id}`), { completed: Boolean(nextState), completedAt: nextState ? Date.now() : null });
-      } catch (e) {
-        alert("Güncelleme hatası: " + e.message);
-      }
+      } catch (e) { alert("Güncelleme hatası: " + e.message); }
     };
 
     document.querySelectorAll(".cat-btn").forEach(btn => {
@@ -1911,23 +1916,14 @@
         await remove(ref(db, `${DB_PATH}/jobs`));
         await remove(ref(db, `${DB_PATH}/fault_addresses`));
         await remove(ref(db, `${DB_PATH}/completed_faults`));
-        allJobs = [];
-        allFaults = [];
-        completedFaults = [];
-        lastServerPushHash = "";
-        setFaultItems([], false);
-        renderCompletedFaults();
-        populateFilters();
-        applyFilters(true);
+        allJobs = []; allFaults = []; completedFaults = []; lastServerPushHash = "";
+        setFaultItems([], false); renderCompletedFaults(); populateFilters(); applyFilters(true);
         el.adminStatus.textContent = "Tüm kayıtlar silindi.";
       } catch (e) { el.adminStatus.textContent = "❌ Hata: " + e.message; }
     });
 
     async function pushRows(rows) {
-      if (!rows || !rows.length) {
-        el.adminStatus.textContent = "Dosyada kayıt bulunamadı.";
-        return;
-      }
+      if (!rows || !rows.length) { el.adminStatus.textContent = "Dosyada kayıt bulunamadı."; return; }
       el.adminStatus.textContent = `⏳ ${rows.length} satır temizlenip yükleniyor...`;
       lastServerPushHash = "";
       syncCollection(rows, { syncServer: true, reason: "ilk yükleme temizliği", resetPaging: true });
@@ -1941,12 +1937,10 @@
         const buf = await file.arrayBuffer();
         const wb = XLSX.read(buf, { type: "array", cellDates: true });
         const collected = [];
-
         for (const sheetName of wb.SheetNames) {
           const sheet = wb.Sheets[sheetName];
           const json = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
           const nonEmpty = json.filter(row => Object.values(row).some(v => String(v ?? "").trim() !== ""));
-
           nonEmpty.forEach((row, i) => {
             const tesisatNo = pickColumn(row, ["tesisat", "installation", "abone no", "sayac no"]);
             const seriNo = pickColumn(row, ["seri", "serial", "sayaç seri", "sayac seri"]);
@@ -1955,20 +1949,15 @@
             const district = pickColumn(row, ["ilce", "ilçe", "district"]);
             const meterType = pickColumn(row, ["sayac tipi", "sayaç tipi", "faz", "tip", "meter"]);
             const fallback = Object.values(row).map(v => String(v ?? "").trim()).filter(Boolean).join(" ");
-
             collected.push(normalizeRecord({
               id: `xl_${sheetName}_${i + 1}_${tesisatNo || "t"}_${seriNo || "s"}_${Date.now()}`,
-              tesisatNo, seriNo, aboneAdi,
-              _rawSource: fallback, settlement, district, meterType,
-              completed: false
+              tesisatNo, seriNo, aboneAdi, _rawSource: fallback, settlement, district, meterType, completed: false
             }, `xl_${sheetName}_${i + 1}`));
           });
         }
-
         await pushRows(collected);
-      } catch (err) {
-        el.adminStatus.textContent = "❌ Excel hatası: " + err.message;
-      } finally { e.target.value = ""; }
+      } catch (err) { el.adminStatus.textContent = "❌ Excel hatası: " + err.message; }
+      finally { e.target.value = ""; }
     });
 
     el.pdfInput.addEventListener("change", async e => {
@@ -1989,14 +1978,11 @@
           });
         }
         const mapped = lines.slice(0, 3000).map((line, i) => normalizeRecord({
-          id: `pdf_${i + 1}_${Date.now()}`,
-          _rawSource: line,
-          completed: false
+          id: `pdf_${i + 1}_${Date.now()}`, _rawSource: line, completed: false
         }, `pdf_${i + 1}`));
         await pushRows(mapped);
-      } catch (err) {
-        el.adminStatus.textContent = "❌ PDF hatası: " + err.message;
-      } finally { e.target.value = ""; }
+      } catch (err) { el.adminStatus.textContent = "❌ PDF hatası: " + err.message; }
+      finally { e.target.value = ""; }
     });
 
     const cachedJobs = loadFromLocalCache();
@@ -2005,9 +1991,7 @@
     }
 
     const cachedFaults = loadFaultCache();
-    if (cachedFaults.length > 0) {
-      setFaultItems(cachedFaults, false);
-    }
+    if (cachedFaults.length > 0) setFaultItems(cachedFaults, false);
 
     const cachedCompletedFaults = loadCompletedFaultsCache();
     if (cachedCompletedFaults.length > 0) {
@@ -2037,17 +2021,13 @@
       if (serverJobs.length > 0) {
         syncCollection(serverJobs, { syncServer: false, reason: "canlı sunucu", resetPaging: false });
       } else if (!allJobs.length) {
-        allJobs = [];
-        populateFilters();
-        applyFilters(false);
+        allJobs = []; populateFilters(); applyFilters(false);
       }
 
       const faultObj = val?.fault_addresses || val?.[DB_PATH]?.fault_addresses;
       if (faultObj && typeof faultObj === "object") {
         const list = Object.values(faultObj).filter(x => x && typeof x === "object");
-        if (list.length > 0) {
-          setFaultItems(list, false);
-        }
+        if (list.length > 0) setFaultItems(list, false);
       }
 
       const doneFaultObj = val?.completed_faults || val?.[DB_PATH]?.completed_faults;
@@ -2061,11 +2041,8 @@
     }, err => {
       el.syncStatus.className = "sync-status sync-err";
       el.syncStatus.textContent = "❌ Bağlantı Hatası (Yerel Hafıza)";
-      if (allJobs.length > 0) {
-        el.adminStatus.textContent = `Yerel hafızadaki ${allJobs.length} kayıt ekranda.`;
-      } else {
-        el.adminStatus.textContent = err.message;
-      }
+      if (allJobs.length > 0) el.adminStatus.textContent = `Yerel hafızadaki ${allJobs.length} kayıt ekranda.`;
+      else el.adminStatus.textContent = err.message;
     });
   </script>
 </body>
