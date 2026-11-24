@@ -199,8 +199,8 @@
       color: var(--text-muted);
       border: 1px solid var(--border);
       border-radius: 999px;
-      padding: 5px 10px;
-      font-size: 11px;
+      padding: 6px 11px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
     }
@@ -490,7 +490,12 @@
 
       <div id="faultActiveSection">
         <section class="card">
-          <div class="group-header-title">⚠️ Hatalı / Okunamayan Adres Kayıtları (Personel & Grup Bazlı)</div>
+          <div class="group-header-title">👷 Personel Kategorileri (Hata Sayısıyla)</div>
+          <div id="faultPersonPills" class="district-pills"></div>
+        </section>
+
+        <section class="card">
+          <div class="group-header-title">⚠️ Hatalı / Okunamayan Adres Filtreleri</div>
           <div class="filter-stack">
             <select id="faultPersonSelect">
               <option value="ALL">Tüm Personeller</option>
@@ -510,11 +515,6 @@
 
             <input id="faultSearchInput" type="text" placeholder="Tesisat, Personel, Adres veya Seri No ara..." />
           </div>
-        </section>
-
-        <section class="card">
-          <div class="group-header-title">👷 Personel Bazlı Dağılım</div>
-          <div id="faultPersonPills" class="district-pills"></div>
         </section>
 
         <section class="card">
@@ -546,8 +546,8 @@
       <h3 style="margin-top:0;">Tamamlandı — Hata ve Yapılan İşlem Notu</h3>
       <p id="faultReasonTargetInfo" style="font-size:12px; color:var(--text-muted); margin-top:0;"></p>
 
-      <label class="field-label">Yapan Kişi / Ekip (örn. Emir Yavuz...)</label>
-      <input id="actorNameInput" type="text" placeholder="Örn: Emir Yavuz bu yaptı..." style="margin-bottom:8px;" />
+      <label class="field-label">Yapan Kişi / Ekip</label>
+      <input id="actorNameInput" type="text" placeholder="İşlemi yapan personel adı..." style="margin-bottom:8px;" />
 
       <label class="field-label">Ne Hata Vardı?</label>
       <input id="detectedErrorInput" type="text" placeholder="Örn: Adres eksikti / Modem sayaca erişemiyordu..." style="margin-bottom:8px;" />
@@ -933,7 +933,6 @@
       return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
     }
 
-    // Canlı İnternet Araştırma (Nominatim + Wikipedia)
     const webResearchCache = new Map();
 
     function computeDirectionFromCenter(lat, lon, districtKey) {
@@ -1051,7 +1050,6 @@
     let aiCycleLock = false;
     let lastServerPushHash = "";
 
-    // Hatalı adres modülü state
     let allFaults = [];
     let completedFaults = [];
     let filteredFaults = [];
@@ -1387,33 +1385,35 @@
     });
 
     function populateFaultFilters() {
-      const persons = Array.from(new Set(allFaults.map(f => f.personel))).sort((a, b) => a.localeCompare(b, "tr"));
-      el.faultPersonSelect.innerHTML = `<option value="ALL">Tüm Personeller (${persons.length})</option>` +
-        persons.map(p => `<option value="${p}">${p}</option>`).join("");
-      if (!persons.includes(selectedFaultPerson)) selectedFaultPerson = "ALL";
+      const counts = new Map();
+      allFaults.forEach(f => counts.set(f.personel, (counts.get(f.personel) || 0) + 1));
+      const sortedPersons = Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "tr"));
+
+      el.faultPersonSelect.innerHTML = `<option value="ALL">Tüm Personeller (${allFaults.length} Hata)</option>` +
+        sortedPersons.map(([p, cnt]) => `<option value="${p}">${p} (${cnt})</option>`).join("");
+      if (!counts.has(selectedFaultPerson)) selectedFaultPerson = "ALL";
       el.faultPersonSelect.value = selectedFaultPerson;
 
-      const groups = Array.from(new Set(allFaults.map(f => f.planGrubu))).sort((a, b) => a.localeCompare(b, "tr"));
+      const groupPool = selectedFaultPerson === "ALL"
+        ? allFaults
+        : allFaults.filter(f => f.personel === selectedFaultPerson);
+      const groups = Array.from(new Set(groupPool.map(f => f.planGrubu))).sort((a, b) => a.localeCompare(b, "tr"));
       el.faultGroupSelect.innerHTML = `<option value="ALL">Tüm Planlama Grupları / İlçeler (${groups.length})</option>` +
         groups.map(g => `<option value="${g}">${g}</option>`).join("");
       if (!groups.includes(selectedFaultGroup)) selectedFaultGroup = "ALL";
       el.faultGroupSelect.value = selectedFaultGroup;
 
-      renderFaultPersonPills();
+      renderFaultPersonPills(sortedPersons);
     }
 
-    function renderFaultPersonPills() {
-      const counts = new Map();
-      allFaults.forEach(f => counts.set(f.personel, (counts.get(f.personel) || 0) + 1));
-      const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "tr"));
-
-      if (!sorted.length) {
+    function renderFaultPersonPills(sortedPersons) {
+      if (!sortedPersons || !sortedPersons.length) {
         el.faultPersonPills.innerHTML = `<span class="status-note" style="margin:0;">Hatalı adres kaydı kalmadı veya yüklenmedi.</span>`;
         return;
       }
 
       const allPill = `<button class="d-pill ${selectedFaultPerson === "ALL" ? "active" : ""}" onclick="window.__quickFaultPerson('ALL')">Tümü (${allFaults.length})</button>`;
-      const pills = sorted.map(([p, cnt]) =>
+      const pills = sortedPersons.map(([p, cnt]) =>
         `<button class="d-pill ${selectedFaultPerson === p ? "active" : ""}" onclick="window.__quickFaultPerson('${p.replace(/'/g, "\\'")}')">${p} (${cnt})</button>`
       ).join("");
       el.faultPersonPills.innerHTML = allPill + pills;
@@ -1421,6 +1421,7 @@
 
     window.__quickFaultPerson = (p) => {
       selectedFaultPerson = p;
+      selectedFaultGroup = "ALL";
       populateFaultFilters();
       applyFaultFilters(true);
     };
@@ -1496,7 +1497,7 @@
       }
     }
 
-    el.faultPersonSelect.addEventListener("change", () => { selectedFaultPerson = el.faultPersonSelect.value; renderFaultPersonPills(); applyFaultFilters(true); });
+    el.faultPersonSelect.addEventListener("change", () => { selectedFaultPerson = el.faultPersonSelect.value; selectedFaultGroup = "ALL"; populateFaultFilters(); applyFaultFilters(true); });
     el.faultGroupSelect.addEventListener("change", () => { selectedFaultGroup = el.faultGroupSelect.value; applyFaultFilters(true); });
     el.faultTypeSelect.addEventListener("change", () => { selectedFaultType = el.faultTypeSelect.value; applyFaultFilters(true); });
     el.faultSearchInput.addEventListener("input", () => { faultSearchQuery = el.faultSearchInput.value; applyFaultFilters(true); });
