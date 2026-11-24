@@ -97,6 +97,30 @@
       flex-shrink: 0;
     }
 
+    .module-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .module-btn {
+      background: var(--bg-card);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .module-btn.active {
+      background: rgba(245, 158, 11, 0.18);
+      color: #fde68a;
+      border-color: var(--accent);
+    }
+
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -173,12 +197,17 @@
       margin-bottom: 10px;
     }
 
+    .err-card {
+      border-color: rgba(239, 68, 68, 0.55);
+    }
+
     .job-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
     .job-title { font-size: 14px; font-weight: 800; color: #fbbf24; }
 
     .tag { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
     .tag-mahalle { background: rgba(59, 130, 246, 0.25); color: #bfdbfe; }
     .tag-koy { background: rgba(16, 185, 129, 0.25); color: #a7f3d0; }
+    .tag-err { background: rgba(239, 68, 68, 0.22); color: #fecaca; }
 
     .job-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; word-break: break-word; }
 
@@ -279,6 +308,11 @@
       <button id="menuBtn" class="menu-btn" title="Menü">⋮</button>
     </header>
 
+    <div class="module-switch">
+      <button id="tabSahaBtn" class="module-btn active">📋 Saha İş Listesi</button>
+      <button id="tabFaultBtn" class="module-btn">⚠️ Hatalı Adres Listesi (<span id="faultBadgeCount">0</span>)</button>
+    </div>
+
     <div id="adminPanel" class="admin-box hidden">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
         <strong>🔐 YETKİLİ PANELİ</strong>
@@ -286,73 +320,123 @@
       </div>
       <div class="admin-grid">
         <label class="btn btn-primary" style="cursor:pointer;">
-          📊 Excel Yükle
+          📊 Saha Excel Yükle
           <input type="file" id="excelInput" accept=".xlsx,.xls,.csv" hidden />
+        </label>
+        <label class="btn btn-warning" style="cursor:pointer;">
+          ⚠️ Hatalı Adres Excel Yükle
+          <input type="file" id="faultExcelInput" accept=".xlsx,.xls,.csv" hidden />
         </label>
         <label class="btn btn-secondary" style="cursor:pointer;">
           📄 PDF Yükle
           <input type="file" id="pdfInput" accept=".pdf" hidden />
         </label>
-        <button id="repairDbBtn" class="btn btn-warning">🤖 Kayıtları Düzenle</button>
+        <button id="repairDbBtn" class="btn btn-secondary">🤖 Kayıtları Düzenle</button>
         <button id="showCompletedToggle" class="btn btn-secondary">✓ Tamamlananlar</button>
         <button id="clearAllBtn" class="btn btn-danger">🗑️ Tümünü Sil</button>
       </div>
       <div id="adminStatus" class="status-note"></div>
     </div>
 
-    <section class="card">
-      <div class="cat-grid">
-        <button class="cat-btn active" data-cat="ALL">Tümü</button>
-        <button class="cat-btn" data-cat="MAHALLE">🏙️ Mahalleler</button>
-        <button class="cat-btn" data-cat="KOY">🌾 Köyler</button>
-      </div>
-
-      <div class="filter-stack">
-        <select id="districtSelect">
-          <option value="ALL">Tüm İlçeler</option>
-        </select>
-
-        <select id="settlementSelect">
-          <option value="ALL">Tüm Mahalle / Köyler</option>
-        </select>
-
-        <input id="searchInput" type="text" placeholder="Tesisat No, Seri No, Mahalle, Köy veya Açık Adres ara..." />
-      </div>
-
-      <div class="controls-row">
-        <div class="meter-row">
-          <button class="chip-btn active" data-meter="ALL">Tümü</button>
-          <button class="chip-btn" data-meter="MONO">Monofaze</button>
-          <button class="chip-btn" data-meter="TRI">Trifaze</button>
+    <!-- MODÜL 1: SAHA İŞ LİSTESİ -->
+    <div id="sahaModule">
+      <section class="card">
+        <div class="cat-grid">
+          <button class="cat-btn active" data-cat="ALL">Tümü</button>
+          <button class="cat-btn" data-cat="MAHALLE">🏙️ Mahalleler</button>
+          <button class="cat-btn" data-cat="KOY">🌾 Köyler</button>
         </div>
 
-        <select id="sortSelect" style="width:auto; min-width:175px; padding:7px 10px; font-size:12px;">
-          <option value="DEFAULT">Sırala: Varsayılan</option>
-          <option value="SETTLEMENT">Sırala: Mahalle / Köy (A-Z)</option>
-          <option value="TESISAT">Sırala: Tesisat No</option>
-        </select>
-      </div>
-    </section>
+        <div class="filter-stack">
+          <select id="districtSelect">
+            <option value="ALL">Tüm İlçeler</option>
+          </select>
 
-    <section id="categorySubGroupCard" class="card">
-      <div id="subGroupTitle" class="group-header-title">🏙️ Mahalleler & 🌾 Köyler — İlçe Dağılımı</div>
-      <div id="districtBreakdownPills" class="district-pills"></div>
-    </section>
+          <select id="settlementSelect">
+            <option value="ALL">Tüm Mahalle / Köyler</option>
+          </select>
 
-    <section class="card">
-      <div class="progress-header">
-        <span id="filteredCountLabel">Ekranda Kalan: 0</span>
-        <span id="percentLabel">%0</span>
-      </div>
-      <div class="progress-bar">
-        <div id="progressFill" class="progress-fill"></div>
-      </div>
-    </section>
+          <input id="searchInput" type="text" placeholder="Tesisat No, Seri No, Mahalle, Köy veya Açık Adres ara..." />
+        </div>
 
-    <div id="listView">
-      <div id="jobsContainer"></div>
-      <div id="loadMoreWrap" class="hidden" style="margin-top:8px;">
-        <button id="loadMoreBtn" class="btn btn-secondary" style="width:100%;">Daha Fazla Göster</button>
+        <div class="controls-row">
+          <div class="meter-row">
+            <button class="chip-btn active" data-meter="ALL">Tümü</button>
+            <button class="chip-btn" data-meter="MONO">Monofaze</button>
+            <button class="chip-btn" data-meter="TRI">Trifaze</button>
+          </div>
+
+          <select id="sortSelect" style="width:auto; min-width:175px; padding:7px 10px; font-size:12px;">
+            <option value="DEFAULT">Sırala: Varsayılan</option>
+            <option value="SETTLEMENT">Sırala: Mahalle / Köy (A-Z)</option>
+            <option value="TESISAT">Sırala: Tesisat No</option>
+          </select>
+        </div>
+      </section>
+
+      <section id="categorySubGroupCard" class="card">
+        <div id="subGroupTitle" class="group-header-title">🏙️ Mahalleler & 🌾 Köyler — İlçe Dağılımı</div>
+        <div id="districtBreakdownPills" class="district-pills"></div>
+      </section>
+
+      <section class="card">
+        <div class="progress-header">
+          <span id="filteredCountLabel">Ekranda Kalan: 0</span>
+          <span id="percentLabel">%0</span>
+        </div>
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+      </section>
+
+      <div id="listView">
+        <div id="jobsContainer"></div>
+        <div id="loadMoreWrap" class="hidden" style="margin-top:8px;">
+          <button id="loadMoreBtn" class="btn btn-secondary" style="width:100%;">Daha Fazla Göster</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODÜL 2: HATALI ADRES / OKUNAMAYAN TESİSATLAR BÖLÜMÜ -->
+    <div id="faultModule" class="hidden">
+      <section class="card">
+        <div class="group-header-title">⚠️ Hatalı / Okunamayan Adres Kayıtları (Personel & Grup Bazlı)</div>
+        <div class="filter-stack">
+          <select id="faultPersonSelect">
+            <option value="ALL">Tüm Personeller</option>
+          </select>
+
+          <select id="faultGroupSelect">
+            <option value="ALL">Tüm Planlama Grupları / İlçeler</option>
+          </select>
+
+          <select id="faultTypeSelect">
+            <option value="ALL">Tüm Hata / Durum Tipleri</option>
+            <option value="MISSING_SETTLEMENT">Mahalle / Köy Bilgisi Eksik</option>
+            <option value="IL_AS_DISTRICT">İl Alanında İlçe Yazılı</option>
+            <option value="DASH_OR_TRUNCATED">Eksik / Kesik / (- -) Adres</option>
+            <option value="METER_ERR">Modem / Sayaç Okuma Hatası</option>
+          </select>
+
+          <input id="faultSearchInput" type="text" placeholder="Tesisat, Personel, Adres veya Seri No ara..." />
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="group-header-title">👷 Personel Bazlı Dağılım</div>
+        <div id="faultPersonPills" class="district-pills"></div>
+      </section>
+
+      <section class="card">
+        <div class="progress-header">
+          <span id="faultCountLabel">Listelenen Hatalı Kayıt: 0</span>
+          <span id="faultTotalLabel">Toplam: 0</span>
+        </div>
+      </section>
+
+      <div id="faultJobsContainer"></div>
+      <div id="faultLoadMoreWrap" class="hidden" style="margin-top:8px;">
+        <button id="faultLoadMoreBtn" class="btn btn-secondary" style="width:100%;">Daha Fazla Hatalı Kayıt Göster</button>
       </div>
     </div>
   </div>
@@ -386,6 +470,7 @@
 
     const DB_PATH = "edirne_saha_v1";
     const LOCAL_CACHE_KEY = "tredas_saha_hafiza_v1";
+    const FAULT_CACHE_KEY = "tredas_hatali_adres_v1";
     const ADMIN_PIN = "1923";
     const PAGE_SIZE = 40;
 
@@ -638,6 +723,40 @@
       };
     }
 
+    function classifyFaultRow(row) {
+      const tesisatNo = String(row["Tesisat"] || row["tesisatNo"] || "").trim();
+      const personel = String(row["PERSONEL"] || row["PERSONEL.1"] || row["personel"] || "Bilinmeyen Personel").trim();
+      const ilRaw = String(row["İL"] || row["il"] || "").trim();
+      const planGrubu = String(row["PLANLAMA GRUBU2"] || row["planGrubu"] || ilRaw || "Genel").trim();
+      const rawAddress = String(row["Adres"] || row["rawAddress"] || "").trim();
+      const modemSeri = String(row["MODEM SERİ NO"] || row["modemSeri"] || "").trim();
+      const modemMarka = String(row["MODEM MARKA"] || row["modemMarka"] || "").trim();
+      const sayacMarka = String(row["SAYAÇ MARKA "] || row["SAYAÇ MARKA"] || row["sayacMarka"] || "").trim();
+      const sayacSeri = String(row["SAYAÇ SERİ NO2"] || row["sayacSeri"] || "").trim();
+      const durumNotu = String(row["Sütun1"] || row["durumNotu"] || "").trim();
+
+      const flags = [];
+      if (!/\b(?:MAH|KÖY|KOY)\b/i.test(rawAddress)) flags.push("MISSING_SETTLEMENT");
+      if (/^(?:KEŞAN|LÜLEBURGAZ)$/i.test(ilRaw)) flags.push("IL_AS_DISTRICT");
+      if (/-\s*-|MERKEZ\s*\/\s*ED\s*$/i.test(rawAddress) || rawAddress.length < 18) flags.push("DASH_OR_TRUNCATED");
+      if (durumNotu) flags.push("METER_ERR");
+
+      return {
+        id: String(row.id || `fault_${tesisatNo}_${personel}`).replace(/[.#$/\[\]]/g, "_"),
+        tesisatNo,
+        personel,
+        ilRaw,
+        planGrubu,
+        rawAddress,
+        modemSeri,
+        modemMarka,
+        sayacMarka,
+        sayacSeri,
+        durumNotu,
+        flags
+      };
+    }
+
     function extractJobs(snapVal) {
       if (!snapVal) return [];
       const cand = snapVal.jobs || snapVal[DB_PATH]?.jobs || snapVal;
@@ -671,9 +790,23 @@
     let aiCycleLock = false;
     let lastServerPushHash = "";
 
+    // Hatalı adres modülü state
+    let allFaults = [];
+    let filteredFaults = [];
+    let faultVisibleLimit = PAGE_SIZE;
+    let selectedFaultPerson = "ALL";
+    let selectedFaultGroup = "ALL";
+    let selectedFaultType = "ALL";
+    let faultSearchQuery = "";
+
     const el = {
       syncStatus: document.getElementById("syncStatus"),
       doneCounter: document.getElementById("doneCounter"),
+      tabSahaBtn: document.getElementById("tabSahaBtn"),
+      tabFaultBtn: document.getElementById("tabFaultBtn"),
+      faultBadgeCount: document.getElementById("faultBadgeCount"),
+      sahaModule: document.getElementById("sahaModule"),
+      faultModule: document.getElementById("faultModule"),
       menuBtn: document.getElementById("menuBtn"),
       menuModal: document.getElementById("menuModal"),
       pinInput: document.getElementById("pinInput"),
@@ -683,6 +816,7 @@
       adminPanel: document.getElementById("adminPanel"),
       logoutAdminBtn: document.getElementById("logoutAdminBtn"),
       excelInput: document.getElementById("excelInput"),
+      faultExcelInput: document.getElementById("faultExcelInput"),
       pdfInput: document.getElementById("pdfInput"),
       repairDbBtn: document.getElementById("repairDbBtn"),
       showCompletedToggle: document.getElementById("showCompletedToggle"),
@@ -699,9 +833,198 @@
       progressFill: document.getElementById("progressFill"),
       jobsContainer: document.getElementById("jobsContainer"),
       loadMoreWrap: document.getElementById("loadMoreWrap"),
-      loadMoreBtn: document.getElementById("loadMoreBtn")
+      loadMoreBtn: document.getElementById("loadMoreBtn"),
+      faultPersonSelect: document.getElementById("faultPersonSelect"),
+      faultGroupSelect: document.getElementById("faultGroupSelect"),
+      faultTypeSelect: document.getElementById("faultTypeSelect"),
+      faultSearchInput: document.getElementById("faultSearchInput"),
+      faultPersonPills: document.getElementById("faultPersonPills"),
+      faultCountLabel: document.getElementById("faultCountLabel"),
+      faultTotalLabel: document.getElementById("faultTotalLabel"),
+      faultJobsContainer: document.getElementById("faultJobsContainer"),
+      faultLoadMoreWrap: document.getElementById("faultLoadMoreWrap"),
+      faultLoadMoreBtn: document.getElementById("faultLoadMoreBtn")
     };
 
+    function switchModule(mod) {
+      if (mod === "FAULT") {
+        el.tabFaultBtn.classList.add("active");
+        el.tabSahaBtn.classList.remove("active");
+        el.faultModule.classList.remove("hidden");
+        el.sahaModule.classList.add("hidden");
+      } else {
+        el.tabSahaBtn.classList.add("active");
+        el.tabFaultBtn.classList.remove("active");
+        el.sahaModule.classList.remove("hidden");
+        el.faultModule.classList.add("hidden");
+      }
+    }
+
+    el.tabSahaBtn.addEventListener("click", () => switchModule("SAHA"));
+    el.tabFaultBtn.addEventListener("click", () => switchModule("FAULT"));
+
+    function saveFaultCache(list) {
+      try {
+        localStorage.setItem(FAULT_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), items: list }));
+      } catch (e) {}
+    }
+
+    function loadFaultCache() {
+      try {
+        const raw = localStorage.getItem(FAULT_CACHE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed.items) ? parsed.items : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function setFaultItems(rows, syncToFirebase = false) {
+      allFaults = rows.map((r, i) => r.flags ? r : classifyFaultRow({ ...r, id: r.id || `f_${i + 1}` }));
+      saveFaultCache(allFaults);
+      el.faultBadgeCount.textContent = allFaults.length;
+      populateFaultFilters();
+      applyFaultFilters(true);
+
+      if (syncToFirebase && allFaults.length > 0) {
+        const obj = {};
+        allFaults.slice(0, 2500).forEach((item, idx) => {
+          obj[item.id || `f_${idx + 1}`] = item;
+        });
+        set(ref(db, `${DB_PATH}/fault_addresses`), obj).catch(() => {});
+      }
+    }
+
+    function populateFaultFilters() {
+      const persons = Array.from(new Set(allFaults.map(f => f.personel))).sort((a, b) => a.localeCompare(b, "tr"));
+      el.faultPersonSelect.innerHTML = `<option value="ALL">Tüm Personeller (${persons.length})</option>` +
+        persons.map(p => `<option value="${p}">${p}</option>`).join("");
+      if (!persons.includes(selectedFaultPerson)) selectedFaultPerson = "ALL";
+      el.faultPersonSelect.value = selectedFaultPerson;
+
+      const groups = Array.from(new Set(allFaults.map(f => f.planGrubu))).sort((a, b) => a.localeCompare(b, "tr"));
+      el.faultGroupSelect.innerHTML = `<option value="ALL">Tüm Planlama Grupları / İlçeler (${groups.length})</option>` +
+        groups.map(g => `<option value="${g}">${g}</option>`).join("");
+      if (!groups.includes(selectedFaultGroup)) selectedFaultGroup = "ALL";
+      el.faultGroupSelect.value = selectedFaultGroup;
+
+      renderFaultPersonPills();
+    }
+
+    function renderFaultPersonPills() {
+      const counts = new Map();
+      allFaults.forEach(f => counts.set(f.personel, (counts.get(f.personel) || 0) + 1));
+      const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "tr"));
+
+      if (!sorted.length) {
+        el.faultPersonPills.innerHTML = `<span class="status-note" style="margin:0;">Hatalı adres kaydı yüklenmedi.</span>`;
+        return;
+      }
+
+      const allPill = `<button class="d-pill ${selectedFaultPerson === "ALL" ? "active" : ""}" onclick="window.__quickFaultPerson('ALL')">Tümü (${allFaults.length})</button>`;
+      const pills = sorted.map(([p, cnt]) =>
+        `<button class="d-pill ${selectedFaultPerson === p ? "active" : ""}" onclick="window.__quickFaultPerson('${p.replace(/'/g, "\\'")}')">${p} (${cnt})</button>`
+      ).join("");
+      el.faultPersonPills.innerHTML = allPill + pills;
+    }
+
+    window.__quickFaultPerson = (p) => {
+      selectedFaultPerson = p;
+      populateFaultFilters();
+      applyFaultFilters(true);
+    };
+
+    function applyFaultFilters(resetPaging = true) {
+      if (resetPaging) faultVisibleLimit = PAGE_SIZE;
+      const q = asciiKey(faultSearchQuery);
+
+      filteredFaults = allFaults.filter(f => {
+        if (selectedFaultPerson !== "ALL" && f.personel !== selectedFaultPerson) return false;
+        if (selectedFaultGroup !== "ALL" && f.planGrubu !== selectedFaultGroup) return false;
+        if (selectedFaultType !== "ALL" && !(f.flags || []).includes(selectedFaultType)) return false;
+        if (q && !asciiKey(`${f.tesisatNo} ${f.personel} ${f.planGrubu} ${f.rawAddress} ${f.sayacSeri} ${f.modemSeri} ${f.durumNotu}`).includes(q)) return false;
+        return true;
+      });
+
+      el.faultCountLabel.textContent = `Listelenen Hatalı Kayıt: ${filteredFaults.length}`;
+      el.faultTotalLabel.textContent = `Toplam: ${allFaults.length}`;
+      renderFaultList();
+    }
+
+    function renderFaultList() {
+      if (!filteredFaults.length) {
+        el.faultJobsContainer.innerHTML = `<div class="empty-box">Hatalı adres listesinde kayıt bulunamadı. Yetkili panelinden hatalı adres Excel dosyasını yükleyebilirsin.</div>`;
+        el.faultLoadMoreWrap.classList.add("hidden");
+        return;
+      }
+
+      const slice = filteredFaults.slice(0, faultVisibleLimit);
+      el.faultJobsContainer.innerHTML = slice.map(f => {
+        const flagLabels = (f.flags || []).map(fl => {
+          if (fl === "MISSING_SETTLEMENT") return "Mah/Köy Eksik";
+          if (fl === "IL_AS_DISTRICT") return "İl=İlçe";
+          if (fl === "DASH_OR_TRUNCATED") return "Eksik/Kesik Adres";
+          if (fl === "METER_ERR") return "Okuma/Modem Hatası";
+          return fl;
+        }).join(" • ");
+
+        return `
+          <article class="job-card err-card">
+            <div class="job-top">
+              <div class="job-title">Tesisat: ${f.tesisatNo || "-"} • ${f.personel}</div>
+              <span class="tag tag-err">⚠️ ${flagLabels || "Hatalı Adres"}</span>
+            </div>
+            <div class="job-meta">
+              Grup: <strong>${f.planGrubu}</strong> • İl Alanı: <strong>${f.ilRaw || "-"}</strong>
+              ${f.sayacSeri ? ` • Sayaç: <strong>${f.sayacSeri}</strong> (${f.sayacMarka || "-"})` : ""}
+              ${f.modemSeri ? ` • Modem: <strong>${f.modemSeri}</strong>` : ""}
+            </div>
+            <div class="job-info-box">
+              <div class="info-line"><span class="info-label">Ham Adres:</span> ${f.rawAddress || "-"}</div>
+              ${f.durumNotu ? `<div class="info-line"><span class="info-label">Durum / Arıza:</span> ${f.durumNotu}</div>` : ""}
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      if (filteredFaults.length > faultVisibleLimit) {
+        el.faultLoadMoreWrap.classList.remove("hidden");
+        el.faultLoadMoreBtn.textContent = `Daha Fazla Hatalı Kayıt Göster (${slice.length} / ${filteredFaults.length})`;
+      } else {
+        el.faultLoadMoreWrap.classList.add("hidden");
+      }
+    }
+
+    el.faultPersonSelect.addEventListener("change", () => { selectedFaultPerson = el.faultPersonSelect.value; renderFaultPersonPills(); applyFaultFilters(true); });
+    el.faultGroupSelect.addEventListener("change", () => { selectedFaultGroup = el.faultGroupSelect.value; applyFaultFilters(true); });
+    el.faultTypeSelect.addEventListener("change", () => { selectedFaultType = el.faultTypeSelect.value; applyFaultFilters(true); });
+    el.faultSearchInput.addEventListener("input", () => { faultSearchQuery = el.faultSearchInput.value; applyFaultFilters(true); });
+    el.faultLoadMoreBtn.addEventListener("click", () => { faultVisibleLimit += PAGE_SIZE; renderFaultList(); });
+
+    el.faultExcelInput.addEventListener("change", async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        el.adminStatus.textContent = "⏳ Hatalı adres Excel dosyası okunuyor...";
+        const buf = await file.arrayBuffer();
+        const wb = XLSX.read(buf, { type: "array", raw: false });
+        const targetSheet = wb.SheetNames.includes("Liste") ? "Liste" : wb.SheetNames[0];
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[targetSheet], { defval: "", raw: false });
+        const mapped = rows
+          .filter(r => String(r["Tesisat"] || r["Adres"] || "").trim() !== "")
+          .map((r, i) => classifyFaultRow({ ...r, id: `fl_${i + 1}_${Date.now()}` }));
+        setFaultItems(mapped, true);
+        switchModule("FAULT");
+        el.adminStatus.textContent = `✅ Hatalı adres listesi yüklendi: ${mapped.length} kayıt.`;
+      } catch (err) {
+        el.adminStatus.textContent = "❌ Hatalı adres Excel hatası: " + err.message;
+      } finally {
+        e.target.value = "";
+      }
+    });
+
+    // --- Mevcut Saha Listesi Fonksiyonları ---
     function saveToLocalCache(jobsObj) {
       try {
         localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify({
@@ -709,9 +1032,7 @@
           count: Object.keys(jobsObj).length,
           jobs: jobsObj
         }));
-      } catch (e) {
-        console.warn("Hafıza kayıt uyarısı:", e);
-      }
+      } catch (e) {}
     }
 
     function loadFromLocalCache() {
@@ -719,12 +1040,8 @@
         const raw = localStorage.getItem(LOCAL_CACHE_KEY);
         if (!raw) return null;
         const parsed = JSON.parse(raw);
-        if (parsed && parsed.jobs && typeof parsed.jobs === "object") {
-          return parsed.jobs;
-        }
-      } catch (e) {
-        console.warn("Hafıza okuma uyarısı:", e);
-      }
+        if (parsed && parsed.jobs && typeof parsed.jobs === "object") return parsed.jobs;
+      } catch (e) {}
       return null;
     }
 
@@ -795,12 +1112,8 @@
           if (digest !== lastServerPushHash) {
             lastServerPushHash = digest;
             set(ref(db, `${DB_PATH}/jobs`), payload)
-              .then(() => {
-                el.adminStatus.textContent = `✅ (${reason}): ${allJobs.length} kayıt temizlendi ve sunucuya kaydedildi.`;
-              })
-              .catch(err => {
-                el.adminStatus.textContent = `✅ (${reason}): ${allJobs.length} kayıt temizlenip hafızaya alındı (Sunucu: ${err.message})`;
-              });
+              .then(() => { el.adminStatus.textContent = `✅ (${reason}): ${allJobs.length} kayıt temizlendi ve sunucuya kaydedildi.`; })
+              .catch(err => { el.adminStatus.textContent = `✅ (${reason}): ${allJobs.length} kayıt temizlenip hafızaya alındı (Sunucu: ${err.message})`; });
           }
         } else if (allJobs.length > 0) {
           el.adminStatus.textContent = `✅ ${allJobs.length} kayıt temiz ve hazır.`;
@@ -1040,9 +1353,12 @@
       try {
         if (!confirm("Tüm kayıtlar silinsin mi?")) return;
         localStorage.removeItem(LOCAL_CACHE_KEY);
+        localStorage.removeItem(FAULT_CACHE_KEY);
         await remove(ref(db, `${DB_PATH}/jobs`));
         allJobs = [];
+        allFaults = [];
         lastServerPushHash = "";
+        setFaultItems([], false);
         populateFilters();
         applyFilters(true);
         el.adminStatus.textContent = "Tüm kayıtlar silindi.";
@@ -1130,17 +1446,31 @@
       syncCollection(Object.values(cachedJobs), { syncServer: false, reason: "yerel hafıza", resetPaging: true });
     }
 
+    const cachedFaults = loadFaultCache();
+    if (cachedFaults.length > 0) {
+      setFaultItems(cachedFaults, false);
+    }
+
     onValue(ref(db, "/"), snap => {
       el.syncStatus.className = "sync-status sync-ok";
       el.syncStatus.textContent = "🟢 Sunucu Bağlı";
 
-      const serverJobs = extractJobs(snap.val());
+      const val = snap.val();
+      const serverJobs = extractJobs(val);
       if (serverJobs.length > 0) {
         syncCollection(serverJobs, { syncServer: false, reason: "canlı sunucu", resetPaging: false });
       } else if (!allJobs.length) {
         allJobs = [];
         populateFilters();
         applyFilters(false);
+      }
+
+      const faultObj = val?.fault_addresses || val?.[DB_PATH]?.fault_addresses;
+      if (faultObj && typeof faultObj === "object") {
+        const list = Object.values(faultObj).filter(x => x && typeof x === "object");
+        if (list.length > 0) {
+          setFaultItems(list, false);
+        }
       }
     }, err => {
       el.syncStatus.className = "sync-status sync-err";
