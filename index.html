@@ -189,7 +189,6 @@
     }
     .chip-btn.active { background: rgba(37, 99, 235, 0.28); color: #ffffff; border-color: #3b82f6; }
 
-    /* Derli Toplu Klasik Mahalle & Köy Kutuları */
     .split-groups {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -429,7 +428,6 @@
       <div id="adminStatus" class="status-note"></div>
     </div>
 
-    <!-- MODÜL 1: SAHA İŞ LİSTESİ -->
     <div id="sahaModule">
       <section class="card">
         <div class="cat-grid">
@@ -464,7 +462,6 @@
         </div>
       </section>
 
-      <!-- DERLİ TOPLU MAHALLE & KÖY PANELİ -->
       <section id="categorySubGroupCard" class="card">
         <div class="split-groups">
           <div id="mahalleSplitBox" class="sub-panel">
@@ -501,7 +498,6 @@
       </div>
     </div>
 
-    <!-- MODÜL 2: HATALI ADRES / OKUNAMAYAN TESİSATLAR BÖLÜMÜ -->
     <div id="faultModule" class="hidden">
       <div class="module-switch">
         <button id="faultActiveSubTabBtn" class="module-btn active">⚠️ Bekleyen Hatalı (<span id="faultActiveSubCount">0</span>)</button>
@@ -559,7 +555,6 @@
     </div>
   </div>
 
-  <!-- Tamamlama Notu ve Neden Penceresi -->
   <div id="faultReasonModal" class="modal-backdrop">
     <div class="modal-card">
       <h3 style="margin-top:0;">Tamamlandı — Hata ve Yapılan İşlem Notu</h3>
@@ -699,7 +694,6 @@
         .map(w => w.charAt(0).toLocaleUpperCase("tr-TR") + w.slice(1)).join(" ").trim();
     }
 
-    // Tekrarlayan kelimeleri ve "Ü" gibi tek harfli kalıntıları temizler
     function deduplicateWords(str) {
       const tokens = String(str || "").trim().split(/\s+/).filter(Boolean);
       const out = [];
@@ -727,7 +721,6 @@
       return clean;
     }
 
-    // Adreste "A B yolu" gibi ifadelerde hangi ilçeye/merkeze daha yakınsa onu seçer
     function resolveNearestDistrictFromRoad(text, fallbackDistrict) {
       const norm = asciiKey(text || "");
       const mRoad = norm.match(/\b([a-zçğıöşü]+)\s+([a-zçğıöşü]+)\s+yol[uü]?\b/);
@@ -748,7 +741,6 @@
         if (matchA && matchB) {
           const cA = DISTRICT_CENTERS[matchA[0]];
           const cB = DISTRICT_CENTERS[matchB[0]];
-          // Varsayılan/öncelikli ilçe merkezine veya ilk aday ilçeye göre daha yakın olanı seçer
           const refCenter = DISTRICT_CENTERS[fallbackDistrict] || DISTRICT_CENTERS["Edirne Merkez"];
           const dA = Math.hypot(cA.lat - refCenter.lat, cA.lon - refCenter.lon);
           const dB = Math.hypot(cB.lat - refCenter.lat, cB.lon - refCenter.lon);
@@ -979,7 +971,6 @@
       return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
     }
 
-    // Aktif İnternet Araştırma (Nominatim + Wikipedia)
     const webResearchCache = new Map();
 
     function computeDirectionFromCenter(lat, lon, districtKey) {
