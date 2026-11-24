@@ -260,6 +260,7 @@
     .reason-label { color: #34d399; font-weight: 800; }
 
     .job-actions { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .fault-card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
     .btn {
       border: 1px solid var(--border);
@@ -824,6 +825,18 @@
       };
     }
 
+    function buildFaultMapsLink(f) {
+      const cleanAddr = String(f.rawAddress || "")
+        .replace(/-\s*-/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      const fallbackIl = /kirklareli/i.test(asciiKey(`${f.planGrubu} ${f.ilRaw} ${cleanAddr}`)) ? "Kırklareli" : "Edirne";
+      const query = cleanAddr
+        ? `${cleanAddr} ${f.planGrubu || ""} ${fallbackIl}`.trim()
+        : `${f.planGrubu || ""} ${fallbackIl}`.trim();
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    }
+
     function extractJobs(snapVal) {
       if (!snapVal) return [];
       const cand = snapVal.jobs || snapVal[DB_PATH]?.jobs || snapVal;
@@ -1006,8 +1019,28 @@
       el.faultCompletedSubCount.textContent = completedFaults.length;
     }
 
+    function dedupeFaultRows(rows) {
+      const seen = new Set();
+      const out = [];
+      for (const item of rows) {
+        const key = `${asciiKey(item.tesisatNo)}|${asciiKey(item.rawAddress)}|${asciiKey(item.personel)}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(item);
+      }
+      return out;
+    }
+
     function setFaultItems(rows, syncToFirebase = false) {
-      allFaults = rows.map((r, i) => r.flags ? r : classifyFaultRow({ ...r, id: r.id || `f_${i + 1}` }));
+      const classified = rows
+        .map((r, i) => r.flags ? r : classifyFaultRow({ ...r, id: r.id || `f_${i + 1}` }))
+        .filter(f => {
+          const tes = String(f.tesisatNo || "").trim();
+          const addr = String(f.rawAddress || "").trim();
+          return tes.length >= 4 || addr.length >= 6;
+        });
+
+      allFaults = dedupeFaultRows(classified);
       saveFaultCache(allFaults);
       updateFaultBadges();
       populateFaultFilters();
@@ -1193,6 +1226,7 @@
           if (fl === "METER_ERR") return "Okuma/Modem Hatası";
           return fl;
         }).join(" • ");
+        const mapsUrl = buildFaultMapsLink(f);
 
         return `
           <article class="job-card err-card">
@@ -1209,7 +1243,8 @@
               <div class="info-line"><span class="info-label">Ham Adres:</span> ${f.rawAddress || "-"}</div>
               ${f.durumNotu ? `<div class="info-line"><span class="info-label">Durum / Arıza:</span> ${f.durumNotu}</div>` : ""}
             </div>
-            <div class="job-actions">
+            <div class="fault-card-actions">
+              <a class="btn btn-primary" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">🗺️ Adrese Git</a>
               <button class="btn btn-success" onclick="window.__openFaultReasonModal('${f.id}')">✓ Tamamlandı</button>
             </div>
           </article>
@@ -1240,12 +1275,12 @@
         const targetSheet = wb.SheetNames.includes("Liste") ? "Liste" : wb.SheetNames[0];
         const rows = XLSX.utils.sheet_to_json(wb.Sheets[targetSheet], { defval: "", raw: false });
         const mapped = rows
-          .filter(r => String(r["Tesisat"] || r["Adres"] || "").trim() !== "")
-          .map((r, i) => classifyFaultRow({ ...r, id: `fl_${i + 1}_${Date.now()}` }));
+          .map((r, i) => classifyFaultRow({ ...r, id: `fl_${i + 1}_${Date.now()}` }))
+          .filter(f => String(f.tesisatNo || "").trim() !== "" || String(f.rawAddress || "").trim() !== "");
         setFaultItems(mapped, true);
         switchModule("FAULT");
         switchFaultSubTab("ACTIVE");
-        el.adminStatus.textContent = `✅ Hatalı adres listesi yüklendi: ${mapped.length} kayıt.`;
+        el.adminStatus.textContent = `✅ Hatalı adres listesi yüklendi: ${allFaults.length} kayıt.`;
       } catch (err) {
         el.adminStatus.textContent = "❌ Hatalı adres Excel hatası: " + err.message;
       } finally {
