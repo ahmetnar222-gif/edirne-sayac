@@ -185,6 +185,32 @@
     }
     .d-pill.active { background: rgba(16, 185, 129, 0.22); color: #ffffff; border-color: var(--success); }
 
+    .reason-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .reason-option-btn {
+      background: var(--bg-input);
+      color: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .reason-option-btn:hover,
+    .reason-option-btn.selected {
+      background: rgba(16, 185, 129, 0.22);
+      border-color: var(--success);
+      color: #a7f3d0;
+    }
+
     .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; margin-bottom: 6px; }
     .progress-bar { width: 100%; height: 8px; background: var(--bg-input); border-radius: 999px; overflow: hidden; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-2), var(--success)); width: 0%; transition: width 0.25s ease; }
@@ -437,6 +463,25 @@
       <div id="faultJobsContainer"></div>
       <div id="faultLoadMoreWrap" class="hidden" style="margin-top:8px;">
         <button id="faultLoadMoreBtn" class="btn btn-secondary" style="width:100%;">Daha Fazla Hatalı Kayıt Göster</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tamamlama Nedeni Seçim Penceresi -->
+  <div id="faultReasonModal" class="modal-backdrop">
+    <div class="modal-card">
+      <h3 style="margin-top:0;">Tamamlama Nedeni Seç</h3>
+      <p id="faultReasonTargetInfo" style="font-size:12px; color:var(--text-muted); margin-top:0;"></p>
+      <div class="reason-grid">
+        <button type="button" class="reason-option-btn" data-reason="Sarı Mühür">🟨 Sarı Mühür</button>
+        <button type="button" class="reason-option-btn" data-reason="Kablo Hatası">🔌 Kablo Hatası</button>
+        <button type="button" class="reason-option-btn" data-reason="Hata Giderildi">✅ Hata Giderildi</button>
+        <button type="button" class="reason-option-btn" data-reason="Sayaç / Modem Değişti">🔁 Sayaç / Modem Değişti</button>
+      </div>
+      <input id="customReasonInput" type="text" placeholder="Farklı bir neden yazın (ör. Kapalı Kilit, Mühürsüz)..." style="margin-bottom:10px;" />
+      <div style="display:flex; gap:8px;">
+        <button id="confirmFaultReasonBtn" class="btn btn-success" style="flex:1;">Kaydet ve Sil</button>
+        <button id="cancelFaultReasonBtn" class="btn btn-secondary" style="flex:1;">İptal</button>
       </div>
     </div>
   </div>
@@ -798,6 +843,8 @@
     let selectedFaultGroup = "ALL";
     let selectedFaultType = "ALL";
     let faultSearchQuery = "";
+    let pendingFaultId = null;
+    let selectedCompletionReason = "";
 
     const el = {
       syncStatus: document.getElementById("syncStatus"),
@@ -843,7 +890,12 @@
       faultTotalLabel: document.getElementById("faultTotalLabel"),
       faultJobsContainer: document.getElementById("faultJobsContainer"),
       faultLoadMoreWrap: document.getElementById("faultLoadMoreWrap"),
-      faultLoadMoreBtn: document.getElementById("faultLoadMoreBtn")
+      faultLoadMoreBtn: document.getElementById("faultLoadMoreBtn"),
+      faultReasonModal: document.getElementById("faultReasonModal"),
+      faultReasonTargetInfo: document.getElementById("faultReasonTargetInfo"),
+      customReasonInput: document.getElementById("customReasonInput"),
+      confirmFaultReasonBtn: document.getElementById("confirmFaultReasonBtn"),
+      cancelFaultReasonBtn: document.getElementById("cancelFaultReasonBtn")
     };
 
     function switchModule(mod) {
@@ -896,19 +948,56 @@
       }
     }
 
-    window.__completeFault = async (id) => {
-      allFaults = allFaults.filter(item => item.id !== id);
+    window.__openFaultReasonModal = (id) => {
+      const target = allFaults.find(x => x.id === id);
+      if (!target) return;
+      pendingFaultId = id;
+      selectedCompletionReason = "";
+      el.customReasonInput.value = "";
+      document.querySelectorAll(".reason-option-btn").forEach(b => b.classList.remove("selected"));
+      el.faultReasonTargetInfo.textContent = `Tesisat: ${target.tesisatNo || "-"} • ${target.personel} • ${target.rawAddress || ""}`;
+      el.faultReasonModal.classList.add("open");
+      el.customReasonInput.focus();
+    };
+
+    document.querySelectorAll(".reason-option-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".reason-option-btn").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        selectedCompletionReason = btn.dataset.reason || "";
+        el.customReasonInput.value = selectedCompletionReason;
+      });
+    });
+
+    el.cancelFaultReasonBtn.addEventListener("click", () => {
+      pendingFaultId = null;
+      el.faultReasonModal.classList.remove("open");
+    });
+
+    el.confirmFaultReasonBtn.addEventListener("click", async () => {
+      if (!pendingFaultId) return;
+      const reasonText = (el.customReasonInput.value || selectedCompletionReason || "").trim();
+      if (!reasonText) {
+        el.customReasonInput.focus();
+        return;
+      }
+
+      const idToRemove = pendingFaultId;
+      pendingFaultId = null;
+      el.faultReasonModal.classList.remove("open");
+
+      allFaults = allFaults.filter(item => item.id !== idToRemove);
       saveFaultCache(allFaults);
       el.faultBadgeCount.textContent = allFaults.length;
       populateFaultFilters();
       applyFaultFilters(false);
 
       try {
-        await remove(ref(db, `${DB_PATH}/fault_addresses/${id}`));
+        await remove(ref(db, `${DB_PATH}/fault_addresses/${idToRemove}`));
       } catch (e) {
         console.warn("Sunucu silme uyarısı:", e);
       }
-    };
+    });
 
     function populateFaultFilters() {
       const persons = Array.from(new Set(allFaults.map(f => f.personel))).sort((a, b) => a.localeCompare(b, "tr"));
@@ -999,7 +1088,7 @@
               ${f.durumNotu ? `<div class="info-line"><span class="info-label">Durum / Arıza:</span> ${f.durumNotu}</div>` : ""}
             </div>
             <div class="job-actions">
-              <button class="btn btn-success" onclick="window.__completeFault('${f.id}')">✓ Tamamlandı</button>
+              <button class="btn btn-success" onclick="window.__openFaultReasonModal('${f.id}')">✓ Tamamlandı</button>
             </div>
           </article>
         `;
