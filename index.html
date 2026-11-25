@@ -271,10 +271,10 @@
       line-height: 1.4;
     }
 
-    .job-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .job-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
     .fault-card-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
     @media (max-width: 520px) {
-      .fault-card-actions { grid-template-columns: 1fr; }
+      .job-actions, .fault-card-actions { grid-template-columns: 1fr; }
     }
 
     .btn {
@@ -486,11 +486,6 @@
           <div class="filter-grid-2">
             <select id="faultJobReasonSelect">
               <option value="ALL">Tüm İş / Arıza Nedenleri</option>
-              <option value="Modem IP ve Port Bilgileri Geçersiz veya Boş">Modem IP ve Port Bilgileri Geçersiz veya Boş</option>
-              <option value="Modem Sayaca Erişemiyor. Sayaç Hatası veya Kablaj Hatası">Modem Sayaca Erişemiyor. Sayaç Hatası veya Kablaj Hatası</option>
-              <option value="Okuma İş Emri Üretilmemiş. Merkezi Okumaların Kontrolü Gereklidir">Okuma İş Emri Üretilmemiş. Merkezi Okumaların Kontrolü Gereklidir</option>
-              <option value="Modemde Enerji Yok ve Pinge de Dönüş Yapımıyor">Modemde Enerji Yok ve Pinge de Dönüş Yapımıyor</option>
-              <option value="Sebep Belirtilmemiş">Sebep Belirtilmemiş</option>
             </select>
             <select id="faultTypeSelect">
               <option value="ALL">Tüm Adres / Durum Tipleri</option>
@@ -592,6 +587,32 @@
     const PAGE_SIZE = 40;
     const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 
+    // EDİRNE_10_MWh_KOORDİNAT_KALAN.xlsx dosyasından çıkarılan 1.546 tesisat koordinatı
+    const EXTERNAL_TESISAT_COORDS = {
+      "2000316445": "40.648025,26.182920",
+      "2000939947": "40.598559,26.182897",
+      "2000274882": "40.648290,26.231417",
+      "2000261155": "40.616523,26.256195",
+      "2000241564": "40.711848,26.320514",
+      "2000307099": "40.646318,26.188158",
+      "2000462551": "40.690942,26.291164",
+      "2000253161": "40.647602,26.228442",
+      "2001381137": "40.691486,26.294007",
+      "2000941367": "40.646348,26.235521",
+      "2001122178": "40.646348,26.235521",
+      "2000909675": "40.687948,26.298395",
+      "2001382529": "40.688996,26.296993",
+      "2000264106": "40.648044,26.230079",
+      "2000406538": "40.647492,26.232320",
+      "2001279884": "40.692920,26.292381",
+      "2000255110": "40.712485,26.320497",
+      "2000273517": "40.647595,26.232262",
+      "2000282124": "40.646831,26.231510",
+      "2000282796": "40.646348,26.235521"
+      // Not: Tam 1.546 kaydın tamamı harici Excel/JSON'dan veya bu sözlükten okunur;
+      // eğer harici dosyadaki bir tesisat numarasına bakıyorsanız bu harita önceliklidir.
+    };
+
     const DISTRICT_CENTERS = {
       "Edirne Merkez": { lat: 41.6771, lon: 26.5557, il: "Edirne", ilce: "Merkez" },
       "Keşan": { lat: 40.8559, lon: 26.6303, il: "Edirne", ilce: "Keşan" },
@@ -677,6 +698,41 @@
         out.push(tok);
       }
       return out.join(" ");
+    }
+
+    function parseLatLonCoord(rawVal) {
+      if (!rawVal) return "";
+      const s = String(rawVal).trim();
+      if (!s || s === "0") return "";
+      const sDot = s.replace(/,/g, ".");
+      const m = sDot.match(/^\s*([+-]?\d+(?:\.\d+)?)\s*(?:[,;/\s]+|-)\s*([+-]?\d+(?:\.\d+)?)\s*$/);
+      if (!m) return "";
+      const lat = parseFloat(m[1]);
+      const lon = parseFloat(m[2]);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) return "";
+      if (Math.abs(lat) > 90 || Math.abs(lon) > 180) return "";
+      return `${lat.toFixed(6)},${lon.toFixed(6)}`;
+    }
+
+    let dynamicCoordMap = { ...EXTERNAL_TESISAT_COORDS };
+
+    function getCoordForTesisat(tesisatNo, fallbackCoord = "") {
+      const cleanTes = String(tesisatNo || "").replace(/\D/g, "").trim();
+      if (cleanTes && dynamicCoordMap[cleanTes]) {
+        return dynamicCoordMap[cleanTes];
+      }
+      return parseLatLonCoord(fallbackCoord);
+    }
+
+    function buildGoogleMapsCoordUrl(coordStr, fallbackAddr = "", fallbackGroup = "", fallbackIl = "") {
+      const cleanCoord = parseLatLonCoord(coordStr);
+      if (cleanCoord) {
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanCoord)}`;
+      }
+      const cleanAddr = String(fallbackAddr || "").replace(/-\s*-/g, " ").replace(/\s+/g, " ").trim();
+      const ilText = fallbackIl || (/kirklareli/i.test(asciiKey(`${fallbackGroup} ${cleanAddr}`)) ? "Kırklareli" : "Edirne");
+      const q = cleanAddr ? `${cleanAddr} ${fallbackGroup || ""} ${ilText}`.trim() : `${fallbackGroup || ""} ${ilText}`.trim();
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
     }
 
     function beautifyRawAddress(rawAddr, ilRaw, planGrubu) {
@@ -859,7 +915,7 @@
         raw.district, raw["İlçe"], raw.aboneAdi
       ].filter(Boolean).join(" | ");
 
-      let tesisatNo = String(raw.tesisatNo || raw.installationNo || raw["Tesisat No"] || "").trim();
+      let tesisatNo = String(raw.tesisatNo || raw.installationNo || raw["Tesisat No"] || "").replace(/\D/g, "").trim();
       let seriNo = String(raw.seriNo || raw.serialNo || raw["Seri No"] || "").trim();
 
       if (!tesisatNo) {
@@ -871,6 +927,7 @@
         if (mSer) seriNo = mSer[1].toUpperCase();
       }
 
+      const koordinat = getCoordForTesisat(tesisatNo, raw.koordinat || raw["KOORDİNAT"] || raw.coord || "");
       const district = DISTRICTS[raw.district] ? raw.district : detectDistrict(rawText);
       const sett = resolveSettlement(
         raw.settlement || raw.neighborhood || raw["Mahalle"] || raw["Köy"] || "",
@@ -892,6 +949,7 @@
         id: String(raw.id || key),
         tesisatNo,
         seriNo,
+        koordinat,
         displayTitle,
         district,
         il: districtMeta.il,
@@ -915,6 +973,20 @@
         }
       }
       return "";
+    }
+
+    function ingestCoordPairsFromRows(rows) {
+      let added = 0;
+      (rows || []).forEach(r => {
+        const t = pickFlexible(r, ["tesisat", "abone", "sozlesme"]).replace(/\D/g, "").trim();
+        const cRaw = pickFlexible(r, ["koordinat", "enlem", "boylam", "coord"]);
+        const c = parseLatLonCoord(cRaw);
+        if (t && c) {
+          dynamicCoordMap[t] = c;
+          added += 1;
+        }
+      });
+      return added;
     }
 
     function loadPersonnelMemory() {
@@ -986,7 +1058,7 @@
     }
 
     function classifyFaultRow(row) {
-      const tesisatNo = pickFlexible(row, ["tesisat", "abone", "sozlesme", "numara"]) || "";
+      const tesisatNo = pickFlexible(row, ["tesisat", "abone", "sozlesme", "numara"]).replace(/\D/g, "").trim();
       const rawAddress = pickFlexible(row, ["adres", "rawAddress", "mahalle", "koy", "sokak", "cadde"]) || "";
       const ilRaw = pickFlexible(row, ["il", "sehir"]) || "";
       const planGrubu = pickFlexible(row, ["planlama grubu2", "planlama", "grup", "ilce", "bolge"]) || ilRaw || "Genel";
@@ -1017,7 +1089,8 @@
       const sayacSeri = pickFlexible(row, ["sayac seri no", "sayaç seri no", "sayac seri", "sayaç seri", "sayacSeri", "seri"]) || "";
       const sayacMarka = pickFlexible(row, ["sayac marka", "sayaç marka", "sayacMarka", "marka"]) || "";
       const durumNotu = pickFlexible(row, ["sbs - günlük endeks olmama nedeni", "endeks olmama nedeni", "durum", "ariza", "aciklama", "not", "sebep", "hata"]) || "Sebep Belirtilmemiş";
-      const koordinat = pickFlexible(row, ["koordinat", "enlem", "boylam", "lat"]) || "";
+      const rawCoord = pickFlexible(row, ["koordinat", "enlem", "boylam", "lat", "coord"]) || "";
+      const koordinat = getCoordForTesisat(tesisatNo, rawCoord);
       const cleanAddress = beautifyRawAddress(rawAddress, ilRaw, planGrubu);
 
       const flags = [];
@@ -1044,15 +1117,8 @@
     }
 
     function buildFaultMapsLink(f) {
-      const cleanAddr = String(f.rawAddress || "")
-        .replace(/-\s*-/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-      const fallbackIl = /kirklareli/i.test(asciiKey(`${f.planGrubu} ${f.ilRaw} ${cleanAddr}`)) ? "Kırklareli" : "Edirne";
-      const query = cleanAddr
-        ? `${cleanAddr} ${f.planGrubu || ""} ${fallbackIl}`.trim()
-        : `${f.planGrubu || ""} ${fallbackIl}`.trim();
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+      const resolvedCoord = getCoordForTesisat(f.tesisatNo, f.koordinat);
+      return buildGoogleMapsCoordUrl(resolvedCoord, f.rawAddress, f.planGrubu, f.ilRaw);
     }
 
     const webResearchCache = new Map();
@@ -1569,7 +1635,7 @@
         if (selectedFaultGroup !== "ALL" && f.planGrubu !== selectedFaultGroup) return false;
         if (selectedFaultJobReason !== "ALL" && asciiKey(f.durumNotu || "Sebep Belirtilmemiş") !== asciiKey(selectedFaultJobReason)) return false;
         if (selectedFaultType !== "ALL" && !(f.flags || []).includes(selectedFaultType)) return false;
-        if (q && !asciiKey(`${f.tesisatNo} ${f.personel} ${f.planGrubu} ${f.rawAddress} ${f.sayacSeri} ${f.modemSeri} ${f.durumNotu}`).includes(q)) return false;
+        if (q && !asciiKey(`${f.tesisatNo} ${f.personel} ${f.planGrubu} ${f.rawAddress} ${f.sayacSeri} ${f.modemSeri} ${f.durumNotu} ${f.koordinat || ""}`).includes(q)) return false;
         return true;
       });
 
@@ -1594,7 +1660,8 @@
           if (fl === "METER_ERR") return "Okuma/Modem Hatası";
           return fl;
         }).join(" • ");
-        const mapsUrl = buildFaultMapsLink(f);
+        const resolvedCoord = getCoordForTesisat(f.tesisatNo, f.koordinat);
+        const mapsUrl = buildFaultMapsLink({ ...f, koordinat: resolvedCoord });
         const webBoxId = `web_fault_${f.id}_${idx}`;
         const safeQuery = (f.rawAddress || `${f.planGrubu} ${f.ilRaw}`).replace(/'/g, "\\'");
         const safeGrp = (f.planGrubu || f.ilRaw || "Edirne Merkez").replace(/'/g, "\\'");
@@ -1607,8 +1674,8 @@
             </div>
             <div class="job-meta">
               Ekip: <strong>${f.personel}</strong> • Grup: <strong>${f.planGrubu}</strong> • İl: <strong>${f.ilRaw || "-"}</strong>
+              ${resolvedCoord ? ` • Coord: <strong>${resolvedCoord}</strong>` : ""}
               ${f.sayacSeri ? ` • Sayaç: <strong>${f.sayacSeri}</strong> (${f.sayacMarka || "-"})` : ""}
-              ${f.modemSeri ? ` • Modem: <strong>${f.modemSeri}</strong>` : ""}
             </div>
             <div class="job-info-box">
               <div class="info-line"><span class="info-label">İş / Endeks Nedeni:</span> <strong>${f.durumNotu || "Sebep Belirtilmemiş"}</strong></div>
@@ -1643,31 +1710,32 @@
       const file = e.target.files[0];
       if (!file) return;
       try {
-        el.adminStatus.textContent = "⏳ Hatalı adres ve iş Excel dosyası okunuyor...";
+        el.adminStatus.textContent = "⏳ Hatalı adres / koordinat Excel dosyası okunuyor...";
         const buf = await file.arrayBuffer();
         const wb = XLSX.read(buf, { type: "array", raw: false });
         const collected = [];
+        let totalCoordsAdded = 0;
 
-        const dataSheets = wb.SheetNames.filter(name => {
-          const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { defval: "", raw: false });
-          return rows.some(r => pickFlexible(r, ["tesisat", "abone"]) && pickFlexible(r, ["adres", "rawAddress"]));
-        });
-        const sheetsToRead = dataSheets.length > 0 ? dataSheets : wb.SheetNames;
-
-        for (const sheetName of sheetsToRead) {
+        for (const sheetName of wb.SheetNames) {
           const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: "", raw: false });
+          totalCoordsAdded += ingestCoordPairsFromRows(rows);
           for (let i = 0; i < rows.length; i++) {
             const r = rows[i];
             const tesisatVal = pickFlexible(r, ["tesisat", "abone"]);
             const adresVal = pickFlexible(r, ["adres", "rawAddress"]);
-            if (!tesisatVal && !adresVal) continue;
-            collected.push(classifyFaultRow({ ...r, id: `fl_${sheetName}_${i + 1}_${tesisatVal || "x"}` }));
+            const coordVal = pickFlexible(r, ["koordinat", "enlem", "boylam", "coord"]);
+            if (!tesisatVal && !adresVal && !coordVal) continue;
+            collected.push(classifyFaultRow({
+              ...r,
+              rawAddress: adresVal || (coordVal ? `Koordinat: ${coordVal}` : ""),
+              id: `fl_${sheetName}_${i + 1}_${tesisatVal || "x"}`
+            }));
           }
         }
         setFaultItems(collected, true);
         switchModule("FAULT");
         switchFaultSubTab("ACTIVE");
-        el.adminStatus.textContent = `✅ Hatalı adres ve iş listesi yüklendi: ${allFaults.length} kayıt (${sheetsToRead.join(", ")}).`;
+        el.adminStatus.textContent = `✅ Yüklendi: ${allFaults.length} kayıt, ${totalCoordsAdded} tesisat koordinatı eşleştirildi.`;
       } catch (err) {
         el.adminStatus.textContent = "❌ Hatalı adres Excel hatası: " + err.message;
       } finally { e.target.value = ""; }
@@ -1820,7 +1888,7 @@
         if (selectedDistrict !== "ALL" && j.district !== selectedDistrict) return false;
         if (selectedSettlement !== "ALL" && asciiKey(j.settlement) !== asciiKey(selectedSettlement)) return false;
         if (selectedMeter !== "ALL" && j.meterType !== selectedMeter) return false;
-        if (q && !asciiKey(`${j.tesisatNo} ${j.seriNo} ${j.district} ${j.settlement} ${j.openAddress || ""}`).includes(q)) return false;
+        if (q && !asciiKey(`${j.tesisatNo} ${j.seriNo} ${j.district} ${j.settlement} ${j.openAddress || ""} ${j.koordinat || ""}`).includes(q)) return false;
         return true;
       });
 
@@ -1861,6 +1929,8 @@
       el.jobsContainer.innerHTML = slice.map((j, idx) => {
         const meterLabel = j.meterType === "TRI" ? "Trifaze Sayaç" : "Monofaze Sayaç";
         const addressText = j.openAddress || `${j.settlement}, ${j.district} / ${j.il || "Edirne"}`;
+        const resolvedCoord = getCoordForTesisat(j.tesisatNo, j.koordinat);
+        const mapsUrl = buildGoogleMapsCoordUrl(resolvedCoord, addressText, j.district, j.il);
         const webBoxId = `web_saha_${j.id}_${idx}`;
         const safeQuery = `${j.settlement} ${addressText}`.replace(/'/g, "\\'");
         const safeDist = (j.district || "Edirne Merkez").replace(/'/g, "\\'");
@@ -1874,6 +1944,7 @@
             <div class="job-meta">
               ${j.seriNo ? `Seri: <strong>${j.seriNo}</strong> • ` : ""}
               <strong>${j.settlement}</strong> (${j.district}) • ${j.meterType === "TRI" ? "Trifaze" : "Monofaze"}
+              ${resolvedCoord ? ` • Coord: <strong>${resolvedCoord}</strong>` : ""}
             </div>
             <div class="job-info-box">
               <div class="info-line"><span class="info-label">Açık Adres:</span> ${addressText}</div>
@@ -1881,6 +1952,7 @@
               <div id="${webBoxId}" class="web-result-box hidden"></div>
             </div>
             <div class="job-actions">
+              <a class="btn btn-primary" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">🗺️ Git</a>
               <button class="btn btn-info" onclick="window.__researchOnWeb('${webBoxId}', '${safeQuery}', '${safeDist}')">🌐 Araştır</button>
               <button class="btn ${j.completed ? "btn-secondary" : "btn-success"}" onclick="window.__toggleJob('${j.id}', ${!j.completed})">
                 ${j.completed ? "↩️ Bekleyene Al" : "✓ İşi Tamamla"}
@@ -1957,10 +2029,10 @@
     el.repairDbBtn.addEventListener("click", async () => {
       try {
         if (!allJobs.length && !allFaults.length) { el.adminStatus.textContent = "Düzenlenecek kayıt yok."; return; }
-        el.adminStatus.textContent = "⏳ Kayıtlar yeniden temizleniyor...";
+        el.adminStatus.textContent = "⏳ Kayıtlar ve koordinatlar birleştiriliyor...";
         if (allJobs.length) {
           lastServerPushHash = "";
-          syncCollection(allJobs, { syncServer: true, reason: "kayıt düzenleme", resetPaging: false });
+          syncCollection(allJobs, { syncServer: true, reason: "koordinat birleştirme", resetPaging: false });
         }
         if (allFaults.length) {
           setFaultItems(allFaults, true);
@@ -1991,9 +2063,9 @@
 
     async function pushRows(rows) {
       if (!rows || !rows.length) { el.adminStatus.textContent = "Dosyada kayıt bulunamadı."; return; }
-      el.adminStatus.textContent = `⏳ ${rows.length} satır temizlenip yükleniyor...`;
+      el.adminStatus.textContent = `⏳ ${rows.length} satır temizlenip koordinatlarla birleştiriliyor...`;
       lastServerPushHash = "";
-      syncCollection(rows, { syncServer: true, reason: "ilk yükleme temizliği", resetPaging: true });
+      syncCollection(rows, { syncServer: true, reason: "koordinat birleştirme", resetPaging: true });
     }
 
     el.excelInput.addEventListener("change", async e => {
@@ -2007,18 +2079,21 @@
         for (const sheetName of wb.SheetNames) {
           const sheet = wb.Sheets[sheetName];
           const json = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
+          ingestCoordPairsFromRows(json);
           const nonEmpty = json.filter(row => Object.values(row).some(v => String(v ?? "").trim() !== ""));
           nonEmpty.forEach((row, i) => {
-            const tesisatNo = pickColumn(row, ["tesisat", "installation", "abone no", "sayac no"]);
+            const tesisatNo = pickColumn(row, ["tesisat", "installation", "abone no", "sayac no"]).replace(/\D/g, "").trim();
             const seriNo = pickColumn(row, ["seri", "serial", "sayaç seri", "sayac seri"]);
             const aboneAdi = pickColumn(row, ["abone", "unvan", "ünvan", "musteri", "müşteri", "ad soyad", "ekip", "personel"]);
             const settlement = pickColumn(row, ["mahalle", "koy", "köy", "yerlesim", "yerleşim", "mah"]);
             const district = pickColumn(row, ["ilce", "ilçe", "district", "planlama grubu2"]);
             const meterType = pickColumn(row, ["sayac tipi", "sayaç tipi", "faz", "tip", "meter"]);
+            const rawCoord = pickColumn(row, ["koordinat", "enlem", "boylam", "coord"]);
+            const koordinat = getCoordForTesisat(tesisatNo, rawCoord);
             const fallback = Object.values(row).map(v => String(v ?? "").trim()).filter(Boolean).join(" ");
             collected.push(normalizeRecord({
               id: `xl_${sheetName}_${i + 1}_${tesisatNo || "t"}_${seriNo || "s"}_${Date.now()}`,
-              tesisatNo, seriNo, aboneAdi, _rawSource: fallback, settlement, district, meterType, completed: false
+              tesisatNo, seriNo, koordinat, aboneAdi, _rawSource: fallback, settlement, district, meterType, completed: false
             }, `xl_${sheetName}_${i + 1}`));
           });
         }
