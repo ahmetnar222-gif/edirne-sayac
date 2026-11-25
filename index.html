@@ -395,14 +395,14 @@
           <input type="file" id="excelInput" accept=".xlsx,.xls,.csv" hidden />
         </label>
         <label class="btn btn-warning" style="cursor:pointer;">
-          ⚠️ Hatalı Adres Excel Yükle
+          ⚠️ Hatalı Adres / Koordinat Excel Yükle
           <input type="file" id="faultExcelInput" accept=".xlsx,.xls,.csv" hidden />
         </label>
         <label class="btn btn-secondary" style="cursor:pointer;">
           📄 PDF Yükle
           <input type="file" id="pdfInput" accept=".pdf" hidden />
         </label>
-        <button id="repairDbBtn" class="btn btn-secondary">🤖 Kayıtları Temizle & Düzenle</button>
+        <button id="repairDbBtn" class="btn btn-secondary">🤖 Tesisatları Birleştir & Düzenle</button>
         <button id="showCompletedToggle" class="btn btn-secondary">✓ Tamamlananlar</button>
         <button id="clearAllBtn" class="btn btn-danger">🗑️ Tümünü Sil</button>
       </div>
@@ -587,32 +587,6 @@
     const PAGE_SIZE = 40;
     const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 
-    // EDİRNE_10_MWh_KOORDİNAT_KALAN.xlsx dosyasından çıkarılan 1.546 tesisat koordinatı
-    const EXTERNAL_TESISAT_COORDS = {
-      "2000316445": "40.648025,26.182920",
-      "2000939947": "40.598559,26.182897",
-      "2000274882": "40.648290,26.231417",
-      "2000261155": "40.616523,26.256195",
-      "2000241564": "40.711848,26.320514",
-      "2000307099": "40.646318,26.188158",
-      "2000462551": "40.690942,26.291164",
-      "2000253161": "40.647602,26.228442",
-      "2001381137": "40.691486,26.294007",
-      "2000941367": "40.646348,26.235521",
-      "2001122178": "40.646348,26.235521",
-      "2000909675": "40.687948,26.298395",
-      "2001382529": "40.688996,26.296993",
-      "2000264106": "40.648044,26.230079",
-      "2000406538": "40.647492,26.232320",
-      "2001279884": "40.692920,26.292381",
-      "2000255110": "40.712485,26.320497",
-      "2000273517": "40.647595,26.232262",
-      "2000282124": "40.646831,26.231510",
-      "2000282796": "40.646348,26.235521"
-      // Not: Tam 1.546 kaydın tamamı harici Excel/JSON'dan veya bu sözlükten okunur;
-      // eğer harici dosyadaki bir tesisat numarasına bakıyorsanız bu harita önceliklidir.
-    };
-
     const DISTRICT_CENTERS = {
       "Edirne Merkez": { lat: 41.6771, lon: 26.5557, il: "Edirne", ilce: "Merkez" },
       "Keşan": { lat: 40.8559, lon: 26.6303, il: "Edirne", ilce: "Keşan" },
@@ -714,7 +688,7 @@
       return `${lat.toFixed(6)},${lon.toFixed(6)}`;
     }
 
-    let dynamicCoordMap = { ...EXTERNAL_TESISAT_COORDS };
+    let dynamicCoordMap = {};
 
     function getCoordForTesisat(tesisatNo, fallbackCoord = "") {
       const cleanTes = String(tesisatNo || "").replace(/\D/g, "").trim();
@@ -987,6 +961,65 @@
         }
       });
       return added;
+    }
+
+    // Tesisat numarasına göre birleştirme (aynı tesisat no -> birleştir, farklı tesisat no -> ekstra ekle)
+    function mergeByTesisat(existingList, incomingList) {
+      const map = new Map();
+      const order = [];
+      let mergedCount = 0;
+      let addedCount = 0;
+
+      const makeKey = (item, fallbackIdx) => {
+        const t = String(item.tesisatNo || "").replace(/\D/g, "").trim();
+        if (t) return `tes_${t}`;
+        const s = String(item.seriNo || "").trim();
+        if (s) return `ser_${s}`;
+        return `row_${fallbackIdx}_${asciiKey(item.rawAddress || item.openAddress || "")}`;
+      };
+
+      (existingList || []).forEach((item, idx) => {
+        const k = makeKey(item, idx);
+        map.set(k, { ...item });
+        order.push(k);
+      });
+
+      (incomingList || []).forEach((item, idx) => {
+        const k = makeKey(item, order.length + idx);
+        if (map.has(k)) {
+          const prev = map.get(k);
+          const mergedCoord = getCoordForTesisat(item.tesisatNo || prev.tesisatNo, item.koordinat || prev.koordinat);
+          map.set(k, {
+            ...prev,
+            tesisatNo: item.tesisatNo || prev.tesisatNo,
+            seriNo: item.seriNo || prev.seriNo,
+            koordinat: mergedCoord || prev.koordinat || "",
+            personel: (item.personel && item.personel !== "Bilinmeyen Personel") ? item.personel : prev.personel,
+            planGrubu: (item.planGrubu && item.planGrubu !== "Genel") ? item.planGrubu : prev.planGrubu,
+            ilRaw: item.ilRaw || prev.ilRaw,
+            district: item.district || prev.district,
+            il: item.il || prev.il,
+            category: item.category || prev.category,
+            settlement: item.settlement || prev.settlement,
+            openAddress: (item.openAddress && item.openAddress.length > (prev.openAddress || "").length) ? item.openAddress : (prev.openAddress || item.openAddress),
+            rawAddress: (item.rawAddress && item.rawAddress.length > (prev.rawAddress || "").length) ? item.rawAddress : (prev.rawAddress || item.rawAddress),
+            modemSeri: item.modemSeri || prev.modemSeri,
+            modemMarka: item.modemMarka || prev.modemMarka,
+            sayacSeri: item.sayacSeri || prev.sayacSeri,
+            sayacMarka: item.sayacMarka || prev.sayacMarka,
+            durumNotu: (item.durumNotu && item.durumNotu !== "Sebep Belirtilmemiş") ? item.durumNotu : prev.durumNotu,
+            completed: Boolean(prev.completed || item.completed),
+            completedAt: prev.completedAt || item.completedAt || null
+          });
+          mergedCount += 1;
+        } else {
+          map.set(k, { ...item });
+          order.push(k);
+          addedCount += 1;
+        }
+      });
+
+      return { items: order.map(k => map.get(k)), mergedCount, addedCount };
     }
 
     function loadPersonnelMemory() {
@@ -1403,16 +1436,25 @@
       el.faultCompletedSubCount.textContent = completedFaults.length;
     }
 
-    function setFaultItems(rows, syncToFirebase = false) {
+    function setFaultItems(rows, syncToFirebase = false, appendMode = false) {
       const classified = (rows || [])
         .map((r, i) => {
           const item = classifyFaultRow({ ...r, id: r.id || `f_${i + 1}_${Date.now()}` });
           if (r.flags && Array.isArray(r.flags)) item.flags = r.flags;
           return item;
         })
-        .filter(f => String(f.rawAddress || "").trim().length > 0 || String(f.tesisatNo || "").trim().length > 0);
+        .filter(f => String(f.rawAddress || "").trim().length > 0 || String(f.tesisatNo || "").trim().length > 0 || String(f.koordinat || "").trim().length > 0);
 
-      allFaults = classified;
+      if (appendMode) {
+        const res = mergeByTesisat(allFaults, classified);
+        allFaults = res.items;
+        if (el.adminStatus) {
+          el.adminStatus.textContent = `✅ Birleştirildi: ${res.mergedCount} aynı tesisat güncellendi, ${res.addedCount} yeni/ekstra kayıt eklendi (Toplam: ${allFaults.length}).`;
+        }
+      } else {
+        allFaults = mergeByTesisat([], classified).items;
+      }
+
       saveFaultCache(allFaults);
       syncPersonnelDatalist();
       updateFaultBadges();
@@ -1421,7 +1463,7 @@
 
       if (syncToFirebase && allFaults.length > 0) {
         const obj = {};
-        allFaults.slice(0, 1500).forEach((item, idx) => { obj[item.id || `f_${idx + 1}`] = item; });
+        allFaults.slice(0, 3500).forEach((item, idx) => { obj[item.id || `f_${idx + 1}`] = item; });
         set(ref(db, `${DB_PATH}/fault_addresses`), obj).catch(() => {});
       }
     }
@@ -1683,7 +1725,7 @@
               <div id="${webBoxId}" class="web-result-box hidden"></div>
             </div>
             <div class="fault-card-actions">
-              <a class="btn btn-primary" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">🗺️ Adrese Git</a>
+              <a class="btn btn-primary" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">🗺️ Git</a>
               <button class="btn btn-info" onclick="window.__researchOnWeb('${webBoxId}', '${safeQuery}', '${safeGrp}')">🌐 Araştır</button>
               <button class="btn btn-success" onclick="window.__openFaultReasonModal('${f.id}')">✓ Tamamlandı</button>
             </div>
@@ -1732,10 +1774,10 @@
             }));
           }
         }
-        setFaultItems(collected, true);
+        setFaultItems(collected, true, true);
         switchModule("FAULT");
         switchFaultSubTab("ACTIVE");
-        el.adminStatus.textContent = `✅ Yüklendi: ${allFaults.length} kayıt, ${totalCoordsAdded} tesisat koordinatı eşleştirildi.`;
+        el.adminStatus.textContent = `✅ Tamamlandı (${totalCoordsAdded} koordinat): Toplam ${allFaults.length} kayıt hazır.`;
       } catch (err) {
         el.adminStatus.textContent = "❌ Hatalı adres Excel hatası: " + err.message;
       } finally { e.target.value = ""; }
@@ -1767,47 +1809,34 @@
       return "";
     }
 
-    function cleanCollection(items) {
-      const out = [];
-      const seen = new Set();
-
+    function cleanCollection(items, baseExisting = []) {
+      const normalizedIncoming = [];
       (items || []).forEach((item, idx) => {
         if (!item || typeof item !== "object") return;
         const rec = normalizeRecord(item, item.id || `kayit_${idx + 1}`);
-        if (!(rec.tesisatNo || rec.seriNo || rec.settlement)) return;
-
-        const sig = asciiKey(
-          rec.tesisatNo
-            ? `tes_${rec.tesisatNo}_${rec.seriNo}`
-            : `${rec.district}_${rec.settlement}_${rec.meterType}_${idx}`
-        );
-
-        if (rec.tesisatNo && seen.has(sig)) {
-          const existingIdx = out.findIndex(x => x._sig === sig);
-          if (existingIdx !== -1 && rec.completed) {
-            out[existingIdx].completed = true;
-            out[existingIdx].completedAt = rec.completedAt || Date.now();
-          }
-          return;
+        if (rec.tesisatNo || rec.seriNo || rec.settlement || rec.koordinat) {
+          normalizedIncoming.push(rec);
         }
-
-        rec._sig = sig;
-        if (rec.tesisatNo) seen.add(sig);
-        out.push(rec);
       });
 
-      return out.map(({ _sig, ...rest }) => rest);
+      const mergedResult = mergeByTesisat(baseExisting, normalizedIncoming);
+      return {
+        items: mergedResult.items,
+        mergedCount: mergedResult.mergedCount,
+        addedCount: mergedResult.addedCount
+      };
     }
 
     function syncCollection(rawList, opts = {}) {
-      const { syncServer = false, reason = "güncelleme", resetPaging = false } = opts;
+      const { syncServer = false, reason = "güncelleme", resetPaging = false, appendMode = false } = opts;
       if (aiCycleLock) return;
       aiCycleLock = true;
 
       try {
-        const cleaned = cleanCollection(rawList);
+        const base = appendMode ? allJobs : [];
+        const res = cleanCollection(rawList, base);
         const payload = {};
-        cleaned.forEach((j, idx) => {
+        res.items.forEach((j, idx) => {
           const safeId = String(j.id || `job_${idx + 1}`).replace(/[.#$/\[\]]/g, "_").slice(0, 120);
           payload[safeId] = { ...j, id: safeId };
         });
@@ -1818,15 +1847,17 @@
         applyFilters(resetPaging);
 
         if (syncServer && allJobs.length > 0) {
-          const digest = `${allJobs.length}_${allJobs.filter(x => x.completed).length}_${allJobs[0]?.id || ""}`;
-          if (digest !== lastServerPushHash) {
-            lastServerPushHash = digest;
-            set(ref(db, `${DB_PATH}/jobs`), payload)
-              .then(() => { el.adminStatus.textContent = `✅ (${reason}): ${allJobs.length} kayıt temizlendi ve sunucuya kaydedildi.`; })
-              .catch(err => { el.adminStatus.textContent = `✅ (${reason}): ${allJobs.length} kayıt temizlenip hafızaya alındı (Sunucu: ${err.message})`; });
-          }
+          const digest = `${allJobs.length}_${allJobs.filter(x => x.completed).length}_${allJobs[0]?.id || ""}_${Date.now()}`;
+          lastServerPushHash = digest;
+          set(ref(db, `${DB_PATH}/jobs`), payload)
+            .then(() => {
+              el.adminStatus.textContent = `✅ (${reason}): ${res.mergedCount} aynı tesisat birleştirildi, ${res.addedCount} yeni/ekstra kayıt eklendi (Toplam: ${allJobs.length}).`;
+            })
+            .catch(err => {
+              el.adminStatus.textContent = `✅ (${reason}): ${res.mergedCount} birleştirildi, ${res.addedCount} eklendi (Sunucu: ${err.message})`;
+            });
         } else if (allJobs.length > 0) {
-          el.adminStatus.textContent = `✅ ${allJobs.length} kayıt temiz ve hazır.`;
+          el.adminStatus.textContent = `✅ ${allJobs.length} kayıt hazır.`;
         }
       } finally {
         aiCycleLock = false;
@@ -2029,13 +2060,12 @@
     el.repairDbBtn.addEventListener("click", async () => {
       try {
         if (!allJobs.length && !allFaults.length) { el.adminStatus.textContent = "Düzenlenecek kayıt yok."; return; }
-        el.adminStatus.textContent = "⏳ Kayıtlar ve koordinatlar birleştiriliyor...";
+        el.adminStatus.textContent = "⏳ Tesisat numaralarına göre birleştirme ve düzenleme yapılıyor...";
         if (allJobs.length) {
-          lastServerPushHash = "";
-          syncCollection(allJobs, { syncServer: true, reason: "koordinat birleştirme", resetPaging: false });
+          syncCollection(allJobs, { syncServer: true, reason: "tesisat birleştirme", resetPaging: false, appendMode: false });
         }
         if (allFaults.length) {
-          setFaultItems(allFaults, true);
+          setFaultItems(allFaults, true, false);
         }
       } catch (e) { el.adminStatus.textContent = "❌ Hata: " + e.message; }
     });
@@ -2052,20 +2082,20 @@
         localStorage.removeItem(LOCAL_CACHE_KEY);
         localStorage.removeItem(FAULT_CACHE_KEY);
         localStorage.removeItem(COMPLETED_FAULTS_CACHE_KEY);
+        dynamicCoordMap = {};
         await remove(ref(db, `${DB_PATH}/jobs`));
         await remove(ref(db, `${DB_PATH}/fault_addresses`));
         await remove(ref(db, `${DB_PATH}/completed_faults`));
         allJobs = []; allFaults = []; completedFaults = []; lastServerPushHash = "";
-        setFaultItems([], false); renderCompletedFaults(); populateFilters(); applyFilters(true);
+        setFaultItems([], false, false); renderCompletedFaults(); populateFilters(); applyFilters(true);
         el.adminStatus.textContent = "Tüm kayıtlar silindi.";
       } catch (e) { el.adminStatus.textContent = "❌ Hata: " + e.message; }
     });
 
     async function pushRows(rows) {
       if (!rows || !rows.length) { el.adminStatus.textContent = "Dosyada kayıt bulunamadı."; return; }
-      el.adminStatus.textContent = `⏳ ${rows.length} satır temizlenip koordinatlarla birleştiriliyor...`;
-      lastServerPushHash = "";
-      syncCollection(rows, { syncServer: true, reason: "koordinat birleştirme", resetPaging: true });
+      el.adminStatus.textContent = `⏳ ${rows.length} satır tesisat numarasına göre birleştirilip ekleniyor...`;
+      syncCollection(rows, { syncServer: true, reason: "ekstra yükleme & birleştirme", resetPaging: true, appendMode: true });
     }
 
     el.excelInput.addEventListener("change", async e => {
@@ -2129,7 +2159,7 @@
 
     const cachedJobs = loadFromLocalCache();
     if (cachedJobs && Object.keys(cachedJobs).length > 0) {
-      syncCollection(Object.values(cachedJobs), { syncServer: false, reason: "yerel hafıza", resetPaging: true });
+      syncCollection(Object.values(cachedJobs), { syncServer: false, reason: "yerel hafıza", resetPaging: true, appendMode: false });
     }
 
     const cachedCompletedFaults = loadCompletedFaultsCache();
@@ -2143,7 +2173,7 @@
     }
 
     const cachedFaults = loadFaultCache();
-    if (cachedFaults.length > 0) setFaultItems(cachedFaults, false);
+    if (cachedFaults.length > 0) setFaultItems(cachedFaults, false, false);
 
     syncPersonnelDatalist();
     updateFaultBadges();
@@ -2168,7 +2198,7 @@
       const val = snap.val();
       const serverJobs = extractJobs(val);
       if (serverJobs.length > 0) {
-        syncCollection(serverJobs, { syncServer: false, reason: "canlı sunucu", resetPaging: false });
+        syncCollection(serverJobs, { syncServer: false, reason: "canlı sunucu", resetPaging: false, appendMode: false });
       } else if (!allJobs.length) {
         allJobs = []; populateFilters(); applyFilters(false);
       }
@@ -2191,7 +2221,7 @@
       const faultObj = val?.fault_addresses || val?.[DB_PATH]?.fault_addresses;
       if (faultObj && typeof faultObj === "object") {
         const list = Object.values(faultObj).filter(x => x && typeof x === "object");
-        if (list.length > 0) setFaultItems(list, false);
+        if (list.length > 0) setFaultItems(list, false, false);
       }
     }, err => {
       el.syncStatus.className = "sync-status sync-err";
