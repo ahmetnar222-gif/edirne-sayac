@@ -474,7 +474,7 @@
         </section>
 
         <section class="card">
-          <div class="group-header-title"><span>⚠️ Hatalı / Okunamayan Adres Filtreleri</span></div>
+          <div class="group-header-title"><span>⚠️ Hatalı / Okunamayan Adres ve İş Filtreleri</span></div>
           <div class="filter-grid-2">
             <select id="faultPersonSelect">
               <option value="ALL">Tüm Personeller</option>
@@ -484,15 +484,23 @@
             </select>
           </div>
           <div class="filter-grid-2">
+            <select id="faultJobReasonSelect">
+              <option value="ALL">Tüm İş / Arıza Nedenleri</option>
+              <option value="Modem IP ve Port Bilgileri Geçersiz veya Boş">Modem IP ve Port Bilgileri Geçersiz veya Boş</option>
+              <option value="Modem Sayaca Erişemiyor. Sayaç Hatası veya Kablaj Hatası">Modem Sayaca Erişemiyor. Sayaç Hatası veya Kablaj Hatası</option>
+              <option value="Okuma İş Emri Üretilmemiş. Merkezi Okumaların Kontrolü Gereklidir">Okuma İş Emri Üretilmemiş. Merkezi Okumaların Kontrolü Gereklidir</option>
+              <option value="Modemde Enerji Yok ve Pinge de Dönüş Yapımıyor">Modemde Enerji Yok ve Pinge de Dönüş Yapımıyor</option>
+              <option value="Sebep Belirtilmemiş">Sebep Belirtilmemiş</option>
+            </select>
             <select id="faultTypeSelect">
-              <option value="ALL">Tüm Hata / Durum Tipleri</option>
+              <option value="ALL">Tüm Adres / Durum Tipleri</option>
               <option value="MISSING_SETTLEMENT">Mahalle / Köy Bilgisi Eksik</option>
               <option value="IL_AS_DISTRICT">İl Alanında İlçe Yazılı</option>
               <option value="DASH_OR_TRUNCATED">Eksik / Kesik / (- -) Adres</option>
               <option value="METER_ERR">Modem / Sayaç Okuma Hatası</option>
             </select>
-            <input id="faultSearchInput" type="text" placeholder="Tesisat, Ekip/Personel, Adres veya Seri No ara..." />
           </div>
+          <input id="faultSearchInput" type="text" placeholder="Tesisat, Ekip/Personel, İş/Arıza Nedeni, Adres veya Seri No ara..." />
         </section>
 
         <section class="card">
@@ -511,7 +519,7 @@
       <div id="faultCompletedSection" class="hidden">
         <section class="card">
           <div class="group-header-title"><span>✓ Tamamlanan Hatalı Kayıtlar (1 Ay Sonra Otomatik Silinir)</span></div>
-          <input id="completedFaultSearchInput" type="text" placeholder="Tesisat, Yapan Kişi, Hata veya Not ara..." />
+          <input id="completedFaultSearchInput" type="text" placeholder="Tesisat, Yapan Kişi, İş/Hata veya Not ara..." />
         </section>
         <div id="completedFaultsContainer"></div>
       </div>
@@ -520,22 +528,22 @@
 
   <div id="faultReasonModal" class="modal-backdrop">
     <div class="modal-card">
-      <h3 style="margin-top:0;">Tamamlandı — Hata ve Yapılan İşlem Notu</h3>
+      <h3 style="margin-top:0;">Tamamlandı — İş / Hata ve Yapılan İşlem Notu</h3>
       <p id="faultReasonTargetInfo" style="font-size:11.5px; color:var(--text-muted); margin-top:0;"></p>
 
       <label class="field-label">Yapan Kişi / Ekip</label>
       <input id="actorNameInput" list="knownPersonnelDatalist" type="text" placeholder="İşlemi yapan personel / ekip adı..." style="margin-bottom:7px;" />
       <datalist id="knownPersonnelDatalist"></datalist>
 
-      <label class="field-label">Ne Hata Vardı?</label>
+      <label class="field-label">Ne Hata / İş Vardı?</label>
       <input id="detectedErrorInput" type="text" placeholder="Örn: Modem IP ve Port Bilgileri Geçersiz veya Boş..." style="margin-bottom:7px;" />
 
       <label class="field-label">Neden Yapıldı? (Hızlı Seçim)</label>
       <div class="reason-grid">
-        <button type="button" class="reason-option-btn" data-reason="Sarı Mühür">🟨 Sarı Mühür</button>
-        <button type="button" class="reason-option-btn" data-reason="Kablo Hatası">🔌 Kablo Hatası</button>
-        <button type="button" class="reason-option-btn" data-reason="Hata Giderildi">✅ Hata Giderildi</button>
-        <button type="button" class="reason-option-btn" data-reason="Sayaç / Modem Değişti">🔁 Sayaç / Modem Değişti</button>
+        <button type="button" class="reason-option-btn" data-reason="IP / Port Güncellendi">🌐 IP / Port Güncellendi</button>
+        <button type="button" class="reason-option-btn" data-reason="Kablo / Sayaç Bağlantısı Düzeltildi">🔌 Kablo / Sayaç Düzeltildi</button>
+        <button type="button" class="reason-option-btn" data-reason="Merkezi Okuma / İş Emri Kontrol Edildi">📋 Okuma / İş Emri Kontrol</button>
+        <button type="button" class="reason-option-btn" data-reason="Modem Enerji / Ping Sorunu Giderildi">⚡ Enerji / Ping Giderildi</button>
       </div>
 
       <label class="field-label">Neden Yapıldı / Açıklama Notu</label>
@@ -681,8 +689,7 @@
         .trim();
 
       if (!s) {
-        const g = (planGrubu || ilRaw || "Edirne Merkez").trim();
-        return g;
+        return (planGrubu || ilRaw || "Edirne Merkez").trim();
       }
 
       if (!/\/(EDİRNE|EDIRNE|KIRKLARELİ|KIRKLARELI)$/i.test(s) && planGrubu && !asciiKey(s).includes(asciiKey(planGrubu))) {
@@ -1009,7 +1016,7 @@
       const modemMarka = pickFlexible(row, ["modem marka", "modemMarka"]) || "";
       const sayacSeri = pickFlexible(row, ["sayac seri no", "sayaç seri no", "sayac seri", "sayaç seri", "sayacSeri", "seri"]) || "";
       const sayacMarka = pickFlexible(row, ["sayac marka", "sayaç marka", "sayacMarka", "marka"]) || "";
-      const durumNotu = pickFlexible(row, ["sbs - günlük endeks olmama nedeni", "endeks olmama nedeni", "durum", "ariza", "aciklama", "not", "sebep", "hata"]) || "";
+      const durumNotu = pickFlexible(row, ["sbs - günlük endeks olmama nedeni", "endeks olmama nedeni", "durum", "ariza", "aciklama", "not", "sebep", "hata"]) || "Sebep Belirtilmemiş";
       const koordinat = pickFlexible(row, ["koordinat", "enlem", "boylam", "lat"]) || "";
       const cleanAddress = beautifyRawAddress(rawAddress, ilRaw, planGrubu);
 
@@ -1017,7 +1024,7 @@
       if (!/\b(?:MAH|KÖY|KOY)\b/i.test(rawAddress)) flags.push("MISSING_SETTLEMENT");
       if (/^(?:KEŞAN|LÜLEBURGAZ)$/i.test(ilRaw)) flags.push("IL_AS_DISTRICT");
       if (/-\s*-|MERKEZ\s*\/\s*ED\s*$/i.test(rawAddress) || rawAddress.length < 18) flags.push("DASH_OR_TRUNCATED");
-      if (durumNotu) flags.push("METER_ERR");
+      if (durumNotu && durumNotu !== "Sebep Belirtilmemiş") flags.push("METER_ERR");
 
       return {
         id: String(row.id || `fault_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`).replace(/[.#$/\[\]]/g, "_"),
@@ -1173,6 +1180,7 @@
     let faultVisibleLimit = PAGE_SIZE;
     let selectedFaultPerson = "ALL";
     let selectedFaultGroup = "ALL";
+    let selectedFaultJobReason = "ALL";
     let selectedFaultType = "ALL";
     let faultSearchQuery = "";
     let completedFaultSearchQuery = "";
@@ -1221,6 +1229,7 @@
       loadMoreBtn: document.getElementById("loadMoreBtn"),
       faultPersonSelect: document.getElementById("faultPersonSelect"),
       faultGroupSelect: document.getElementById("faultGroupSelect"),
+      faultJobReasonSelect: document.getElementById("faultJobReasonSelect"),
       faultTypeSelect: document.getElementById("faultTypeSelect"),
       faultSearchInput: document.getElementById("faultSearchInput"),
       faultPersonPills: document.getElementById("faultPersonPills"),
@@ -1352,6 +1361,9 @@
     }
 
     function getDefaultErrorSummary(target) {
+      if (target.durumNotu && target.durumNotu !== "Sebep Belirtilmemiş") {
+        return target.durumNotu;
+      }
       const flagLabels = (target.flags || []).map(fl => {
         if (fl === "MISSING_SETTLEMENT") return "Mahalle/Köy eksik";
         if (fl === "IL_AS_DISTRICT") return "İl alanında ilçe yazılı";
@@ -1359,7 +1371,6 @@
         if (fl === "METER_ERR") return "Okuma/modem hatası";
         return fl;
       });
-      if (target.durumNotu) flagLabels.push(target.durumNotu);
       return flagLabels.join(" • ") || "Adres / okuma hatası";
     }
 
@@ -1376,7 +1387,7 @@
       el.detectedErrorInput.value = getDefaultErrorSummary(target);
       el.customReasonInput.value = "";
       document.querySelectorAll(".reason-option-btn").forEach(b => b.classList.remove("selected"));
-      el.faultReasonTargetInfo.textContent = `Tesisat: ${target.tesisatNo || "-"} • Ekip: ${target.personel || "-"} • ${target.rawAddress || ""}`;
+      el.faultReasonTargetInfo.textContent = `Tesisat: ${target.tesisatNo || "-"} • Ekip: ${target.personel || "-"} • İş: ${target.durumNotu || "-"}`;
       el.faultReasonModal.classList.add("open");
       el.actorNameInput.focus();
     };
@@ -1463,7 +1474,7 @@
       const q = asciiKey(completedFaultSearchQuery);
       const list = completedFaults.filter(f => {
         if (!q) return true;
-        return asciiKey(`${f.tesisatNo} ${f.personel} ${f.completedBy || ""} ${f.detectedError || ""} ${f.planGrubu} ${f.rawAddress} ${f.completionReason || ""}`).includes(q);
+        return asciiKey(`${f.tesisatNo} ${f.personel} ${f.completedBy || ""} ${f.detectedError || ""} ${f.durumNotu || ""} ${f.planGrubu} ${f.rawAddress} ${f.completionReason || ""}`).includes(q);
       });
 
       if (!list.length) {
@@ -1483,7 +1494,7 @@
           </div>
           <div class="job-info-box">
             <div class="info-line"><span class="info-label">Yapan Kişi:</span> ${f.completedBy || f.personel}</div>
-            <div class="info-line"><span class="info-label">Ne Hata Vardı?</span> ${f.detectedError || "-"}</div>
+            <div class="info-line"><span class="info-label">İş / Hata Nedeni:</span> ${f.detectedError || f.durumNotu || "-"}</div>
             <div class="info-line"><span class="reason-label">Neden Yapıldı / Not:</span> ${f.completionReason || "-"}</div>
             <div class="info-line"><span class="info-label">Adres:</span> ${f.rawAddress || "-"}</div>
           </div>
@@ -1501,7 +1512,7 @@
       allFaults.forEach(f => counts.set(f.personel, (counts.get(f.personel) || 0) + 1));
       const sortedPersons = Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "tr"));
 
-      el.faultPersonSelect.innerHTML = `<option value="ALL">Tüm Personeller (${allFaults.length} Hata)</option>` +
+      el.faultPersonSelect.innerHTML = `<option value="ALL">Tüm Personeller (${allFaults.length} Kayıt)</option>` +
         sortedPersons.map(([p, cnt]) => `<option value="${p}">${p} (${cnt})</option>`).join("");
       if (!counts.has(selectedFaultPerson)) selectedFaultPerson = "ALL";
       el.faultPersonSelect.value = selectedFaultPerson;
@@ -1512,6 +1523,19 @@
         groups.map(g => `<option value="${g}">${g}</option>`).join("");
       if (!groups.includes(selectedFaultGroup)) selectedFaultGroup = "ALL";
       el.faultGroupSelect.value = selectedFaultGroup;
+
+      const jobReasonCounts = new Map();
+      allFaults.forEach(f => {
+        const rName = (f.durumNotu || "Sebep Belirtilmemiş").trim();
+        jobReasonCounts.set(rName, (jobReasonCounts.get(rName) || 0) + 1);
+      });
+      const sortedReasons = Array.from(jobReasonCounts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "tr"));
+      el.faultJobReasonSelect.innerHTML = `<option value="ALL">Tüm İş / Arıza Nedenleri (${allFaults.length})</option>` +
+        sortedReasons.map(([rName, cnt]) => `<option value="${rName.replace(/"/g, "&quot;")}">${rName} (${cnt})</option>`).join("");
+      if (selectedFaultJobReason !== "ALL" && !jobReasonCounts.has(selectedFaultJobReason)) {
+        selectedFaultJobReason = "ALL";
+      }
+      el.faultJobReasonSelect.value = selectedFaultJobReason;
 
       renderFaultPersonPills(sortedPersons);
     }
@@ -1543,19 +1567,20 @@
       filteredFaults = allFaults.filter(f => {
         if (selectedFaultPerson !== "ALL" && f.personel !== selectedFaultPerson) return false;
         if (selectedFaultGroup !== "ALL" && f.planGrubu !== selectedFaultGroup) return false;
+        if (selectedFaultJobReason !== "ALL" && asciiKey(f.durumNotu || "Sebep Belirtilmemiş") !== asciiKey(selectedFaultJobReason)) return false;
         if (selectedFaultType !== "ALL" && !(f.flags || []).includes(selectedFaultType)) return false;
         if (q && !asciiKey(`${f.tesisatNo} ${f.personel} ${f.planGrubu} ${f.rawAddress} ${f.sayacSeri} ${f.modemSeri} ${f.durumNotu}`).includes(q)) return false;
         return true;
       });
 
-      el.faultCountLabel.textContent = `Listelenen Hatalı Kayıt: ${filteredFaults.length}`;
+      el.faultCountLabel.textContent = `Listelenen İş / Hatalı Kayıt: ${filteredFaults.length}`;
       el.faultTotalLabel.textContent = `Toplam: ${allFaults.length}`;
       renderFaultList();
     }
 
     function renderFaultList() {
       if (!filteredFaults.length) {
-        el.faultJobsContainer.innerHTML = `<div class="empty-box">Hatalı adres listesinde kayıt bulunamadı.</div>`;
+        el.faultJobsContainer.innerHTML = `<div class="empty-box">Seçili filtrelere uygun iş veya hatalı adres kaydı bulunamadı.</div>`;
         el.faultLoadMoreWrap.classList.add("hidden");
         return;
       }
@@ -1586,8 +1611,8 @@
               ${f.modemSeri ? ` • Modem: <strong>${f.modemSeri}</strong>` : ""}
             </div>
             <div class="job-info-box">
+              <div class="info-line"><span class="info-label">İş / Endeks Nedeni:</span> <strong>${f.durumNotu || "Sebep Belirtilmemiş"}</strong></div>
               <div class="info-line"><span class="info-label">Düzenli Adres:</span> ${f.rawAddress || "-"}</div>
-              ${f.durumNotu ? `<div class="info-line"><span class="info-label">Durum / Arıza:</span> ${f.durumNotu}</div>` : ""}
               <div id="${webBoxId}" class="web-result-box hidden"></div>
             </div>
             <div class="fault-card-actions">
@@ -1609,6 +1634,7 @@
 
     el.faultPersonSelect.addEventListener("change", () => { selectedFaultPerson = el.faultPersonSelect.value; selectedFaultGroup = "ALL"; populateFaultFilters(); applyFaultFilters(true); });
     el.faultGroupSelect.addEventListener("change", () => { selectedFaultGroup = el.faultGroupSelect.value; applyFaultFilters(true); });
+    el.faultJobReasonSelect.addEventListener("change", () => { selectedFaultJobReason = el.faultJobReasonSelect.value; applyFaultFilters(true); });
     el.faultTypeSelect.addEventListener("change", () => { selectedFaultType = el.faultTypeSelect.value; applyFaultFilters(true); });
     el.faultSearchInput.addEventListener("input", () => { faultSearchQuery = el.faultSearchInput.value; applyFaultFilters(true); });
     el.faultLoadMoreBtn.addEventListener("click", () => { faultVisibleLimit += PAGE_SIZE; renderFaultList(); });
@@ -1617,7 +1643,7 @@
       const file = e.target.files[0];
       if (!file) return;
       try {
-        el.adminStatus.textContent = "⏳ Hatalı adres Excel dosyası okunuyor...";
+        el.adminStatus.textContent = "⏳ Hatalı adres ve iş Excel dosyası okunuyor...";
         const buf = await file.arrayBuffer();
         const wb = XLSX.read(buf, { type: "array", raw: false });
         const collected = [];
@@ -1641,7 +1667,7 @@
         setFaultItems(collected, true);
         switchModule("FAULT");
         switchFaultSubTab("ACTIVE");
-        el.adminStatus.textContent = `✅ Hatalı adres listesi yüklendi: ${allFaults.length} kayıt (${sheetsToRead.join(", ")}).`;
+        el.adminStatus.textContent = `✅ Hatalı adres ve iş listesi yüklendi: ${allFaults.length} kayıt (${sheetsToRead.join(", ")}).`;
       } catch (err) {
         el.adminStatus.textContent = "❌ Hatalı adres Excel hatası: " + err.message;
       } finally { e.target.value = ""; }
