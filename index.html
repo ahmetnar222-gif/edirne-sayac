@@ -189,24 +189,6 @@
     }
     .chip-btn.active { background: rgba(37, 99, 235, 0.28); color: #ffffff; border-color: #3b82f6; }
 
-    .split-groups {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    @media (max-width: 640px) {
-      .split-groups { grid-template-columns: 1fr; }
-    }
-
-    .sub-panel {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 8px;
-      max-height: 150px;
-      overflow-y: auto;
-    }
-
     .group-header-title {
       font-size: 12px;
       font-weight: 800;
@@ -234,7 +216,6 @@
       text-overflow: ellipsis;
     }
     .d-pill.active { background: rgba(16, 185, 129, 0.22); color: #ffffff; border-color: var(--success); }
-    .d-pill.mah-pill.active { background: rgba(37, 99, 235, 0.28); color: #ffffff; border-color: #3b82f6; }
 
     .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 800; margin-bottom: 5px; }
     .progress-bar { width: 100%; height: 6px; background: var(--bg-input); border-radius: 999px; overflow: hidden; }
@@ -462,24 +443,6 @@
         </div>
       </section>
 
-      <section id="categorySubGroupCard" class="card">
-        <div class="split-groups">
-          <div id="mahalleSplitBox" class="sub-panel">
-            <div class="group-header-title">
-              <span id="mahalleSplitTitle">🏙️ Mahalleler</span>
-            </div>
-            <div id="mahalleSplitPills" class="pill-wrap"></div>
-          </div>
-
-          <div id="koySplitBox" class="sub-panel">
-            <div class="group-header-title">
-              <span id="koySplitTitle">🌾 Köyler</span>
-            </div>
-            <div id="koySplitPills" class="pill-wrap"></div>
-          </div>
-        </div>
-      </section>
-
       <section class="card">
         <div class="progress-header">
           <span id="filteredCountLabel">Ekranda Kalan: 0</span>
@@ -506,7 +469,7 @@
 
       <div id="faultActiveSection">
         <section class="card">
-          <div class="group-header-title"><span>👷 Personel Kategorileri (Hata Sayısıyla)</span></div>
+          <div class="group-header-title"><span>👷 Personel / Ekip Kategorileri (Hata Sayısıyla)</span></div>
           <div id="faultPersonPills" class="pill-wrap"></div>
         </section>
 
@@ -528,7 +491,7 @@
               <option value="DASH_OR_TRUNCATED">Eksik / Kesik / (- -) Adres</option>
               <option value="METER_ERR">Modem / Sayaç Okuma Hatası</option>
             </select>
-            <input id="faultSearchInput" type="text" placeholder="Tesisat, Personel, Adres veya Seri No ara..." />
+            <input id="faultSearchInput" type="text" placeholder="Tesisat, Ekip/Personel, Adres veya Seri No ara..." />
           </div>
         </section>
 
@@ -561,10 +524,11 @@
       <p id="faultReasonTargetInfo" style="font-size:11.5px; color:var(--text-muted); margin-top:0;"></p>
 
       <label class="field-label">Yapan Kişi / Ekip</label>
-      <input id="actorNameInput" type="text" placeholder="İşlemi yapan personel adı..." style="margin-bottom:7px;" />
+      <input id="actorNameInput" list="knownPersonnelDatalist" type="text" placeholder="İşlemi yapan personel / ekip adı..." style="margin-bottom:7px;" />
+      <datalist id="knownPersonnelDatalist"></datalist>
 
       <label class="field-label">Ne Hata Vardı?</label>
-      <input id="detectedErrorInput" type="text" placeholder="Örn: Adres eksikti / Modem sayaca erişemiyordu..." style="margin-bottom:7px;" />
+      <input id="detectedErrorInput" type="text" placeholder="Örn: Modem IP ve Port Bilgileri Geçersiz veya Boş..." style="margin-bottom:7px;" />
 
       <label class="field-label">Neden Yapıldı? (Hızlı Seçim)</label>
       <div class="reason-grid">
@@ -615,6 +579,7 @@
     const LOCAL_CACHE_KEY = "tredas_saha_hafiza_v1";
     const FAULT_CACHE_KEY = "tredas_hatali_adres_v1";
     const COMPLETED_FAULTS_CACHE_KEY = "tredas_hatali_tamamlanan_v1";
+    const PERSONNEL_MEMORY_KEY = "tredas_personel_hafiza_v1";
     const ADMIN_PIN = "1923";
     const PAGE_SIZE = 40;
     const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
@@ -704,6 +669,26 @@
         out.push(tok);
       }
       return out.join(" ");
+    }
+
+    function beautifyRawAddress(rawAddr, ilRaw, planGrubu) {
+      let s = String(rawAddr || "")
+        .replace(/-\s*-/g, " ")
+        .replace(/\bMERKEZ\s*\/\s*ED\s*$/i, "MERKEZ/EDİRNE")
+        .replace(/\bMERKEZ\s*\/\s*KR\s*$/i, "MERKEZ/KIRKLARELİ")
+        .replace(/\s*\/\s*/g, "/")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      if (!s) {
+        const g = (planGrubu || ilRaw || "Edirne Merkez").trim();
+        return g;
+      }
+
+      if (!/\/(EDİRNE|EDIRNE|KIRKLARELİ|KIRKLARELI)$/i.test(s) && planGrubu && !asciiKey(s).includes(asciiKey(planGrubu))) {
+        s = `${s} (${properTr(planGrubu)})`;
+      }
+      return s;
     }
 
     function stripNoiseFromSettlementName(str, districtIlce) {
@@ -916,9 +901,78 @@
       if (!row || typeof row !== "object") return "";
       for (const k of Object.keys(row)) {
         const ak = asciiKey(k);
-        if (keys.some(target => ak.includes(asciiKey(target)))) {
+        if (!ak || ak.startsWith("unnamed")) continue;
+        if (keys.some(target => ak === asciiKey(target) || ak.includes(asciiKey(target)))) {
           const val = String(row[k] ?? "").trim();
-          if (val) return val;
+          if (val && val.toLowerCase() !== "nan") return val;
+        }
+      }
+      return "";
+    }
+
+    function loadPersonnelMemory() {
+      try {
+        const raw = localStorage.getItem(PERSONNEL_MEMORY_KEY);
+        if (!raw) return { names: [], byTesisat: {}, byGroup: {} };
+        const parsed = JSON.parse(raw);
+        return {
+          names: Array.isArray(parsed.names) ? parsed.names : [],
+          byTesisat: parsed.byTesisat && typeof parsed.byTesisat === "object" ? parsed.byTesisat : {},
+          byGroup: parsed.byGroup && typeof parsed.byGroup === "object" ? parsed.byGroup : {}
+        };
+      } catch (e) {
+        return { names: [], byTesisat: {}, byGroup: {} };
+      }
+    }
+
+    function savePersonnelMemory(mem) {
+      try {
+        localStorage.setItem(PERSONNEL_MEMORY_KEY, JSON.stringify({
+          names: Array.from(new Set((mem.names || []).filter(Boolean))).slice(0, 200),
+          byTesisat: mem.byTesisat || {},
+          byGroup: mem.byGroup || {}
+        }));
+      } catch (e) {}
+    }
+
+    function syncPersonnelDatalist() {
+      const dl = document.getElementById("knownPersonnelDatalist");
+      if (!dl) return;
+      const mem = loadPersonnelMemory();
+      const setNames = new Set(mem.names);
+      allFaults.forEach(f => {
+        if (f.personel && f.personel !== "Bilinmeyen Personel") setNames.add(f.personel);
+      });
+      completedFaults.forEach(f => {
+        if (f.completedBy && f.completedBy !== "Belirtilmedi") setNames.add(f.completedBy);
+        if (f.personel && f.personel !== "Bilinmeyen Personel") setNames.add(f.personel);
+      });
+      dl.innerHTML = Array.from(setNames).sort((a, b) => a.localeCompare(b, "tr"))
+        .map(n => `<option value="${n.replace(/"/g, "&quot;")}"></option>`).join("");
+    }
+
+    function rememberPersonnelMapping(personName, tesisatNo, planGrubu) {
+      const cleanName = deduplicateWords(String(personName || "").trim());
+      if (!cleanName || asciiKey(cleanName) === "bilinmeyen personel" || asciiKey(cleanName) === "belirtilmedi") return;
+      const mem = loadPersonnelMemory();
+      if (!mem.names.some(n => asciiKey(n) === asciiKey(cleanName))) {
+        mem.names.push(properTr(cleanName));
+      }
+      if (tesisatNo) mem.byTesisat[String(tesisatNo).trim()] = properTr(cleanName);
+      if (planGrubu && !mem.byGroup[asciiKey(planGrubu)]) {
+        mem.byGroup[asciiKey(planGrubu)] = properTr(cleanName);
+      }
+      savePersonnelMemory(mem);
+      syncPersonnelDatalist();
+    }
+
+    function extractPersonnelFromText(text) {
+      const raw = String(text || "");
+      const m = raw.match(/(?:ekip|personel|görevli|gorevli|okuyucu|saha\s*personeli|saha\s*elemanı|saha\s*elemani)\s*[:\-–]\s*([A-ZÇĞİÖŞÜa-zçğıöşü\s]{3,35})/i);
+      if (m) {
+        const candidate = deduplicateWords(m[1].split(/[|•,/]/)[0].trim());
+        if (candidate && !/\b(mah|köy|koy|sok|cad|no|daire|il|ilçe)\b/i.test(candidate)) {
+          return properTr(candidate);
         }
       }
       return "";
@@ -926,16 +980,38 @@
 
     function classifyFaultRow(row) {
       const tesisatNo = pickFlexible(row, ["tesisat", "abone", "sozlesme", "numara"]) || "";
-      const personel = deduplicateWords(pickFlexible(row, ["personel", "gorevli", "okuyucu", "saha"]) || "Bilinmeyen Personel");
+      const rawAddress = pickFlexible(row, ["adres", "rawAddress", "mahalle", "koy", "sokak", "cadde"]) || "";
       const ilRaw = pickFlexible(row, ["il", "sehir"]) || "";
-      const planGrubu = pickFlexible(row, ["planlama", "grup", "ilce", "bolge"]) || ilRaw || "Genel";
-      const rawAddress = pickFlexible(row, ["adres", "rawAddress", "mahalle", "koy", "sokak", "cadde"])
-        || Object.values(row).map(v => String(v ?? "").trim()).filter(Boolean).join(" • ");
-      const modemSeri = pickFlexible(row, ["modem seri", "modemSeri", "modem no"]) || "";
+      const planGrubu = pickFlexible(row, ["planlama grubu2", "planlama", "grup", "ilce", "bolge"]) || ilRaw || "Genel";
+
+      let personel = deduplicateWords(
+        pickFlexible(row, [
+          "ekip", "personel", "gorevli", "görevli", "okuyucu", "saha",
+          "eleman", "sorumlu", "calisan", "çalışan", "ad soyad", "adi soyadi", "adı soyadı"
+        ]) || extractPersonnelFromText(`${rawAddress} ${row.durumNotu || ""}`)
+      );
+
+      if (!personel || asciiKey(personel) === "bilinmeyen personel") {
+        const mem = loadPersonnelMemory();
+        if (tesisatNo && mem.byTesisat[tesisatNo]) {
+          personel = mem.byTesisat[tesisatNo];
+        } else if (mem.byGroup[asciiKey(planGrubu)]) {
+          personel = mem.byGroup[asciiKey(planGrubu)];
+        } else {
+          personel = "Bilinmeyen Personel";
+        }
+      } else {
+        personel = properTr(personel);
+        rememberPersonnelMapping(personel, tesisatNo, planGrubu);
+      }
+
+      const modemSeri = pickFlexible(row, ["modem seri no", "modem seri", "modemSeri", "modem no"]) || "";
       const modemMarka = pickFlexible(row, ["modem marka", "modemMarka"]) || "";
+      const sayacSeri = pickFlexible(row, ["sayac seri no", "sayaç seri no", "sayac seri", "sayaç seri", "sayacSeri", "seri"]) || "";
       const sayacMarka = pickFlexible(row, ["sayac marka", "sayaç marka", "sayacMarka", "marka"]) || "";
-      const sayacSeri = pickFlexible(row, ["sayac seri", "sayaç seri", "sayacSeri", "seri"]) || "";
-      const durumNotu = pickFlexible(row, ["sutun1", "durum", "ariza", "aciklama", "not", "sebep", "hata"]) || "";
+      const durumNotu = pickFlexible(row, ["sbs - günlük endeks olmama nedeni", "endeks olmama nedeni", "durum", "ariza", "aciklama", "not", "sebep", "hata"]) || "";
+      const koordinat = pickFlexible(row, ["koordinat", "enlem", "boylam", "lat"]) || "";
+      const cleanAddress = beautifyRawAddress(rawAddress, ilRaw, planGrubu);
 
       const flags = [];
       if (!/\b(?:MAH|KÖY|KOY)\b/i.test(rawAddress)) flags.push("MISSING_SETTLEMENT");
@@ -949,12 +1025,13 @@
         personel,
         ilRaw,
         planGrubu,
-        rawAddress,
+        rawAddress: cleanAddress,
         modemSeri,
         modemMarka,
         sayacMarka,
         sayacSeri,
         durumNotu,
+        koordinat,
         flags
       };
     }
@@ -1136,12 +1213,6 @@
       settlementSelect: document.getElementById("settlementSelect"),
       searchInput: document.getElementById("searchInput"),
       sortSelect: document.getElementById("sortSelect"),
-      mahalleSplitBox: document.getElementById("mahalleSplitBox"),
-      koySplitBox: document.getElementById("koySplitBox"),
-      mahalleSplitTitle: document.getElementById("mahalleSplitTitle"),
-      koySplitTitle: document.getElementById("koySplitTitle"),
-      mahalleSplitPills: document.getElementById("mahalleSplitPills"),
-      koySplitPills: document.getElementById("koySplitPills"),
       filteredCountLabel: document.getElementById("filteredCountLabel"),
       percentLabel: document.getElementById("percentLabel"),
       progressFill: document.getElementById("progressFill"),
@@ -1259,11 +1330,16 @@
 
     function setFaultItems(rows, syncToFirebase = false) {
       const classified = (rows || [])
-        .map((r, i) => r.flags ? r : classifyFaultRow({ ...r, id: r.id || `f_${i + 1}_${Date.now()}` }))
+        .map((r, i) => {
+          const item = classifyFaultRow({ ...r, id: r.id || `f_${i + 1}_${Date.now()}` });
+          if (r.flags && Array.isArray(r.flags)) item.flags = r.flags;
+          return item;
+        })
         .filter(f => String(f.rawAddress || "").trim().length > 0 || String(f.tesisatNo || "").trim().length > 0);
 
       allFaults = classified;
       saveFaultCache(allFaults);
+      syncPersonnelDatalist();
       updateFaultBadges();
       populateFaultFilters();
       applyFaultFilters(true);
@@ -1292,11 +1368,15 @@
       if (!target) return;
       pendingFaultId = id;
       selectedCompletionReason = "";
-      el.actorNameInput.value = target.personel && target.personel !== "Bilinmeyen Personel" ? target.personel : "";
+      const mem = loadPersonnelMemory();
+      const suggestedPerson = (target.personel && target.personel !== "Bilinmeyen Personel")
+        ? target.personel
+        : (mem.byTesisat[target.tesisatNo] || mem.byGroup[asciiKey(target.planGrubu)] || mem.names[0] || "");
+      el.actorNameInput.value = suggestedPerson;
       el.detectedErrorInput.value = getDefaultErrorSummary(target);
       el.customReasonInput.value = "";
       document.querySelectorAll(".reason-option-btn").forEach(b => b.classList.remove("selected"));
-      el.faultReasonTargetInfo.textContent = `Tesisat: ${target.tesisatNo || "-"} • ${target.rawAddress || ""}`;
+      el.faultReasonTargetInfo.textContent = `Tesisat: ${target.tesisatNo || "-"} • Ekip: ${target.personel || "-"} • ${target.rawAddress || ""}`;
       el.faultReasonModal.classList.add("open");
       el.actorNameInput.focus();
     };
@@ -1330,10 +1410,12 @@
       el.faultReasonModal.classList.remove("open");
 
       if (targetItem) {
+        rememberPersonnelMapping(actorName, targetItem.tesisatNo, targetItem.planGrubu);
         const nowMs = Date.now();
         const completedEntry = {
           ...targetItem,
-          completedBy: actorName,
+          personel: actorName !== "Belirtilmedi" ? properTr(actorName) : targetItem.personel,
+          completedBy: properTr(actorName),
           detectedError,
           completionReason: reasonNote,
           completedAt: new Date(nowMs).toLocaleString("tr-TR"),
@@ -1345,8 +1427,19 @@
         set(ref(db, `${DB_PATH}/completed_faults/${completedEntry.id}`), completedEntry).catch(() => {});
       }
 
-      allFaults = allFaults.filter(item => item.id !== idToRemove);
+      const memAfter = loadPersonnelMemory();
+      allFaults = allFaults
+        .filter(item => item.id !== idToRemove)
+        .map(item => {
+          if (item.personel === "Bilinmeyen Personel") {
+            const matched = memAfter.byTesisat[item.tesisatNo] || memAfter.byGroup[asciiKey(item.planGrubu)];
+            if (matched) return { ...item, personel: matched };
+          }
+          return item;
+        });
+
       saveFaultCache(allFaults);
+      syncPersonnelDatalist();
       updateFaultBadges();
       populateFaultFilters();
       applyFaultFilters(false);
@@ -1364,6 +1457,7 @@
     function renderCompletedFaults() {
       completedFaults = purgeExpiredCompletedFaults(completedFaults);
       saveCompletedFaultsCache(completedFaults);
+      syncPersonnelDatalist();
       updateFaultBadges();
 
       const q = asciiKey(completedFaultSearchQuery);
@@ -1487,12 +1581,12 @@
               <span class="tag tag-err">⚠️ ${flagLabels || "Hatalı Adres"}</span>
             </div>
             <div class="job-meta">
-              Grup: <strong>${f.planGrubu}</strong> • İl Alanı: <strong>${f.ilRaw || "-"}</strong>
+              Ekip: <strong>${f.personel}</strong> • Grup: <strong>${f.planGrubu}</strong> • İl: <strong>${f.ilRaw || "-"}</strong>
               ${f.sayacSeri ? ` • Sayaç: <strong>${f.sayacSeri}</strong> (${f.sayacMarka || "-"})` : ""}
               ${f.modemSeri ? ` • Modem: <strong>${f.modemSeri}</strong>` : ""}
             </div>
             <div class="job-info-box">
-              <div class="info-line"><span class="info-label">Ham Adres:</span> ${f.rawAddress || "-"}</div>
+              <div class="info-line"><span class="info-label">Düzenli Adres:</span> ${f.rawAddress || "-"}</div>
               ${f.durumNotu ? `<div class="info-line"><span class="info-label">Durum / Arıza:</span> ${f.durumNotu}</div>` : ""}
               <div id="${webBoxId}" class="web-result-box hidden"></div>
             </div>
@@ -1527,7 +1621,13 @@
         const buf = await file.arrayBuffer();
         const wb = XLSX.read(buf, { type: "array", raw: false });
         const collected = [];
-        const sheetsToRead = wb.SheetNames.includes("Liste") ? ["Liste"] : wb.SheetNames;
+
+        const dataSheets = wb.SheetNames.filter(name => {
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { defval: "", raw: false });
+          return rows.some(r => pickFlexible(r, ["tesisat", "abone"]) && pickFlexible(r, ["adres", "rawAddress"]));
+        });
+        const sheetsToRead = dataSheets.length > 0 ? dataSheets : wb.SheetNames;
+
         for (const sheetName of sheetsToRead) {
           const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: "", raw: false });
           for (let i = 0; i < rows.length; i++) {
@@ -1535,13 +1635,13 @@
             const tesisatVal = pickFlexible(r, ["tesisat", "abone"]);
             const adresVal = pickFlexible(r, ["adres", "rawAddress"]);
             if (!tesisatVal && !adresVal) continue;
-            collected.push(classifyFaultRow({ ...r, id: `fl_${sheetName}_${i + 1}_${Date.now()}` }));
+            collected.push(classifyFaultRow({ ...r, id: `fl_${sheetName}_${i + 1}_${tesisatVal || "x"}` }));
           }
         }
         setFaultItems(collected, true);
         switchModule("FAULT");
         switchFaultSubTab("ACTIVE");
-        el.adminStatus.textContent = `✅ Hatalı adres listesi yüklendi: ${allFaults.length} kayıt.`;
+        el.adminStatus.textContent = `✅ Hatalı adres listesi yüklendi: ${allFaults.length} kayıt (${sheetsToRead.join(", ")}).`;
       } catch (err) {
         el.adminStatus.textContent = "❌ Hatalı adres Excel hatası: " + err.message;
       } finally { e.target.value = ""; }
@@ -1645,67 +1745,6 @@
       return j.category === "KOY" ? `${properTr(cleanLabel)} Köyü` : `${properTr(cleanLabel)} Mah.`;
     }
 
-    function renderSplitSettlements() {
-      const pool = allJobs.filter(j => {
-        if (!showCompleted && j.completed) return false;
-        if (selectedDistrict !== "ALL" && j.district !== selectedDistrict) return false;
-        if (selectedMeter !== "ALL" && j.meterType !== selectedMeter) return false;
-        return true;
-      });
-
-      const mahMap = new Map();
-      const koyMap = new Map();
-
-      pool.forEach(j => {
-        const label = formatSettlementLabel(j);
-        if (!label) return;
-        const key = asciiKey(label);
-        if (j.category === "KOY") {
-          const prev = koyMap.get(key) || { label, count: 0 };
-          prev.count += 1;
-          koyMap.set(key, prev);
-        } else {
-          const prev = mahMap.get(key) || { label, count: 0 };
-          prev.count += 1;
-          mahMap.set(key, prev);
-        }
-      });
-
-      const mahList = Array.from(mahMap.values()).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "tr"));
-      const koyList = Array.from(koyMap.values()).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "tr"));
-
-      const mahTotal = mahList.reduce((acc, x) => acc + x.count, 0);
-      const koyTotal = koyList.reduce((acc, x) => acc + x.count, 0);
-
-      el.mahalleSplitTitle.textContent = `🏙️ Mahalleler (${mahList.length} • ${mahTotal})`;
-      el.koySplitTitle.textContent = `🌾 Köyler (${koyList.length} • ${koyTotal})`;
-
-      el.mahalleSplitBox.classList.toggle("hidden", selectedCat === "KOY");
-      el.koySplitBox.classList.toggle("hidden", selectedCat === "MAHALLE");
-
-      el.mahalleSplitPills.innerHTML = mahList.length
-        ? mahList.map(item => {
-            const isSel = selectedSettlement !== "ALL" && asciiKey(selectedSettlement) === asciiKey(item.label);
-            return `<button class="d-pill mah-pill ${isSel ? "active" : ""}" onclick="window.__quickSettlement('MAHALLE', '${item.label.replace(/'/g, "\\'")}')">${item.label} (${item.count})</button>`;
-          }).join("")
-        : `<span class="status-note" style="margin:0;">Mahalle kaydı yok.</span>`;
-
-      el.koySplitPills.innerHTML = koyList.length
-        ? koyList.map(item => {
-            const isSel = selectedSettlement !== "ALL" && asciiKey(selectedSettlement) === asciiKey(item.label);
-            return `<button class="d-pill ${isSel ? "active" : ""}" onclick="window.__quickSettlement('KOY', '${item.label.replace(/'/g, "\\'")}')">${item.label} (${item.count})</button>`;
-          }).join("")
-        : `<span class="status-note" style="margin:0;">Köy kaydı yok.</span>`;
-    }
-
-    window.__quickSettlement = (cat, label) => {
-      selectedCat = cat;
-      document.querySelectorAll(".cat-btn").forEach(b => b.classList.toggle("active", b.dataset.cat === cat));
-      selectedSettlement = (selectedSettlement !== "ALL" && asciiKey(selectedSettlement) === asciiKey(label)) ? "ALL" : label;
-      populateFilters();
-      applyFilters(true);
-    };
-
     function populateFilters() {
       const pool = allJobs.filter(j => {
         if (!showCompleted && j.completed) return false;
@@ -1725,17 +1764,24 @@
         const formatted = formatSettlementLabel(j);
         if (!formatted) return;
         const k = asciiKey(formatted);
-        if (!uniqueMap.has(k)) uniqueMap.set(k, formatted);
+        const prev = uniqueMap.get(k);
+        if (!prev) {
+          uniqueMap.set(k, { label: formatted, category: j.category, count: 1 });
+        } else {
+          prev.count += 1;
+        }
       });
 
-      const settlements = Array.from(uniqueMap.values()).sort((a, b) => a.localeCompare(b, "tr"));
-      const ph = selectedCat === "KOY" ? "Tüm Köyler" : selectedCat === "MAHALLE" ? "Tüm Mahalleler" : "Tüm Mahalle / Köyler";
+      const settlements = Array.from(uniqueMap.values()).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "tr"));
+      const ph = selectedCat === "KOY" ? "Tüm Köyler" : selectedCat === "MAHALLE" ? "Tüm Mahalleler" : "Mahalle / Köy Seçin";
       el.settlementSelect.innerHTML = `<option value="ALL">${ph} (${settlements.length})</option>` +
-        settlements.map(s => `<option value="${s}">${s}</option>`).join("");
-      if (!settlements.some(s => asciiKey(s) === asciiKey(selectedSettlement))) selectedSettlement = "ALL";
-      el.settlementSelect.value = selectedSettlement;
+        settlements.map(s => {
+          const icon = s.category === "KOY" ? "🌾" : "🏙️";
+          return `<option value="${s.label}">${icon} ${s.label} (${s.count})</option>`;
+        }).join("");
 
-      renderSplitSettlements();
+      if (!settlements.some(s => asciiKey(s.label) === asciiKey(selectedSettlement))) selectedSettlement = "ALL";
+      el.settlementSelect.value = selectedSettlement;
     }
 
     function applyFilters(resetPaging = true) {
@@ -1759,7 +1805,6 @@
       }
 
       filteredJobs = list;
-      renderSplitSettlements();
       updateCounters();
       renderList();
     }
@@ -1885,10 +1930,15 @@
 
     el.repairDbBtn.addEventListener("click", async () => {
       try {
-        if (!allJobs.length) { el.adminStatus.textContent = "Düzenlenecek kayıt yok."; return; }
+        if (!allJobs.length && !allFaults.length) { el.adminStatus.textContent = "Düzenlenecek kayıt yok."; return; }
         el.adminStatus.textContent = "⏳ Kayıtlar yeniden temizleniyor...";
-        lastServerPushHash = "";
-        syncCollection(allJobs, { syncServer: true, reason: "kayıt düzenleme", resetPaging: false });
+        if (allJobs.length) {
+          lastServerPushHash = "";
+          syncCollection(allJobs, { syncServer: true, reason: "kayıt düzenleme", resetPaging: false });
+        }
+        if (allFaults.length) {
+          setFaultItems(allFaults, true);
+        }
       } catch (e) { el.adminStatus.textContent = "❌ Hata: " + e.message; }
     });
 
@@ -1935,9 +1985,9 @@
           nonEmpty.forEach((row, i) => {
             const tesisatNo = pickColumn(row, ["tesisat", "installation", "abone no", "sayac no"]);
             const seriNo = pickColumn(row, ["seri", "serial", "sayaç seri", "sayac seri"]);
-            const aboneAdi = pickColumn(row, ["abone", "unvan", "ünvan", "musteri", "müşteri", "ad soyad"]);
+            const aboneAdi = pickColumn(row, ["abone", "unvan", "ünvan", "musteri", "müşteri", "ad soyad", "ekip", "personel"]);
             const settlement = pickColumn(row, ["mahalle", "koy", "köy", "yerlesim", "yerleşim", "mah"]);
-            const district = pickColumn(row, ["ilce", "ilçe", "district"]);
+            const district = pickColumn(row, ["ilce", "ilçe", "district", "planlama grubu2"]);
             const meterType = pickColumn(row, ["sayac tipi", "sayaç tipi", "faz", "tip", "meter"]);
             const fallback = Object.values(row).map(v => String(v ?? "").trim()).filter(Boolean).join(" ");
             collected.push(normalizeRecord({
@@ -1981,15 +2031,22 @@
       syncCollection(Object.values(cachedJobs), { syncServer: false, reason: "yerel hafıza", resetPaging: true });
     }
 
-    const cachedFaults = loadFaultCache();
-    if (cachedFaults.length > 0) setFaultItems(cachedFaults, false);
-
     const cachedCompletedFaults = loadCompletedFaultsCache();
     if (cachedCompletedFaults.length > 0) {
       completedFaults = cachedCompletedFaults;
-      updateFaultBadges();
-      renderCompletedFaults();
+      completedFaults.forEach(cf => {
+        if (cf.completedBy && cf.completedBy !== "Belirtilmedi") {
+          rememberPersonnelMapping(cf.completedBy, cf.tesisatNo, cf.planGrubu);
+        }
+      });
     }
+
+    const cachedFaults = loadFaultCache();
+    if (cachedFaults.length > 0) setFaultItems(cachedFaults, false);
+
+    syncPersonnelDatalist();
+    updateFaultBadges();
+    renderCompletedFaults();
 
     setInterval(() => {
       if (completedFaults.length > 0) {
@@ -2015,19 +2072,25 @@
         allJobs = []; populateFilters(); applyFilters(false);
       }
 
-      const faultObj = val?.fault_addresses || val?.[DB_PATH]?.fault_addresses;
-      if (faultObj && typeof faultObj === "object") {
-        const list = Object.values(faultObj).filter(x => x && typeof x === "object");
-        if (list.length > 0) setFaultItems(list, false);
-      }
-
       const doneFaultObj = val?.completed_faults || val?.[DB_PATH]?.completed_faults;
       if (doneFaultObj && typeof doneFaultObj === "object") {
         const doneList = purgeExpiredCompletedFaults(Object.values(doneFaultObj).filter(x => x && typeof x === "object"));
         completedFaults = doneList;
+        completedFaults.forEach(cf => {
+          if (cf.completedBy && cf.completedBy !== "Belirtilmedi") {
+            rememberPersonnelMapping(cf.completedBy, cf.tesisatNo, cf.planGrubu);
+          }
+        });
         saveCompletedFaultsCache(completedFaults);
+        syncPersonnelDatalist();
         updateFaultBadges();
         renderCompletedFaults();
+      }
+
+      const faultObj = val?.fault_addresses || val?.[DB_PATH]?.fault_addresses;
+      if (faultObj && typeof faultObj === "object") {
+        const list = Object.values(faultObj).filter(x => x && typeof x === "object");
+        if (list.length > 0) setFaultItems(list, false);
       }
     }, err => {
       el.syncStatus.className = "sync-status sync-err";
