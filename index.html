@@ -1,2234 +1,471 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>TREDAŞ — Edirne & Kırklareli Saha Operasyon Paneli</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <style>
-    :root {
-      --bg-main: #0b1120;
-      --bg-card: #111827;
-      --bg-soft: #1e293b;
-      --bg-input: #0f172a;
-      --border: #334155;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --accent: #f59e0b;
-      --accent-2: #2563eb;
-      --success: #10b981;
-      --danger: #ef4444;
-    }
-
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
-      background: var(--bg-main);
-      color: var(--text-main);
-      font-size: 13.5px;
-      line-height: 1.4;
-    }
-
-    .container {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 10px 10px 72px;
-    }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 9px 12px;
-      margin-bottom: 10px;
-      position: sticky;
-      top: 6px;
-      z-index: 900;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
-
-    .brand-row { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
-
-    .badge-tredas {
-      background: var(--accent);
-      color: #090d16;
-      font-weight: 900;
-      font-size: 11px;
-      padding: 4px 7px;
-      border-radius: 6px;
-      flex-shrink: 0;
-      letter-spacing: 0.3px;
-    }
-
-    .title-group { min-width: 0; }
-    .app-title { font-size: 13.5px; font-weight: 800; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sync-status { font-size: 11px; font-weight: 700; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sync-ok { color: #34d399; }
-    .sync-err { color: #f87171; }
-    .sync-busy { color: #fbbf24; }
-
-    .stats-pill {
-      background: var(--bg-soft);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 5px 8px;
-      font-size: 12px;
-      font-weight: 800;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .menu-btn {
-      background: var(--bg-soft);
-      color: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      width: 34px;
-      height: 34px;
-      font-size: 17px;
-      font-weight: 700;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .module-switch {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .module-btn {
-      background: var(--bg-card);
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 9px 10px;
-      font-size: 12.5px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .module-btn.active {
-      background: rgba(245, 158, 11, 0.16);
-      color: #fde68a;
-      border-color: var(--accent);
-    }
-
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 12px;
-      margin-bottom: 10px;
-    }
-
-    .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
-    .cat-btn {
-      background: var(--bg-input);
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 7px 6px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .cat-btn.active { background: rgba(37, 99, 235, 0.25); color: #ffffff; border-color: #3b82f6; }
-
-    .filter-grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    @media (max-width: 560px) {
-      .filter-grid-2 { grid-template-columns: 1fr; }
-    }
-
-    select, input[type="text"], input[type="password"], textarea {
-      width: 100%;
-      background: var(--bg-input);
-      color: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 10px;
-      font-size: 12.5px;
-      outline: none;
-      font-family: inherit;
-    }
-
-    textarea { resize: vertical; min-height: 62px; }
-
-    .controls-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .meter-row { display: flex; flex-wrap: wrap; gap: 6px; }
-
-    .chip-btn {
-      background: var(--bg-input);
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 5px 11px;
-      font-size: 11.5px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .chip-btn.active { background: rgba(37, 99, 235, 0.28); color: #ffffff; border-color: #3b82f6; }
-
-    .group-header-title {
-      font-size: 12px;
-      font-weight: 800;
-      color: #fbbf24;
-      margin-bottom: 6px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .pill-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
-
-    .d-pill {
-      background: var(--bg-card);
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      border-radius: 7px;
-      padding: 4px 8px;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      max-width: 100%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .d-pill.active { background: rgba(16, 185, 129, 0.22); color: #ffffff; border-color: var(--success); }
-
-    .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 800; margin-bottom: 5px; }
-    .progress-bar { width: 100%; height: 6px; background: var(--bg-input); border-radius: 999px; overflow: hidden; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, #2563eb, #10b981); width: 0%; transition: width 0.25s ease; }
-
-    .job-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 12px;
-      margin-bottom: 8px;
-    }
-
-    .err-card { border-color: rgba(239, 68, 68, 0.5); }
-    .done-fault-card { border-color: rgba(16, 185, 129, 0.5); }
-
-    .job-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
-    .job-title { font-size: 13.5px; font-weight: 800; color: #fbbf24; }
-
-    .tag { font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 999px; white-space: nowrap; }
-    .tag-mahalle { background: rgba(37, 99, 235, 0.25); color: #bfdbfe; }
-    .tag-koy { background: rgba(16, 185, 129, 0.25); color: #a7f3d0; }
-    .tag-err { background: rgba(239, 68, 68, 0.22); color: #fecaca; }
-    .tag-done { background: rgba(16, 185, 129, 0.22); color: #a7f3d0; }
-
-    .job-meta { font-size: 11.5px; color: var(--text-muted); margin-bottom: 7px; }
-
-    .job-info-box {
-      font-size: 12.5px;
-      color: #f8fafc;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 7px 9px;
-      margin-bottom: 8px;
-      line-height: 1.45;
-    }
-
-    .info-line { margin-bottom: 2px; }
-    .info-line:last-child { margin-bottom: 0; color: var(--text-muted); font-size: 11.5px; }
-    .info-label { color: #fbbf24; font-weight: 700; }
-    .reason-label { color: #34d399; font-weight: 800; }
-    .web-label { color: #60a5fa; font-weight: 800; }
-
-    .web-result-box {
-      margin-top: 6px;
-      padding: 7px 9px;
-      border-radius: 7px;
-      background: rgba(37, 99, 235, 0.14);
-      border: 1px solid rgba(96, 165, 250, 0.45);
-      font-size: 11.5px;
-      color: #e2e8f0;
-      line-height: 1.4;
-    }
-
-    .job-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-    .fault-card-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-    @media (max-width: 520px) {
-      .job-actions, .fault-card-actions { grid-template-columns: 1fr; }
-    }
-
-    .btn {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 9px;
-      font-size: 12px;
-      font-weight: 800;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-    }
-
-    .btn-primary { background: var(--accent-2); border-color: var(--accent-2); color: #ffffff; }
-    .btn-info { background: rgba(37, 99, 235, 0.22); border-color: #60a5fa; color: #dbeafe; }
-    .btn-success { background: var(--success); border-color: var(--success); color: #052e16; }
-    .btn-secondary { background: var(--bg-soft); color: #ffffff; }
-    .btn-warning { background: var(--accent); border-color: var(--accent); color: #111827; }
-    .btn-danger { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.55); color: #fecaca; }
-
-    .admin-box {
-      border: 1px solid rgba(245, 158, 11, 0.55);
-      background: rgba(245, 158, 11, 0.08);
-      border-radius: 12px;
-      padding: 10px 12px;
-      margin-bottom: 10px;
-    }
-
-    .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 6px; margin-top: 8px; }
-    .status-note { font-size: 11.5px; color: var(--text-muted); margin-top: 6px; }
-
-    .reason-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
-    .reason-option-btn {
-      background: var(--bg-input);
-      color: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 7px 8px;
-      font-size: 11.5px;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: left;
-    }
-    .reason-option-btn.selected {
-      background: rgba(16, 185, 129, 0.22);
-      border-color: var(--success);
-      color: #a7f3d0;
-    }
-
-    .field-label { display: block; font-size: 11.5px; font-weight: 700; color: #fbbf24; margin-bottom: 3px; }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 14px;
-      z-index: 1200;
-    }
-    .modal-backdrop.open { display: flex; }
-
-    .modal-card {
-      width: 100%;
-      max-width: 430px;
-      max-height: 92vh;
-      overflow-y: auto;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
-    }
-
-    .empty-box {
-      border: 1px dashed var(--border);
-      border-radius: 12px;
-      padding: 18px 12px;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 12.5px;
-    }
-
-    .hidden { display: none !important; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>TREDAŞ - Edirne & Kırklareli Saha Paneli</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#0b1120;--card:#111827;--soft:#1e293b;--input:#0f172a;--border:#334155;--txt:#f8fafc;--muted:#94a3b8;--accent:#f59e0b;--blue:#2563eb;--green:#10b981;--red:#ef4444}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--txt);font-size:13.5px;line-height:1.4}
+.container{max-width:960px;margin:0 auto;padding:10px 10px 72px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:9px 12px;margin-bottom:10px;position:sticky;top:6px;z-index:900}
+.badge{background:var(--accent);color:#090d16;font-weight:900;font-size:11px;padding:4px 7px;border-radius:6px}
+.app-title{font-size:13.5px;font-weight:800;margin:0}
+.sync{font-size:11px;font-weight:700}
+.sync-ok{color:#34d399}.sync-err{color:#f87171}.sync-busy{color:#fbbf24}
+.pill{background:var(--soft);border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:12px;font-weight:800;white-space:nowrap}
+.menu-btn{background:var(--soft);color:#fff;border:1px solid var(--border);border-radius:8px;width:34px;height:34px;font-size:17px;cursor:pointer}
+.mod-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.mod-btn{background:var(--card);color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:9px 10px;font-size:12.5px;font-weight:800;cursor:pointer}
+.mod-btn.active{background:rgba(245,158,11,.16);color:#fde68a;border-color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+.cat-btn{background:var(--input);color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:7px 6px;font-size:12px;font-weight:700;cursor:pointer}
+.cat-btn.active{background:rgba(37,99,235,.25);color:#fff;border-color:#3b82f6}
+.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+@media(max-width:560px){.filter-grid{grid-template-columns:1fr}}
+select,input[type=text],input[type=password],textarea{width:100%;background:var(--input);color:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12.5px;outline:none;font-family:inherit}
+textarea{resize:vertical;min-height:62px}
+.controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+.chip{background:var(--input);color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:5px 11px;font-size:11.5px;font-weight:700;cursor:pointer}
+.chip.active{background:rgba(37,99,235,.28);color:#fff;border-color:#3b82f6}
+.progress-head{display:flex;justify-content:space-between;font-size:12px;font-weight:800;margin-bottom:5px}
+.progress{width:100%;height:6px;background:var(--input);border-radius:999px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#2563eb,#10b981);width:0%;transition:width .25s}
+.job{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.job.err{border-color:rgba(239,68,68,.5)} .job.done{border-color:rgba(16,185,129,.5)}
+.job-top{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}
+.job-title{font-size:13.5px;font-weight:800;color:#fbbf24}
+.tag{font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.tag-m{background:rgba(37,99,235,.25);color:#bfdbfe}.tag-k{background:rgba(16,185,129,.25);color:#a7f3d0}.tag-e{background:rgba(239,68,68,.22);color:#fecaca}.tag-d{background:rgba(16,185,129,.22);color:#a7f3d0}
+.job-meta{font-size:11.5px;color:var(--muted);margin-bottom:7px}
+.info{font-size:12.5px;background:var(--input);border:1px solid var(--border);border-radius:8px;padding:7px 9px;margin-bottom:8px;line-height:1.45}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+@media(max-width:520px){.actions{grid-template-columns:1fr}}
+.btn{border:1px solid var(--border);border-radius:8px;padding:8px 9px;font-size:12px;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.btn-p{background:var(--blue);border-color:var(--blue);color:#fff}.btn-i{background:rgba(37,99,235,.22);border-color:#60a5fa;color:#dbeafe}.btn-s{background:var(--green);border-color:var(--green);color:#052e16}.btn-sec{background:var(--soft);color:#fff}.btn-w{background:var(--accent);border-color:var(--accent);color:#111827}.btn-d{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.55);color:#fecaca}
+.admin{border:1px solid rgba(245,158,11,.55);background:rgba(245,158,11,.08);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:6px;margin-top:8px}
+.note{font-size:11.5px;color:var(--muted);margin-top:6px}
+.reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.reason-btn{background:var(--input);color:#fff;border:1px solid var(--border);border-radius:8px;padding:7px 8px;font-size:11.5px;font-weight:700;cursor:pointer;text-align:left}
+.reason-btn.sel{background:rgba(16,185,129,.22);border-color:var(--green);color:#a7f3d0}
+.label{display:block;font-size:11.5px;font-weight:700;color:#fbbf24;margin-bottom:3px}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:14px;z-index:1200}
+.backdrop.open{display:flex}
+.modal{width:100%;max-width:430px;max-height:92vh;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+.empty{border:1px dashed var(--border);border-radius:12px;padding:18px 12px;text-align:center;color:var(--muted);font-size:12.5px}
+.hidden{display:none!important}
+.pill-wrap{display:flex;flex-wrap:wrap;gap:5px}
+.d-pill{background:var(--card);color:var(--muted);border:1px solid var(--border);border-radius:7px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer}
+.d-pill.active{background:rgba(16,185,129,.22);color:#fff;border-color:var(--green)}
+</style>
 </head>
 <body>
-  <div class="container">
-    <header class="topbar">
-      <div class="brand-row">
-        <span class="badge-tredas">TREDAŞ</span>
-        <div class="title-group">
-          <h1 class="app-title">Edirne & Kırklareli Saha</h1>
-          <div id="syncStatus" class="sync-status sync-busy">⏳ Sunucu bekleniyor...</div>
-        </div>
-      </div>
-      <div id="doneCounter" class="stats-pill">0 / 0</div>
-      <button id="menuBtn" class="menu-btn" title="Menü">⋮</button>
-    </header>
-
-    <div class="module-switch">
-      <button id="tabSahaBtn" class="module-btn active">📋 Saha İş Listesi</button>
-      <button id="tabFaultBtn" class="module-btn">⚠️ Hatalı Adres (<span id="faultBadgeCount">0</span>) • ✓ (<span id="completedFaultBadgeCount">0</span>)</button>
-    </div>
-
-    <div id="adminPanel" class="admin-box hidden">
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-        <strong>🔐 YETKİLİ PANELİ</strong>
-        <button id="logoutAdminBtn" class="btn btn-secondary" style="padding:4px 9px; font-size:11.5px;">Çıkış</button>
-      </div>
-      <div class="admin-grid">
-        <label class="btn btn-primary" style="cursor:pointer;">
-          📊 Saha Excel Yükle
-          <input type="file" id="excelInput" accept=".xlsx,.xls,.csv" hidden />
-        </label>
-        <label class="btn btn-warning" style="cursor:pointer;">
-          ⚠️ Hatalı Adres / Koordinat Excel Yükle
-          <input type="file" id="faultExcelInput" accept=".xlsx,.xls,.csv" hidden />
-        </label>
-        <label class="btn btn-secondary" style="cursor:pointer;">
-          📄 PDF Yükle
-          <input type="file" id="pdfInput" accept=".pdf" hidden />
-        </label>
-        <button id="repairDbBtn" class="btn btn-secondary">🤖 Tesisatları Birleştir & Düzenle</button>
-        <button id="showCompletedToggle" class="btn btn-secondary">✓ Tamamlananlar</button>
-        <button id="clearAllBtn" class="btn btn-danger">🗑️ Tümünü Sil</button>
-      </div>
-      <div id="adminStatus" class="status-note"></div>
-    </div>
-
-    <div id="sahaModule">
-      <section class="card">
-        <div class="cat-grid">
-          <button class="cat-btn active" data-cat="ALL">Tümü</button>
-          <button class="cat-btn" data-cat="MAHALLE">🏙️ Mahalleler</button>
-          <button class="cat-btn" data-cat="KOY">🌾 Köyler</button>
-        </div>
-
-        <div class="filter-grid-2">
-          <select id="districtSelect">
-            <option value="ALL">Tüm İlçeler</option>
-          </select>
-          <select id="settlementSelect">
-            <option value="ALL">Tüm Mahalle / Köyler</option>
-          </select>
-        </div>
-
-        <input id="searchInput" type="text" placeholder="Tesisat No, Seri No, Mahalle, Köy, Yol veya Adres ara..." />
-
-        <div class="controls-row">
-          <div class="meter-row">
-            <button class="chip-btn active" data-meter="ALL">Tümü</button>
-            <button class="chip-btn" data-meter="MONO">Monofaze</button>
-            <button class="chip-btn" data-meter="TRI">Trifaze</button>
-          </div>
-
-          <select id="sortSelect" style="width:auto; min-width:165px; padding:6px 9px; font-size:11.5px;">
-            <option value="DEFAULT">Sırala: Varsayılan</option>
-            <option value="SETTLEMENT">Sırala: Mahalle / Köy (A-Z)</option>
-            <option value="TESISAT">Sırala: Tesisat No</option>
-          </select>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="progress-header">
-          <span id="filteredCountLabel">Ekranda Kalan: 0</span>
-          <span id="percentLabel">%0</span>
-        </div>
-        <div class="progress-bar">
-          <div id="progressFill" class="progress-fill"></div>
-        </div>
-      </section>
-
-      <div id="listView">
-        <div id="jobsContainer"></div>
-        <div id="loadMoreWrap" class="hidden" style="margin-top:8px;">
-          <button id="loadMoreBtn" class="btn btn-secondary" style="width:100%;">Daha Fazla Göster</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="faultModule" class="hidden">
-      <div class="module-switch">
-        <button id="faultActiveSubTabBtn" class="module-btn active">⚠️ Bekleyen Hatalı (<span id="faultActiveSubCount">0</span>)</button>
-        <button id="faultCompletedSubTabBtn" class="module-btn">✓ Tamamlananlar (<span id="faultCompletedSubCount">0</span>)</button>
-      </div>
-
-      <div id="faultActiveSection">
-        <section class="card">
-          <div class="group-header-title"><span>👷 Personel / Ekip Kategorileri (Hata Sayısıyla)</span></div>
-          <div id="faultPersonPills" class="pill-wrap"></div>
-        </section>
-
-        <section class="card">
-          <div class="group-header-title"><span>⚠️ Hatalı / Okunamayan Adres ve İş Filtreleri</span></div>
-          <div class="filter-grid-2">
-            <select id="faultPersonSelect">
-              <option value="ALL">Tüm Personeller</option>
-            </select>
-            <select id="faultGroupSelect">
-              <option value="ALL">Tüm Planlama Grupları / İlçeler</option>
-            </select>
-          </div>
-          <div class="filter-grid-2">
-            <select id="faultJobReasonSelect">
-              <option value="ALL">Tüm İş / Arıza Nedenleri</option>
-            </select>
-            <select id="faultTypeSelect">
-              <option value="ALL">Tüm Adres / Durum Tipleri</option>
-              <option value="MISSING_SETTLEMENT">Mahalle / Köy Bilgisi Eksik</option>
-              <option value="IL_AS_DISTRICT">İl Alanında İlçe Yazılı</option>
-              <option value="DASH_OR_TRUNCATED">Eksik / Kesik / (- -) Adres</option>
-              <option value="METER_ERR">Modem / Sayaç Okuma Hatası</option>
-            </select>
-          </div>
-          <input id="faultSearchInput" type="text" placeholder="Tesisat, Ekip/Personel, İş/Arıza Nedeni, Adres veya Seri No ara..." />
-        </section>
-
-        <section class="card">
-          <div class="progress-header">
-            <span id="faultCountLabel">Listelenen Hatalı Kayıt: 0</span>
-            <span id="faultTotalLabel">Toplam: 0</span>
-          </div>
-        </section>
-
-        <div id="faultJobsContainer"></div>
-        <div id="faultLoadMoreWrap" class="hidden" style="margin-top:8px;">
-          <button id="faultLoadMoreBtn" class="btn btn-secondary" style="width:100%;">Daha Fazla Hatalı Kayıt Göster</button>
-        </div>
-      </div>
-
-      <div id="faultCompletedSection" class="hidden">
-        <section class="card">
-          <div class="group-header-title"><span>✓ Tamamlanan Hatalı Kayıtlar (1 Ay Sonra Otomatik Silinir)</span></div>
-          <input id="completedFaultSearchInput" type="text" placeholder="Tesisat, Yapan Kişi, İş/Hata veya Not ara..." />
-        </section>
-        <div id="completedFaultsContainer"></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="faultReasonModal" class="modal-backdrop">
-    <div class="modal-card">
-      <h3 style="margin-top:0;">Tamamlandı — İş / Hata ve Yapılan İşlem Notu</h3>
-      <p id="faultReasonTargetInfo" style="font-size:11.5px; color:var(--text-muted); margin-top:0;"></p>
-
-      <label class="field-label">Yapan Kişi / Ekip</label>
-      <input id="actorNameInput" list="knownPersonnelDatalist" type="text" placeholder="İşlemi yapan personel / ekip adı..." style="margin-bottom:7px;" />
-      <datalist id="knownPersonnelDatalist"></datalist>
-
-      <label class="field-label">Ne Hata / İş Vardı?</label>
-      <input id="detectedErrorInput" type="text" placeholder="Örn: Modem IP ve Port Bilgileri Geçersiz veya Boş..." style="margin-bottom:7px;" />
-
-      <label class="field-label">Neden Yapıldı? (Hızlı Seçim)</label>
-      <div class="reason-grid">
-        <button type="button" class="reason-option-btn" data-reason="IP / Port Güncellendi">🌐 IP / Port Güncellendi</button>
-        <button type="button" class="reason-option-btn" data-reason="Kablo / Sayaç Bağlantısı Düzeltildi">🔌 Kablo / Sayaç Düzeltildi</button>
-        <button type="button" class="reason-option-btn" data-reason="Merkezi Okuma / İş Emri Kontrol Edildi">📋 Okuma / İş Emri Kontrol</button>
-        <button type="button" class="reason-option-btn" data-reason="Modem Enerji / Ping Sorunu Giderildi">⚡ Enerji / Ping Giderildi</button>
-      </div>
-
-      <label class="field-label">Neden Yapıldı / Açıklama Notu</label>
-      <textarea id="customReasonInput" placeholder="Detay not yazın (ne yapıldı, neden yapıldı)..." style="margin-bottom:9px;"></textarea>
-
-      <div style="display:flex; gap:8px;">
-        <button id="confirmFaultReasonBtn" class="btn btn-success" style="flex:1;">Kaydet ve Tamamla</button>
-        <button id="cancelFaultReasonBtn" class="btn btn-secondary" style="flex:1;">İptal</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="menuModal" class="modal-backdrop">
-    <div class="modal-card">
-      <h3 style="margin-top:0;">Yetkili Girişi</h3>
-      <p style="font-size:12.5px; color:var(--text-muted);">Excel/PDF yükleme ve kayıt düzenleme için PIN kodunu girin.</p>
-      <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN (1923)" style="margin-bottom:10px;" />
-      <div style="display:flex; gap:8px;">
-        <button id="pinSubmitBtn" class="btn btn-primary" style="flex:1;">Giriş</button>
-        <button id="pinCloseBtn" class="btn btn-secondary" style="flex:1;">Kapat</button>
-      </div>
-      <div id="pinError" style="color:var(--danger); font-size:12px; margin-top:8px;"></div>
-    </div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBKtY2d7J8j7y9M2w4u5x6z7A8B9C0D1E2F",
-      authDomain: "edirne-sayac-saha.firebaseapp.com",
-      databaseURL: "https://edirne-sayac-saha-default-rtdb.firebaseio.com",
-      projectId: "edirne-sayac-saha",
-      storageBucket: "edirne-sayac-saha.appspot.com",
-      messagingSenderId: "1234567890",
-      appId: "1:1234567890:web:abcdef123456"
-    };
-
-    const DB_PATH = "edirne_saha_v1";
-    const LOCAL_CACHE_KEY = "tredas_saha_hafiza_v1";
-    const FAULT_CACHE_KEY = "tredas_hatali_adres_v1";
-    const COMPLETED_FAULTS_CACHE_KEY = "tredas_hatali_tamamlanan_v1";
-    const PERSONNEL_MEMORY_KEY = "tredas_personel_hafiza_v1";
-    const ADMIN_PIN = "1923";
-    const PAGE_SIZE = 40;
-    const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
-
-    const DISTRICT_CENTERS = {
-      "Edirne Merkez": { lat: 41.6771, lon: 26.5557, il: "Edirne", ilce: "Merkez" },
-      "Keşan": { lat: 40.8559, lon: 26.6303, il: "Edirne", ilce: "Keşan" },
-      "Uzunköprü": { lat: 41.2686, lon: 26.6894, il: "Edirne", ilce: "Uzunköprü" },
-      "İpsala": { lat: 40.9167, lon: 26.3833, il: "Edirne", ilce: "İpsala" },
-      "Havsa": { lat: 41.5500, lon: 26.8167, il: "Edirne", ilce: "Havsa" },
-      "Meriç": { lat: 41.1889, lon: 26.4167, il: "Edirne", ilce: "Meriç" },
-      "Enez": { lat: 40.7250, lon: 26.0833, il: "Edirne", ilce: "Enez" },
-      "Süloğlu": { lat: 41.7667, lon: 26.9000, il: "Edirne", ilce: "Süloğlu" },
-      "Lalapaşa": { lat: 41.8389, lon: 26.7361, il: "Edirne", ilce: "Lalapaşa" },
-      "Kırklareli Merkez": { lat: 41.7333, lon: 27.2167, il: "Kırklareli", ilce: "Merkez" },
-      "Lüleburgaz": { lat: 41.4056, lon: 27.3569, il: "Kırklareli", ilce: "Lüleburgaz" },
-      "Babaeski": { lat: 41.4333, lon: 27.0917, il: "Kırklareli", ilce: "Babaeski" },
-      "Vize": { lat: 41.5736, lon: 27.7667, il: "Kırklareli", ilce: "Vize" },
-      "Pınarhisar": { lat: 41.6222, lon: 27.5139, il: "Kırklareli", ilce: "Pınarhisar" },
-      "Demirköy": { lat: 41.8222, lon: 27.7583, il: "Kırklareli", ilce: "Demirköy" },
-      "Pehlivanköy": { lat: 41.3500, lon: 27.1833, il: "Kırklareli", ilce: "Pehlivanköy" },
-      "Kofçaz": { lat: 41.9333, lon: 27.1833, il: "Kırklareli", ilce: "Kofçaz" }
-    };
-
-    const DISTRICTS = DISTRICT_CENTERS;
-
-    const NAMES = {
-      "sukrupasa": "Şükrüpaşa", "saricapasa": "Sarıcapaşa", "sahin": "Şahin", "sinan": "Sinan",
-      "sabuni": "Sabuni", "nisancipasa": "Nişancıpaşa", "mithatpasa": "Mithatpaşa",
-      "kocasinan": "Kocasinan", "abdullahpasa": "Abdullahpaşa", "fatih": "Fatih",
-      "abdurrahman": "Abdurrahman", "talatpasa": "Talatpaşa", "dilaverbey": "Dilaverbey",
-      "babademirtas": "Babademirtaş", "barutluk": "Barutluk", "menzilahir": "Menzilahır",
-      "yildirim beyazit": "Yıldırım Beyazıt", "yildirim haci sarraf": "Yıldırım Hacı Sarraf",
-      "sarraf": "Yıldırım Hacı Sarraf", "yildirim": "Yıldırım Beyazıt", "karaagac": "Karaağaç",
-      "istasyon": "İstasyon", "yeniimaret": "Yeniimaret", "medrese alibey": "Medrese Alibey",
-      "cavusbey": "Çavuşbey", "kaleici": "Kaleiçi", "meydan": "Meydan", "umurbey": "Umurbey",
-      "kurtulus": "Kurtuluş", "ataturk": "Atatürk", "1. murat": "1. Murat", "1 murat": "1. Murat",
-      "sehsuvarbey": "Şehsuvarbey", "karakas": "Karakaş", "yayla": "Yayla", "demirtas": "Demirtaş",
-      "akalar": "Akalar", "berber": "Berber", "cumhuriyet": "Cumhuriyet", "kocahidir": "Kocahıdır",
-      "durak": "Durak", "8 kasim": "8 Kasım", "genclik": "Gençlik", "siteler": "Siteler",
-      "yenimahalle": "Yeni", "yeni": "Yeni", "gaziomerbey": "Gaziömerbey", "buyuk cami": "Büyük Cami",
-      "eriklis": "Erikli", "erikli": "Erikli", "tayakadin": "Tayakadın", "yenikadin": "Yenikadın",
-      "kadin": "Yenikadın", "eskikadin": "Eskikadın", "sazlidere": "Sazlıdere", "kopru": "Köprü",
-      "bosnakoy": "Bosnaköy", "bosna": "Bosnaköy", "demirkoy": "Demirköy", "suakacagi": "Suakacağı",
-      "kayapa": "Kayapa", "kemalkoy": "Kemalköy", "buyukdolluk": "Büyükdöllük",
-      "kucukdolluk": "Küçükdöllük", "orhaniye": "Orhaniye", "uzgac": "Uzgaç", "ahirkoy": "Ahırköy",
-      "karakasim": "Karakasım", "haciumur": "Hacıumur", "yenimuhacir": "Yenimuhacır",
-      "begendik": "Beğendik", "kuplu": "Küplü", "subasi": "Subaşı", "kircasalih": "Kırcasalih",
-      "igneada": "İğneada", "kiyikoy": "Kıyıköy", "ahmetbey": "Ahmetbey", "evrensekiz": "Evrensekiz",
-      "buyukkaristiran": "Büyükkarıştıran", "kavakkoy": "Kavakköy", "kaynarca": "Kaynarca",
-      "abalar": "Abalar", "buyukdoganca": "Büyükdoğanca", "copkoy": "Çöpköy",
-      "avariz": "Avarız", "degirmenyeni": "Değirmenyeni", "kemal": "Kemal",
-      "haciisa": "Hacıisa", "varos": "Varoş", "balaban": "Balaban", "mescit": "Mescit",
-      "kosenciftligi": "Köşençiftliği", "kösenciftligi": "Köşençiftliği",
-      "bayrambey": "Bayrambey", "muradiye": "Muradiye", "rizaefendi": "Rızaefendi",
-      "buyukevren": "Büyükevren", "yenikarpuzlu": "Yenikarpuzlu", "cakmak": "Çakmak"
-    };
-
-    const KOYLER = new Set([
-      "tayakadin", "yenikadin", "kadin", "eskikadin", "sazlidere", "kopru", "bosnakoy",
-      "bosna", "demirkoy", "suakacagi", "kayapa", "kemalkoy", "buyukdolluk", "kucukdolluk",
-      "orhaniye", "uzgac", "ahirkoy", "karakasim", "haciumur", "yenimuhacir",
-      "begendik", "kuplu", "subasi", "kircasalih", "igneada", "kiyikoy",
-      "ahmetbey", "evrensekiz", "buyukkaristiran", "kavakkoy", "kaynarca", "abalar",
-      "buyukdoganca", "copkoy", "avariz", "degirmenyeni", "kemal", "balaban", "mescit",
-      "kosenciftligi", "kösenciftligi", "buyukevren", "yenikarpuzlu"
-    ]);
-
-    const trLower = s => (s || "").toString().toLocaleLowerCase("tr-TR").trim();
-    const asciiKey = s => trLower(s)
-      .replace(/ı/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u")
-      .replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c")
-      .replace(/[^a-z0-9.\s]/g, " ").replace(/\s+/g, " ").trim();
-
-    function properTr(s) {
-      return trLower(s).replace(/\s+/g, " ").split(" ").filter(Boolean)
-        .map(w => w.charAt(0).toLocaleUpperCase("tr-TR") + w.slice(1)).join(" ").trim();
-    }
-
-    function deduplicateWords(str) {
-      const tokens = String(str || "").trim().split(/\s+/).filter(Boolean);
-      const out = [];
-      for (const tok of tokens) {
-        if (tok.length === 1 && /^[A-ZÇĞİÖŞÜa-zçğıöşü]$/.test(tok)) continue;
-        const prev = out[out.length - 1];
-        if (prev && asciiKey(prev) === asciiKey(tok)) continue;
-        out.push(tok);
-      }
-      return out.join(" ");
-    }
-
-    function parseLatLonCoord(rawVal) {
-      if (!rawVal) return "";
-      const s = String(rawVal).trim();
-      if (!s || s === "0") return "";
-      const sDot = s.replace(/,/g, ".");
-      const m = sDot.match(/^\s*([+-]?\d+(?:\.\d+)?)\s*(?:[,;/\s]+|-)\s*([+-]?\d+(?:\.\d+)?)\s*$/);
-      if (!m) return "";
-      const lat = parseFloat(m[1]);
-      const lon = parseFloat(m[2]);
-      if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) return "";
-      if (Math.abs(lat) > 90 || Math.abs(lon) > 180) return "";
-      return `${lat.toFixed(6)},${lon.toFixed(6)}`;
-    }
-
-    let dynamicCoordMap = {};
-
-    function getCoordForTesisat(tesisatNo, fallbackCoord = "") {
-      const cleanTes = String(tesisatNo || "").replace(/\D/g, "").trim();
-      if (cleanTes && dynamicCoordMap[cleanTes]) {
-        return dynamicCoordMap[cleanTes];
-      }
-      return parseLatLonCoord(fallbackCoord);
-    }
-
-    function buildGoogleMapsCoordUrl(coordStr, fallbackAddr = "", fallbackGroup = "", fallbackIl = "") {
-      const cleanCoord = parseLatLonCoord(coordStr);
-      if (cleanCoord) {
-        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanCoord)}`;
-      }
-      const cleanAddr = String(fallbackAddr || "").replace(/-\s*-/g, " ").replace(/\s+/g, " ").trim();
-      const ilText = fallbackIl || (/kirklareli/i.test(asciiKey(`${fallbackGroup} ${cleanAddr}`)) ? "Kırklareli" : "Edirne");
-      const q = cleanAddr ? `${cleanAddr} ${fallbackGroup || ""} ${ilText}`.trim() : `${fallbackGroup || ""} ${ilText}`.trim();
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
-    }
-
-    function beautifyRawAddress(rawAddr, ilRaw, planGrubu) {
-      let s = String(rawAddr || "")
-        .replace(/-\s*-/g, " ")
-        .replace(/\bMERKEZ\s*\/\s*ED\s*$/i, "MERKEZ/EDİRNE")
-        .replace(/\bMERKEZ\s*\/\s*KR\s*$/i, "MERKEZ/KIRKLARELİ")
-        .replace(/\s*\/\s*/g, "/")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      if (!s) {
-        return (planGrubu || ilRaw || "Edirne Merkez").trim();
-      }
-
-      if (!/\/(EDİRNE|EDIRNE|KIRKLARELİ|KIRKLARELI)$/i.test(s) && planGrubu && !asciiKey(s).includes(asciiKey(planGrubu))) {
-        s = `${s} (${properTr(planGrubu)})`;
-      }
-      return s;
-    }
-
-    function stripNoiseFromSettlementName(str, districtIlce) {
-      let clean = String(str || "")
-        .replace(/\b\d+\b/g, " ")
-        .replace(/\b(lun|byl|mak|sayac|sayaç|monofaze|trifaze|mono|tri|faz|sok|sk|no|daire|diskapino|dışkapıno|hayat|köyün kendisi|koyun kendisi|koy ici|köy içi|merkez|genel|mahallesi|mah\.?|mh\.?|köyü|koyu|köy|koy|beldesi|belde|belediyesi|belediye|edirne|kırklareli|kirklareli)\b/gi, " ")
-        .replace(/[|/\\\-–—.,:;]+/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      clean = deduplicateWords(clean);
-      if (districtIlce && asciiKey(clean) === asciiKey(districtIlce)) {
-        return "";
-      }
-      return clean;
-    }
-
-    function resolveNearestDistrictFromRoad(text, fallbackDistrict) {
-      const norm = asciiKey(text || "");
-      const mRoad = norm.match(/\b([a-zçğıöşü]+)\s+([a-zçğıöşü]+)\s+yol[uü]?\b/);
-      const candidates = [];
-
-      for (const [key, meta] of Object.entries(DISTRICTS)) {
-        const ilceKey = asciiKey(meta.ilce);
-        if (ilceKey !== "merkez" && new RegExp(`(^|[^a-z0-9])${ilceKey}([^a-z0-9]|$)`).test(norm)) {
-          candidates.push(key);
-        }
-      }
-
-      if (mRoad) {
-        const aKey = asciiKey(mRoad[1]);
-        const bKey = asciiKey(mRoad[2]);
-        const matchA = Object.entries(DISTRICTS).find(([, m]) => asciiKey(m.ilce) === aKey);
-        const matchB = Object.entries(DISTRICTS).find(([, m]) => asciiKey(m.ilce) === bKey);
-        if (matchA && matchB) {
-          const cA = DISTRICT_CENTERS[matchA[0]];
-          const cB = DISTRICT_CENTERS[matchB[0]];
-          const refCenter = DISTRICT_CENTERS[fallbackDistrict] || DISTRICT_CENTERS["Edirne Merkez"];
-          const dA = Math.hypot(cA.lat - refCenter.lat, cA.lon - refCenter.lon);
-          const dB = Math.hypot(cB.lat - refCenter.lat, cB.lon - refCenter.lon);
-          return dA <= dB ? matchA[0] : matchB[0];
-        }
-      }
-
-      if (candidates.length > 0) return candidates[0];
-      return fallbackDistrict;
-    }
-
-    function detectDistrict(text) {
-      const n = asciiKey(text || "");
-      const isK = n.includes("kirklareli");
-      const base = isK ? "Kırklareli Merkez" : "Edirne Merkez";
-      return resolveNearestDistrictFromRoad(text, base);
-    }
-
-    function resolveSettlement(rawSett, rawSrc, districtKey) {
-      const src = `${rawSett || ""} ${rawSrc || ""}`;
-      const norm = asciiKey(src);
-      const districtMeta = DISTRICTS[districtKey] || DISTRICTS["Edirne Merkez"];
-      const districtNorm = asciiKey(districtMeta.ilce);
-
-      const hasExplicitKoy = /\bkoy\b|\bkoyu\b|\bköyü\b|\bköyün\b|\bkoyun\b|\bbeldesi\b|\bbelediyesi\b/i.test(norm);
-      const hasExplicitMah = /\bmahallesi\b|\bmah\b|\bmh\b/i.test(norm);
-
-      let matchedKey = null;
-      for (const k of Object.keys(NAMES).sort((a, b) => b.length - a.length)) {
-        if (k === "kadin" && (norm.includes("yenikadin") || norm.includes("eskikadin") || norm.includes("tayakadin"))) continue;
-        if (districtNorm && districtNorm !== "merkez" && k === districtNorm && !hasExplicitKoy && !hasExplicitMah) {
-          continue;
-        }
-        if (new RegExp(`(^|[^a-z0-9])${k.replace(/\./g, "\\.")}([^a-z0-9]|$)`).test(norm)) {
-          matchedKey = k;
-          break;
-        }
-      }
-
-      let cat = "MAHALLE";
-      let base = "";
-
-      if (matchedKey) {
-        base = NAMES[matchedKey] || "";
-        cat = (KOYLER.has(matchedKey) || hasExplicitKoy) ? "KOY" : "MAHALLE";
-      } else {
-        let cand = String(rawSett || "");
-        const kM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü\s]+?)\s*(?:Köyü|Köy|Beldesi|Belde|Belediyesi)/i);
-        const mM = src.match(/([A-ZÇĞİÖŞÜa-zçğıöşü\s]+?)\s*(?:Mahallesi|Mah\.?|Mh\.?)/i);
-
-        if (kM && asciiKey(kM[1]) !== districtNorm) { cat = "KOY"; cand = kM[1]; }
-        else if (mM && asciiKey(mM[1]) !== districtNorm) { cat = "MAHALLE"; cand = mM[1]; }
-
-        if (hasExplicitKoy && !hasExplicitMah) {
-          cat = "KOY";
-        }
-
-        const cleanedCand = stripNoiseFromSettlementName(cand, districtMeta.ilce);
-        const cKey = asciiKey(cleanedCand);
-
-        if (NAMES[cKey]) {
-          base = NAMES[cKey] || "";
-          cat = (KOYLER.has(cKey) || hasExplicitKoy) ? "KOY" : "MAHALLE";
-        } else if (cleanedCand.length >= 2 && !/^\d+$/.test(cleanedCand)) {
-          base = properTr(cleanedCand);
-        } else {
-          base = `${districtMeta.ilce} Merkez`;
-        }
-      }
-
-      base = stripNoiseFromSettlementName(base, districtMeta.ilce);
-      if (!base) base = `${districtMeta.ilce} Merkez`;
-      else base = properTr(base);
-
-      return cat === "KOY"
-        ? { category: "KOY", settlement: `${base} Köyü` }
-        : { category: "MAHALLE", settlement: `${base} Mah.` };
-    }
-
-    function extractOpenAddress(rawText, settlement, districtKey) {
-      const districtMeta = DISTRICTS[districtKey] || { il: "Edirne", ilce: districtKey };
-      const cleanedRaw = String(rawText || "")
-        .replace(/\b\d{7,14}\b/g, " ")
-        .replace(/\b(lun|byl|mak|sayac|sayaç|monofaze|trifaze|mono|tri|faz|köyün kendisi|koyun kendisi|koy ici|köy içi|diskapino[:\s]*hayat|dışkapıno[:\s]*hayat|hayat)\b/gi, " ")
-        .replace(/\|+/g, ", ")
-        .replace(/\s*,\s*/g, ", ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      const parts = [];
-      if (settlement) parts.push(settlement);
-
-      const mSok = cleanedRaw.match(/([A-ZÇĞİÖŞÜa-zçğıöşü0-9.\s]{2,36}?\s*(?:Sk\.?|Sok\.?|Sokak|Cd\.?|Cad\.?|Cadde|Blv\.?|Bulvarı|Yolu?)\s*(?:No[:\s]*[A-Za-z0-9/-]+)?(?:\s*(?:Daire|D\.?|Kat|Apt\.?)[:\s]*[A-Za-z0-9/-]+)?)/i);
-      if (mSok) {
-        const sokClean = deduplicateWords(properTr(mSok[1].replace(/\s+/g, " ").trim()));
-        if (sokClean.length >= 3 && asciiKey(sokClean) !== asciiKey(settlement)) {
-          parts.push(sokClean);
-        }
-      } else {
-        const mNo = cleanedRaw.match(/\b(?:No|Sok\.?\s*No|Cad\.?\s*No)[:\s]*([A-Za-z0-9/-]{1,12})\b/i);
-        if (mNo) parts.push(`No: ${mNo[1]}`);
-      }
-
-      const cityLine = `${districtMeta.ilce} / ${districtMeta.il}`;
-      if (!parts.some(p => asciiKey(p).includes(asciiKey(districtMeta.ilce)))) {
-        parts.push(cityLine);
-      }
-
-      const deduped = [];
-      parts.forEach(p => {
-        const k = asciiKey(p);
-        if (p && !deduped.some(existing => asciiKey(existing) === k)) {
-          deduped.push(p);
-        }
-      });
-
-      return deduped.join(", ");
-    }
-
-    function normalizeRecord(raw, key) {
-      const rawText = [
-        raw._rawSource, raw.rawAddress, raw.adres, raw.ADRES, raw.address,
-        raw.settlement, raw.neighborhood, raw["Mahalle"], raw["Köy"],
-        raw.district, raw["İlçe"], raw.aboneAdi
-      ].filter(Boolean).join(" | ");
-
-      let tesisatNo = String(raw.tesisatNo || raw.installationNo || raw["Tesisat No"] || "").replace(/\D/g, "").trim();
-      let seriNo = String(raw.seriNo || raw.serialNo || raw["Seri No"] || "").trim();
-
-      if (!tesisatNo) {
-        const mTes = rawText.match(/\b(\d{7,12})\b/);
-        if (mTes) tesisatNo = mTes[1];
-      }
-      if (!seriNo) {
-        const mSer = rawText.match(/\b([A-Z]{2,5}[-_ ]?\d{5,12})\b/i);
-        if (mSer) seriNo = mSer[1].toUpperCase();
-      }
-
-      const koordinat = getCoordForTesisat(tesisatNo, raw.koordinat || raw["KOORDİNAT"] || raw.coord || "");
-      const district = DISTRICTS[raw.district] ? raw.district : detectDistrict(rawText);
-      const sett = resolveSettlement(
-        raw.settlement || raw.neighborhood || raw["Mahalle"] || raw["Köy"] || "",
-        rawText,
-        district
-      );
-
-      const openAddress = extractOpenAddress(rawText, sett.settlement, district);
-      const mNorm = asciiKey(`${raw.meterType || raw["Sayaç Tipi"] || ""} ${rawText}`);
-      const meterType = (mNorm.includes("tri") || mNorm.includes("3 faz") || mNorm.includes("trifaze")) ? "TRI" : "MONO";
-      const rawTitle = String(raw.aboneAdi || raw.customerName || raw["Abone Adı"] || "").trim();
-      const displayTitle = tesisatNo
-        ? `Tesisat: ${tesisatNo}`
-        : (seriNo ? `Sayaç: ${seriNo}` : (rawTitle ? properTr(rawTitle) : `${sett.settlement} Kaydı`));
-
-      const districtMeta = DISTRICTS[district] || { il: "Edirne", ilce: district };
-
-      return {
-        id: String(raw.id || key),
-        tesisatNo,
-        seriNo,
-        koordinat,
-        displayTitle,
-        district,
-        il: districtMeta.il,
-        category: sett.category,
-        settlement: sett.settlement,
-        openAddress,
-        meterType,
-        completed: Boolean(raw.completed),
-        completedAt: raw.completedAt || null
-      };
-    }
-
-    function pickFlexible(row, keys) {
-      if (!row || typeof row !== "object") return "";
-      for (const k of Object.keys(row)) {
-        const ak = asciiKey(k);
-        if (!ak || ak.startsWith("unnamed")) continue;
-        if (keys.some(target => ak === asciiKey(target) || ak.includes(asciiKey(target)))) {
-          const val = String(row[k] ?? "").trim();
-          if (val && val.toLowerCase() !== "nan") return val;
-        }
-      }
-      return "";
-    }
-
-    function ingestCoordPairsFromRows(rows) {
-      let added = 0;
-      (rows || []).forEach(r => {
-        const t = pickFlexible(r, ["tesisat", "abone", "sozlesme"]).replace(/\D/g, "").trim();
-        const cRaw = pickFlexible(r, ["koordinat", "enlem", "boylam", "coord"]);
-        const c = parseLatLonCoord(cRaw);
-        if (t && c) {
-          dynamicCoordMap[t] = c;
-          added += 1;
-        }
-      });
-      return added;
-    }
-
-    // Tesisat numarasına göre birleştirme (aynı tesisat no -> birleştir, farklı tesisat no -> ekstra ekle)
-    function mergeByTesisat(existingList, incomingList) {
-      const map = new Map();
-      const order = [];
-      let mergedCount = 0;
-      let addedCount = 0;
-
-      const makeKey = (item, fallbackIdx) => {
-        const t = String(item.tesisatNo || "").replace(/\D/g, "").trim();
-        if (t) return `tes_${t}`;
-        const s = String(item.seriNo || "").trim();
-        if (s) return `ser_${s}`;
-        return `row_${fallbackIdx}_${asciiKey(item.rawAddress || item.openAddress || "")}`;
-      };
-
-      (existingList || []).forEach((item, idx) => {
-        const k = makeKey(item, idx);
-        map.set(k, { ...item });
-        order.push(k);
-      });
-
-      (incomingList || []).forEach((item, idx) => {
-        const k = makeKey(item, order.length + idx);
-        if (map.has(k)) {
-          const prev = map.get(k);
-          const mergedCoord = getCoordForTesisat(item.tesisatNo || prev.tesisatNo, item.koordinat || prev.koordinat);
-          map.set(k, {
-            ...prev,
-            tesisatNo: item.tesisatNo || prev.tesisatNo,
-            seriNo: item.seriNo || prev.seriNo,
-            koordinat: mergedCoord || prev.koordinat || "",
-            personel: (item.personel && item.personel !== "Bilinmeyen Personel") ? item.personel : prev.personel,
-            planGrubu: (item.planGrubu && item.planGrubu !== "Genel") ? item.planGrubu : prev.planGrubu,
-            ilRaw: item.ilRaw || prev.ilRaw,
-            district: item.district || prev.district,
-            il: item.il || prev.il,
-            category: item.category || prev.category,
-            settlement: item.settlement || prev.settlement,
-            openAddress: (item.openAddress && item.openAddress.length > (prev.openAddress || "").length) ? item.openAddress : (prev.openAddress || item.openAddress),
-            rawAddress: (item.rawAddress && item.rawAddress.length > (prev.rawAddress || "").length) ? item.rawAddress : (prev.rawAddress || item.rawAddress),
-            modemSeri: item.modemSeri || prev.modemSeri,
-            modemMarka: item.modemMarka || prev.modemMarka,
-            sayacSeri: item.sayacSeri || prev.sayacSeri,
-            sayacMarka: item.sayacMarka || prev.sayacMarka,
-            durumNotu: (item.durumNotu && item.durumNotu !== "Sebep Belirtilmemiş") ? item.durumNotu : prev.durumNotu,
-            completed: Boolean(prev.completed || item.completed),
-            completedAt: prev.completedAt || item.completedAt || null
-          });
-          mergedCount += 1;
-        } else {
-          map.set(k, { ...item });
-          order.push(k);
-          addedCount += 1;
-        }
-      });
-
-      return { items: order.map(k => map.get(k)), mergedCount, addedCount };
-    }
-
-    function loadPersonnelMemory() {
-      try {
-        const raw = localStorage.getItem(PERSONNEL_MEMORY_KEY);
-        if (!raw) return { names: [], byTesisat: {}, byGroup: {} };
-        const parsed = JSON.parse(raw);
-        return {
-          names: Array.isArray(parsed.names) ? parsed.names : [],
-          byTesisat: parsed.byTesisat && typeof parsed.byTesisat === "object" ? parsed.byTesisat : {},
-          byGroup: parsed.byGroup && typeof parsed.byGroup === "object" ? parsed.byGroup : {}
-        };
-      } catch (e) {
-        return { names: [], byTesisat: {}, byGroup: {} };
-      }
-    }
-
-    function savePersonnelMemory(mem) {
-      try {
-        localStorage.setItem(PERSONNEL_MEMORY_KEY, JSON.stringify({
-          names: Array.from(new Set((mem.names || []).filter(Boolean))).slice(0, 200),
-          byTesisat: mem.byTesisat || {},
-          byGroup: mem.byGroup || {}
-        }));
-      } catch (e) {}
-    }
-
-    function syncPersonnelDatalist() {
-      const dl = document.getElementById("knownPersonnelDatalist");
-      if (!dl) return;
-      const mem = loadPersonnelMemory();
-      const setNames = new Set(mem.names);
-      allFaults.forEach(f => {
-        if (f.personel && f.personel !== "Bilinmeyen Personel") setNames.add(f.personel);
-      });
-      completedFaults.forEach(f => {
-        if (f.completedBy && f.completedBy !== "Belirtilmedi") setNames.add(f.completedBy);
-        if (f.personel && f.personel !== "Bilinmeyen Personel") setNames.add(f.personel);
-      });
-      dl.innerHTML = Array.from(setNames).sort((a, b) => a.localeCompare(b, "tr"))
-        .map(n => `<option value="${n.replace(/"/g, "&quot;")}"></option>`).join("");
-    }
-
-    function rememberPersonnelMapping(personName, tesisatNo, planGrubu) {
-      const cleanName = deduplicateWords(String(personName || "").trim());
-      if (!cleanName || asciiKey(cleanName) === "bilinmeyen personel" || asciiKey(cleanName) === "belirtilmedi") return;
-      const mem = loadPersonnelMemory();
-      if (!mem.names.some(n => asciiKey(n) === asciiKey(cleanName))) {
-        mem.names.push(properTr(cleanName));
-      }
-      if (tesisatNo) mem.byTesisat[String(tesisatNo).trim()] = properTr(cleanName);
-      if (planGrubu && !mem.byGroup[asciiKey(planGrubu)]) {
-        mem.byGroup[asciiKey(planGrubu)] = properTr(cleanName);
-      }
-      savePersonnelMemory(mem);
-      syncPersonnelDatalist();
-    }
-
-    function extractPersonnelFromText(text) {
-      const raw = String(text || "");
-      const m = raw.match(/(?:ekip|personel|görevli|gorevli|okuyucu|saha\s*personeli|saha\s*elemanı|saha\s*elemani)\s*[:\-–]\s*([A-ZÇĞİÖŞÜa-zçğıöşü\s]{3,35})/i);
-      if (m) {
-        const candidate = deduplicateWords(m[1].split(/[|•,/]/)[0].trim());
-        if (candidate && !/\b(mah|köy|koy|sok|cad|no|daire|il|ilçe)\b/i.test(candidate)) {
-          return properTr(candidate);
-        }
-      }
-      return "";
-    }
-
-    function classifyFaultRow(row) {
-      const tesisatNo = pickFlexible(row, ["tesisat", "abone", "sozlesme", "numara"]).replace(/\D/g, "").trim();
-      const rawAddress = pickFlexible(row, ["adres", "rawAddress", "mahalle", "koy", "sokak", "cadde"]) || "";
-      const ilRaw = pickFlexible(row, ["il", "sehir"]) || "";
-      const planGrubu = pickFlexible(row, ["planlama grubu2", "planlama", "grup", "ilce", "bolge"]) || ilRaw || "Genel";
-
-      let personel = deduplicateWords(
-        pickFlexible(row, [
-          "ekip", "personel", "gorevli", "görevli", "okuyucu", "saha",
-          "eleman", "sorumlu", "calisan", "çalışan", "ad soyad", "adi soyadi", "adı soyadı"
-        ]) || extractPersonnelFromText(`${rawAddress} ${row.durumNotu || ""}`)
-      );
-
-      if (!personel || asciiKey(personel) === "bilinmeyen personel") {
-        const mem = loadPersonnelMemory();
-        if (tesisatNo && mem.byTesisat[tesisatNo]) {
-          personel = mem.byTesisat[tesisatNo];
-        } else if (mem.byGroup[asciiKey(planGrubu)]) {
-          personel = mem.byGroup[asciiKey(planGrubu)];
-        } else {
-          personel = "Bilinmeyen Personel";
-        }
-      } else {
-        personel = properTr(personel);
-        rememberPersonnelMapping(personel, tesisatNo, planGrubu);
-      }
-
-      const modemSeri = pickFlexible(row, ["modem seri no", "modem seri", "modemSeri", "modem no"]) || "";
-      const modemMarka = pickFlexible(row, ["modem marka", "modemMarka"]) || "";
-      const sayacSeri = pickFlexible(row, ["sayac seri no", "sayaç seri no", "sayac seri", "sayaç seri", "sayacSeri", "seri"]) || "";
-      const sayacMarka = pickFlexible(row, ["sayac marka", "sayaç marka", "sayacMarka", "marka"]) || "";
-      const durumNotu = pickFlexible(row, ["sbs - günlük endeks olmama nedeni", "endeks olmama nedeni", "durum", "ariza", "aciklama", "not", "sebep", "hata"]) || "Sebep Belirtilmemiş";
-      const rawCoord = pickFlexible(row, ["koordinat", "enlem", "boylam", "lat", "coord"]) || "";
-      const koordinat = getCoordForTesisat(tesisatNo, rawCoord);
-      const cleanAddress = beautifyRawAddress(rawAddress, ilRaw, planGrubu);
-
-      const flags = [];
-      if (!/\b(?:MAH|KÖY|KOY)\b/i.test(rawAddress)) flags.push("MISSING_SETTLEMENT");
-      if (/^(?:KEŞAN|LÜLEBURGAZ)$/i.test(ilRaw)) flags.push("IL_AS_DISTRICT");
-      if (/-\s*-|MERKEZ\s*\/\s*ED\s*$/i.test(rawAddress) || rawAddress.length < 18) flags.push("DASH_OR_TRUNCATED");
-      if (durumNotu && durumNotu !== "Sebep Belirtilmemiş") flags.push("METER_ERR");
-
-      return {
-        id: String(row.id || `fault_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`).replace(/[.#$/\[\]]/g, "_"),
-        tesisatNo,
-        personel,
-        ilRaw,
-        planGrubu,
-        rawAddress: cleanAddress,
-        modemSeri,
-        modemMarka,
-        sayacMarka,
-        sayacSeri,
-        durumNotu,
-        koordinat,
-        flags
-      };
-    }
-
-    function buildFaultMapsLink(f) {
-      const resolvedCoord = getCoordForTesisat(f.tesisatNo, f.koordinat);
-      return buildGoogleMapsCoordUrl(resolvedCoord, f.rawAddress, f.planGrubu, f.ilRaw);
-    }
-
-    const webResearchCache = new Map();
-
-    function computeDirectionFromCenter(lat, lon, districtKey) {
-      const center = DISTRICT_CENTERS[districtKey] || DISTRICT_CENTERS["Edirne Merkez"];
-      const dLat = lat - center.lat;
-      const dLon = lon - center.lon;
-      const distKm = Math.round(Math.hypot(dLat * 111, dLon * 84) * 10) / 10;
-      if (distKm < 0.8) return `${districtKey} merkezine yakın (~${distKm} km)`;
-      const ns = dLat >= 0.004 ? "Kuzey" : (dLat <= -0.004 ? "Güney" : "");
-      const ew = dLon >= 0.005 ? "Doğu" : (dLon <= -0.005 ? "Batı" : "");
-      const dir = `${ns}${ew}` || "Merkez civarı";
-      return `${districtKey} merkezinin ${dir} yönünde (~${distKm} km)`;
-    }
-
-    window.__researchOnWeb = async (boxId, queryText, districtKey) => {
-      const box = document.getElementById(boxId);
-      if (!box) return;
-      box.classList.remove("hidden");
-
-      const cacheKey = asciiKey(`${queryText} ${districtKey}`);
-      if (webResearchCache.has(cacheKey)) {
-        box.innerHTML = webResearchCache.get(cacheKey);
-        return;
-      }
-
-      box.innerHTML = `🌐 İnternette araştırılıyor: <strong>${queryText}</strong>...`;
-
-      const cleanedQuery = deduplicateWords(
-        String(queryText || "")
-          .replace(/\b\d{7,14}\b/g, " ")
-          .replace(/-\s*-/g, " ")
-          .replace(/\s+/g, " ")
-          .trim()
-      );
-
-      const fallbackIl = /kirklareli/i.test(asciiKey(`${districtKey} ${cleanedQuery}`)) ? "Kırklareli" : "Edirne";
-      const fullQuery = `${cleanedQuery} ${districtKey || ""} ${fallbackIl}`.trim();
-
-      try {
-        const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=1&q=${encodeURIComponent(fullQuery)}`;
-        const nomResp = await fetch(nomUrl, { headers: { "Accept-Language": "tr" } });
-        const nomData = nomResp.ok ? await nomResp.json() : [];
-
-        let locSummary = "Harita/adres eşleşmesi bulunamadı.";
-        let sideText = "";
-
-        if (Array.isArray(nomData) && nomData.length > 0) {
-          const hit = nomData[0];
-          const addr = hit.address || {};
-          const foundSub = addr.suburb || addr.neighbourhood || addr.village || addr.town || addr.city_district || "";
-          const foundDist = addr.county || addr.town || addr.city || "";
-          const foundProv = addr.state || addr.province || "";
-          const lat = parseFloat(hit.lat);
-          const lon = parseFloat(hit.lon);
-          if (Number.isFinite(lat) && Number.isFinite(lon)) {
-            sideText = computeDirectionFromCenter(lat, lon, districtKey);
-          }
-          locSummary = `Doğrulanan Konum: <strong>${hit.display_name}</strong>` +
-            (foundSub || foundDist || foundProv ? ` <span style="color:#cbd5e1;">(${[foundSub, foundDist, foundProv].filter(Boolean).join(" / ")})</span>` : "");
-        }
-
-        const topicTerm = (cleanedQuery.split(",")[0] || cleanedQuery).trim();
-        let wikiText = "";
-        if (topicTerm) {
-          const wikiUrl = `https://tr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topicTerm)}`;
-          const wikiResp = await fetch(wikiUrl);
-          if (wikiResp.ok) {
-            const wikiJson = await wikiResp.json();
-            if (wikiJson && wikiJson.extract) {
-              wikiText = wikiJson.extract.slice(0, 200) + (wikiJson.extract.length > 200 ? "..." : "");
-            }
-          }
-        }
-
-        const html = `
-          <div><span class="web-label">🌐 İnternet Sonucu:</span> ${locSummary}</div>
-          ${sideText ? `<div style="margin-top:2px;"><span class="info-label">🧭 Ne Tarafta:</span> ${sideText}</div>` : ""}
-          ${wikiText ? `<div style="margin-top:2px; color:#cbd5e1;"><span class="reason-label">ℹ️ Bilgi:</span> ${wikiText}</div>` : ""}
-        `;
-        webResearchCache.set(cacheKey, html);
-        box.innerHTML = html;
-      } catch (err) {
-        box.innerHTML = `<span style="color:#f87171;">⚠️ İnternet sorgusu yapılamadı:</span> ${err.message}`;
-      }
-    };
-
-    function extractJobs(snapVal) {
-      if (!snapVal) return [];
-      const cand = snapVal.jobs || snapVal[DB_PATH]?.jobs || snapVal;
-      if (Array.isArray(cand)) {
-        return cand.map((item, idx) => (item && typeof item === "object" ? normalizeRecord(item, idx) : null)).filter(Boolean);
-      }
-      if (cand && typeof cand === "object") {
-        const entries = Object.entries(cand).filter(([k, v]) => v && typeof v === "object" && k !== "jobs");
-        const jobEntries = entries.filter(([, v]) =>
-          "address" in v || "rawAddress" in v || "tesisatNo" in v || "seriNo" in v || "settlement" in v || "adres" in v || "district" in v
-        );
-        if (jobEntries.length) return jobEntries.map(([k, v]) => normalizeRecord(v, k));
-      }
-      return [];
-    }
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    let allJobs = [];
-    let filteredJobs = [];
-    let visibleLimit = PAGE_SIZE;
-    let selectedCat = "ALL";
-    let selectedDistrict = "ALL";
-    let selectedSettlement = "ALL";
-    let selectedMeter = "ALL";
-    let sortMode = "DEFAULT";
-    let searchQuery = "";
-    let showCompleted = false;
-    let isAdmin = false;
-    let aiCycleLock = false;
-    let lastServerPushHash = "";
-
-    let allFaults = [];
-    let completedFaults = [];
-    let filteredFaults = [];
-    let faultVisibleLimit = PAGE_SIZE;
-    let selectedFaultPerson = "ALL";
-    let selectedFaultGroup = "ALL";
-    let selectedFaultJobReason = "ALL";
-    let selectedFaultType = "ALL";
-    let faultSearchQuery = "";
-    let completedFaultSearchQuery = "";
-    let pendingFaultId = null;
-    let selectedCompletionReason = "";
-
-    const el = {
-      syncStatus: document.getElementById("syncStatus"),
-      doneCounter: document.getElementById("doneCounter"),
-      tabSahaBtn: document.getElementById("tabSahaBtn"),
-      tabFaultBtn: document.getElementById("tabFaultBtn"),
-      faultBadgeCount: document.getElementById("faultBadgeCount"),
-      completedFaultBadgeCount: document.getElementById("completedFaultBadgeCount"),
-      sahaModule: document.getElementById("sahaModule"),
-      faultModule: document.getElementById("faultModule"),
-      faultActiveSubTabBtn: document.getElementById("faultActiveSubTabBtn"),
-      faultCompletedSubTabBtn: document.getElementById("faultCompletedSubTabBtn"),
-      faultActiveSubCount: document.getElementById("faultActiveSubCount"),
-      faultCompletedSubCount: document.getElementById("faultCompletedSubCount"),
-      faultActiveSection: document.getElementById("faultActiveSection"),
-      faultCompletedSection: document.getElementById("faultCompletedSection"),
-      menuBtn: document.getElementById("menuBtn"),
-      menuModal: document.getElementById("menuModal"),
-      pinInput: document.getElementById("pinInput"),
-      pinSubmitBtn: document.getElementById("pinSubmitBtn"),
-      pinCloseBtn: document.getElementById("pinCloseBtn"),
-      pinError: document.getElementById("pinError"),
-      adminPanel: document.getElementById("adminPanel"),
-      logoutAdminBtn: document.getElementById("logoutAdminBtn"),
-      excelInput: document.getElementById("excelInput"),
-      faultExcelInput: document.getElementById("faultExcelInput"),
-      pdfInput: document.getElementById("pdfInput"),
-      repairDbBtn: document.getElementById("repairDbBtn"),
-      showCompletedToggle: document.getElementById("showCompletedToggle"),
-      clearAllBtn: document.getElementById("clearAllBtn"),
-      adminStatus: document.getElementById("adminStatus"),
-      districtSelect: document.getElementById("districtSelect"),
-      settlementSelect: document.getElementById("settlementSelect"),
-      searchInput: document.getElementById("searchInput"),
-      sortSelect: document.getElementById("sortSelect"),
-      filteredCountLabel: document.getElementById("filteredCountLabel"),
-      percentLabel: document.getElementById("percentLabel"),
-      progressFill: document.getElementById("progressFill"),
-      jobsContainer: document.getElementById("jobsContainer"),
-      loadMoreWrap: document.getElementById("loadMoreWrap"),
-      loadMoreBtn: document.getElementById("loadMoreBtn"),
-      faultPersonSelect: document.getElementById("faultPersonSelect"),
-      faultGroupSelect: document.getElementById("faultGroupSelect"),
-      faultJobReasonSelect: document.getElementById("faultJobReasonSelect"),
-      faultTypeSelect: document.getElementById("faultTypeSelect"),
-      faultSearchInput: document.getElementById("faultSearchInput"),
-      faultPersonPills: document.getElementById("faultPersonPills"),
-      faultCountLabel: document.getElementById("faultCountLabel"),
-      faultTotalLabel: document.getElementById("faultTotalLabel"),
-      faultJobsContainer: document.getElementById("faultJobsContainer"),
-      faultLoadMoreWrap: document.getElementById("faultLoadMoreWrap"),
-      faultLoadMoreBtn: document.getElementById("faultLoadMoreBtn"),
-      completedFaultSearchInput: document.getElementById("completedFaultSearchInput"),
-      completedFaultsContainer: document.getElementById("completedFaultsContainer"),
-      faultReasonModal: document.getElementById("faultReasonModal"),
-      faultReasonTargetInfo: document.getElementById("faultReasonTargetInfo"),
-      actorNameInput: document.getElementById("actorNameInput"),
-      detectedErrorInput: document.getElementById("detectedErrorInput"),
-      customReasonInput: document.getElementById("customReasonInput"),
-      confirmFaultReasonBtn: document.getElementById("confirmFaultReasonBtn"),
-      cancelFaultReasonBtn: document.getElementById("cancelFaultReasonBtn")
-    };
-
-    function switchModule(mod) {
-      if (mod === "FAULT") {
-        el.tabFaultBtn.classList.add("active");
-        el.tabSahaBtn.classList.remove("active");
-        el.faultModule.classList.remove("hidden");
-        el.sahaModule.classList.add("hidden");
-      } else {
-        el.tabSahaBtn.classList.add("active");
-        el.tabFaultBtn.classList.remove("active");
-        el.sahaModule.classList.remove("hidden");
-        el.faultModule.classList.add("hidden");
-      }
-    }
-
-    function switchFaultSubTab(sub) {
-      if (sub === "COMPLETED") {
-        el.faultCompletedSubTabBtn.classList.add("active");
-        el.faultActiveSubTabBtn.classList.remove("active");
-        el.faultCompletedSection.classList.remove("hidden");
-        el.faultActiveSection.classList.add("hidden");
-        renderCompletedFaults();
-      } else {
-        el.faultActiveSubTabBtn.classList.add("active");
-        el.faultCompletedSubTabBtn.classList.remove("active");
-        el.faultActiveSection.classList.remove("hidden");
-        el.faultCompletedSection.classList.add("hidden");
-      }
-    }
-
-    el.tabSahaBtn.addEventListener("click", () => switchModule("SAHA"));
-    el.tabFaultBtn.addEventListener("click", () => switchModule("FAULT"));
-    el.faultActiveSubTabBtn.addEventListener("click", () => switchFaultSubTab("ACTIVE"));
-    el.faultCompletedSubTabBtn.addEventListener("click", () => switchFaultSubTab("COMPLETED"));
-
-    function saveFaultCache(list) {
-      try { localStorage.setItem(FAULT_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), items: list })); } catch (e) {}
-    }
-
-    function loadFaultCache() {
-      try {
-        const raw = localStorage.getItem(FAULT_CACHE_KEY);
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed.items) ? parsed.items : [];
-      } catch (e) { return []; }
-    }
-
-    function saveCompletedFaultsCache(list) {
-      try { localStorage.setItem(COMPLETED_FAULTS_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), items: list })); } catch (e) {}
-    }
-
-    function purgeExpiredCompletedFaults(list) {
-      const now = Date.now();
-      const valid = [];
-      const expiredIds = [];
-      (list || []).forEach(item => {
-        if (!item || typeof item !== "object") return;
-        const ts = Number(item.completedAtMs || item.expiresAt - RETENTION_MS || 0);
-        const exp = Number(item.expiresAt || (ts ? ts + RETENTION_MS : now + RETENTION_MS));
-        if (exp > 0 && now >= exp) {
-          if (item.id) expiredIds.push(item.id);
-        } else {
-          valid.push({ ...item, completedAtMs: ts || now, expiresAt: exp });
-        }
-      });
-      expiredIds.forEach(id => { remove(ref(db, `${DB_PATH}/completed_faults/${id}`)).catch(() => {}); });
-      return valid;
-    }
-
-    function loadCompletedFaultsCache() {
-      try {
-        const raw = localStorage.getItem(COMPLETED_FAULTS_CACHE_KEY);
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        const list = Array.isArray(parsed.items) ? parsed.items : [];
-        const purged = purgeExpiredCompletedFaults(list);
-        saveCompletedFaultsCache(purged);
-        return purged;
-      } catch (e) { return []; }
-    }
-
-    function updateFaultBadges() {
-      el.faultBadgeCount.textContent = allFaults.length;
-      el.completedFaultBadgeCount.textContent = completedFaults.length;
-      el.faultActiveSubCount.textContent = allFaults.length;
-      el.faultCompletedSubCount.textContent = completedFaults.length;
-    }
-
-    function setFaultItems(rows, syncToFirebase = false, appendMode = false) {
-      const classified = (rows || [])
-        .map((r, i) => {
-          const item = classifyFaultRow({ ...r, id: r.id || `f_${i + 1}_${Date.now()}` });
-          if (r.flags && Array.isArray(r.flags)) item.flags = r.flags;
-          return item;
-        })
-        .filter(f => String(f.rawAddress || "").trim().length > 0 || String(f.tesisatNo || "").trim().length > 0 || String(f.koordinat || "").trim().length > 0);
-
-      if (appendMode) {
-        const res = mergeByTesisat(allFaults, classified);
-        allFaults = res.items;
-        if (el.adminStatus) {
-          el.adminStatus.textContent = `✅ Birleştirildi: ${res.mergedCount} aynı tesisat güncellendi, ${res.addedCount} yeni/ekstra kayıt eklendi (Toplam: ${allFaults.length}).`;
-        }
-      } else {
-        allFaults = mergeByTesisat([], classified).items;
-      }
-
-      saveFaultCache(allFaults);
-      syncPersonnelDatalist();
-      updateFaultBadges();
-      populateFaultFilters();
-      applyFaultFilters(true);
-
-      if (syncToFirebase && allFaults.length > 0) {
-        const obj = {};
-        allFaults.slice(0, 3500).forEach((item, idx) => { obj[item.id || `f_${idx + 1}`] = item; });
-        set(ref(db, `${DB_PATH}/fault_addresses`), obj).catch(() => {});
-      }
-    }
-
-    function getDefaultErrorSummary(target) {
-      if (target.durumNotu && target.durumNotu !== "Sebep Belirtilmemiş") {
-        return target.durumNotu;
-      }
-      const flagLabels = (target.flags || []).map(fl => {
-        if (fl === "MISSING_SETTLEMENT") return "Mahalle/Köy eksik";
-        if (fl === "IL_AS_DISTRICT") return "İl alanında ilçe yazılı";
-        if (fl === "DASH_OR_TRUNCATED") return "Eksik/kesik adres";
-        if (fl === "METER_ERR") return "Okuma/modem hatası";
-        return fl;
-      });
-      return flagLabels.join(" • ") || "Adres / okuma hatası";
-    }
-
-    window.__openFaultReasonModal = (id) => {
-      const target = allFaults.find(x => x.id === id);
-      if (!target) return;
-      pendingFaultId = id;
-      selectedCompletionReason = "";
-      const mem = loadPersonnelMemory();
-      const suggestedPerson = (target.personel && target.personel !== "Bilinmeyen Personel")
-        ? target.personel
-        : (mem.byTesisat[target.tesisatNo] || mem.byGroup[asciiKey(target.planGrubu)] || mem.names[0] || "");
-      el.actorNameInput.value = suggestedPerson;
-      el.detectedErrorInput.value = getDefaultErrorSummary(target);
-      el.customReasonInput.value = "";
-      document.querySelectorAll(".reason-option-btn").forEach(b => b.classList.remove("selected"));
-      el.faultReasonTargetInfo.textContent = `Tesisat: ${target.tesisatNo || "-"} • Ekip: ${target.personel || "-"} • İş: ${target.durumNotu || "-"}`;
-      el.faultReasonModal.classList.add("open");
-      el.actorNameInput.focus();
-    };
-
-    document.querySelectorAll(".reason-option-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".reason-option-btn").forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
-        selectedCompletionReason = btn.dataset.reason || "";
-        const cur = el.customReasonInput.value.trim();
-        el.customReasonInput.value = cur ? `${selectedCompletionReason} — ${cur}` : selectedCompletionReason;
-      });
-    });
-
-    el.cancelFaultReasonBtn.addEventListener("click", () => {
-      pendingFaultId = null;
-      el.faultReasonModal.classList.remove("open");
-    });
-
-    el.confirmFaultReasonBtn.addEventListener("click", async () => {
-      if (!pendingFaultId) return;
-      const actorName = (el.actorNameInput.value || "").trim() || "Belirtilmedi";
-      const detectedError = (el.detectedErrorInput.value || "").trim() || "Adres / okuma hatası";
-      const reasonNote = (el.customReasonInput.value || selectedCompletionReason || "").trim();
-
-      if (!reasonNote) { el.customReasonInput.focus(); return; }
-
-      const idToRemove = pendingFaultId;
-      const targetItem = allFaults.find(item => item.id === idToRemove);
-      pendingFaultId = null;
-      el.faultReasonModal.classList.remove("open");
-
-      if (targetItem) {
-        rememberPersonnelMapping(actorName, targetItem.tesisatNo, targetItem.planGrubu);
-        const nowMs = Date.now();
-        const completedEntry = {
-          ...targetItem,
-          personel: actorName !== "Belirtilmedi" ? properTr(actorName) : targetItem.personel,
-          completedBy: properTr(actorName),
-          detectedError,
-          completionReason: reasonNote,
-          completedAt: new Date(nowMs).toLocaleString("tr-TR"),
-          completedAtMs: nowMs,
-          expiresAt: nowMs + RETENTION_MS
-        };
-        completedFaults = purgeExpiredCompletedFaults([completedEntry, ...completedFaults]);
-        saveCompletedFaultsCache(completedFaults);
-        set(ref(db, `${DB_PATH}/completed_faults/${completedEntry.id}`), completedEntry).catch(() => {});
-      }
-
-      const memAfter = loadPersonnelMemory();
-      allFaults = allFaults
-        .filter(item => item.id !== idToRemove)
-        .map(item => {
-          if (item.personel === "Bilinmeyen Personel") {
-            const matched = memAfter.byTesisat[item.tesisatNo] || memAfter.byGroup[asciiKey(item.planGrubu)];
-            if (matched) return { ...item, personel: matched };
-          }
-          return item;
-        });
-
-      saveFaultCache(allFaults);
-      syncPersonnelDatalist();
-      updateFaultBadges();
-      populateFaultFilters();
-      applyFaultFilters(false);
-      renderCompletedFaults();
-
-      try { await remove(ref(db, `${DB_PATH}/fault_addresses/${idToRemove}`)); } catch (e) {}
-    });
-
-    function formatRemainingText(expiresAt) {
-      const diff = Math.max(0, Number(expiresAt || 0) - Date.now());
-      const days = Math.ceil(diff / (24 * 60 * 60 * 1000));
-      return days > 0 ? `${days} gün sonra silinir` : "Yakında silinir";
-    }
-
-    function renderCompletedFaults() {
-      completedFaults = purgeExpiredCompletedFaults(completedFaults);
-      saveCompletedFaultsCache(completedFaults);
-      syncPersonnelDatalist();
-      updateFaultBadges();
-
-      const q = asciiKey(completedFaultSearchQuery);
-      const list = completedFaults.filter(f => {
-        if (!q) return true;
-        return asciiKey(`${f.tesisatNo} ${f.personel} ${f.completedBy || ""} ${f.detectedError || ""} ${f.durumNotu || ""} ${f.planGrubu} ${f.rawAddress} ${f.completionReason || ""}`).includes(q);
-      });
-
-      if (!list.length) {
-        el.completedFaultsContainer.innerHTML = `<div class="empty-box">Henüz tamamlanan hatalı kayıt yok (veya 1 aylık süresi dolanlar silindi).</div>`;
-        return;
-      }
-
-      el.completedFaultsContainer.innerHTML = list.map(f => `
-        <article class="job-card done-fault-card">
-          <div class="job-top">
-            <div class="job-title">Tesisat: ${f.tesisatNo || "-"} • ${f.completedBy || f.personel}</div>
-            <span class="tag tag-done">⏳ ${formatRemainingText(f.expiresAt)}</span>
-          </div>
-          <div class="job-meta">
-            Grup: <strong>${f.planGrubu}</strong>
-            ${f.completedAt ? ` • Tarih: <strong>${f.completedAt}</strong>` : ""}
-          </div>
-          <div class="job-info-box">
-            <div class="info-line"><span class="info-label">Yapan Kişi:</span> ${f.completedBy || f.personel}</div>
-            <div class="info-line"><span class="info-label">İş / Hata Nedeni:</span> ${f.detectedError || f.durumNotu || "-"}</div>
-            <div class="info-line"><span class="reason-label">Neden Yapıldı / Not:</span> ${f.completionReason || "-"}</div>
-            <div class="info-line"><span class="info-label">Adres:</span> ${f.rawAddress || "-"}</div>
-          </div>
-        </article>
-      `).join("");
-    }
-
-    el.completedFaultSearchInput.addEventListener("input", () => {
-      completedFaultSearchQuery = el.completedFaultSearchInput.value;
-      renderCompletedFaults();
-    });
-
-    function populateFaultFilters() {
-      const counts = new Map();
-      allFaults.forEach(f => counts.set(f.personel, (counts.get(f.personel) || 0) + 1));
-      const sortedPersons = Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "tr"));
-
-      el.faultPersonSelect.innerHTML = `<option value="ALL">Tüm Personeller (${allFaults.length} Kayıt)</option>` +
-        sortedPersons.map(([p, cnt]) => `<option value="${p}">${p} (${cnt})</option>`).join("");
-      if (!counts.has(selectedFaultPerson)) selectedFaultPerson = "ALL";
-      el.faultPersonSelect.value = selectedFaultPerson;
-
-      const groupPool = selectedFaultPerson === "ALL" ? allFaults : allFaults.filter(f => f.personel === selectedFaultPerson);
-      const groups = Array.from(new Set(groupPool.map(f => f.planGrubu))).sort((a, b) => a.localeCompare(b, "tr"));
-      el.faultGroupSelect.innerHTML = `<option value="ALL">Tüm Planlama Grupları / İlçeler (${groups.length})</option>` +
-        groups.map(g => `<option value="${g}">${g}</option>`).join("");
-      if (!groups.includes(selectedFaultGroup)) selectedFaultGroup = "ALL";
-      el.faultGroupSelect.value = selectedFaultGroup;
-
-      const jobReasonCounts = new Map();
-      allFaults.forEach(f => {
-        const rName = (f.durumNotu || "Sebep Belirtilmemiş").trim();
-        jobReasonCounts.set(rName, (jobReasonCounts.get(rName) || 0) + 1);
-      });
-      const sortedReasons = Array.from(jobReasonCounts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "tr"));
-      el.faultJobReasonSelect.innerHTML = `<option value="ALL">Tüm İş / Arıza Nedenleri (${allFaults.length})</option>` +
-        sortedReasons.map(([rName, cnt]) => `<option value="${rName.replace(/"/g, "&quot;")}">${rName} (${cnt})</option>`).join("");
-      if (selectedFaultJobReason !== "ALL" && !jobReasonCounts.has(selectedFaultJobReason)) {
-        selectedFaultJobReason = "ALL";
-      }
-      el.faultJobReasonSelect.value = selectedFaultJobReason;
-
-      renderFaultPersonPills(sortedPersons);
-    }
-
-    function renderFaultPersonPills(sortedPersons) {
-      if (!sortedPersons || !sortedPersons.length) {
-        el.faultPersonPills.innerHTML = `<span class="status-note" style="margin:0;">Hatalı adres kaydı kalmadı veya yüklenmedi.</span>`;
-        return;
-      }
-
-      const allPill = `<button class="d-pill ${selectedFaultPerson === "ALL" ? "active" : ""}" onclick="window.__quickFaultPerson('ALL')">Tümü (${allFaults.length})</button>`;
-      const pills = sortedPersons.map(([p, cnt]) =>
-        `<button class="d-pill ${selectedFaultPerson === p ? "active" : ""}" onclick="window.__quickFaultPerson('${p.replace(/'/g, "\\'")}')">${p} (${cnt})</button>`
-      ).join("");
-      el.faultPersonPills.innerHTML = allPill + pills;
-    }
-
-    window.__quickFaultPerson = (p) => {
-      selectedFaultPerson = p;
-      selectedFaultGroup = "ALL";
-      populateFaultFilters();
-      applyFaultFilters(true);
-    };
-
-    function applyFaultFilters(resetPaging = true) {
-      if (resetPaging) faultVisibleLimit = PAGE_SIZE;
-      const q = asciiKey(faultSearchQuery);
-
-      filteredFaults = allFaults.filter(f => {
-        if (selectedFaultPerson !== "ALL" && f.personel !== selectedFaultPerson) return false;
-        if (selectedFaultGroup !== "ALL" && f.planGrubu !== selectedFaultGroup) return false;
-        if (selectedFaultJobReason !== "ALL" && asciiKey(f.durumNotu || "Sebep Belirtilmemiş") !== asciiKey(selectedFaultJobReason)) return false;
-        if (selectedFaultType !== "ALL" && !(f.flags || []).includes(selectedFaultType)) return false;
-        if (q && !asciiKey(`${f.tesisatNo} ${f.personel} ${f.planGrubu} ${f.rawAddress} ${f.sayacSeri} ${f.modemSeri} ${f.durumNotu} ${f.koordinat || ""}`).includes(q)) return false;
-        return true;
-      });
-
-      el.faultCountLabel.textContent = `Listelenen İş / Hatalı Kayıt: ${filteredFaults.length}`;
-      el.faultTotalLabel.textContent = `Toplam: ${allFaults.length}`;
-      renderFaultList();
-    }
-
-    function renderFaultList() {
-      if (!filteredFaults.length) {
-        el.faultJobsContainer.innerHTML = `<div class="empty-box">Seçili filtrelere uygun iş veya hatalı adres kaydı bulunamadı.</div>`;
-        el.faultLoadMoreWrap.classList.add("hidden");
-        return;
-      }
-
-      const slice = filteredFaults.slice(0, faultVisibleLimit);
-      el.faultJobsContainer.innerHTML = slice.map((f, idx) => {
-        const flagLabels = (f.flags || []).map(fl => {
-          if (fl === "MISSING_SETTLEMENT") return "Mah/Köy Eksik";
-          if (fl === "IL_AS_DISTRICT") return "İl=İlçe";
-          if (fl === "DASH_OR_TRUNCATED") return "Eksik/Kesik Adres";
-          if (fl === "METER_ERR") return "Okuma/Modem Hatası";
-          return fl;
-        }).join(" • ");
-        const resolvedCoord = getCoordForTesisat(f.tesisatNo, f.koordinat);
-        const mapsUrl = buildFaultMapsLink({ ...f, koordinat: resolvedCoord });
-        const webBoxId = `web_fault_${f.id}_${idx}`;
-        const safeQuery = (f.rawAddress || `${f.planGrubu} ${f.ilRaw}`).replace(/'/g, "\\'");
-        const safeGrp = (f.planGrubu || f.ilRaw || "Edirne Merkez").replace(/'/g, "\\'");
-
-        return `
-          <article class="job-card err-card">
-            <div class="job-top">
-              <div class="job-title">Tesisat: ${f.tesisatNo || "-"} • ${f.personel}</div>
-              <span class="tag tag-err">⚠️ ${flagLabels || "Hatalı Adres"}</span>
-            </div>
-            <div class="job-meta">
-              Ekip: <strong>${f.personel}</strong> • Grup: <strong>${f.planGrubu}</strong> • İl: <strong>${f.ilRaw || "-"}</strong>
-              ${resolvedCoord ? ` • Coord: <strong>${resolvedCoord}</strong>` : ""}
-              ${f.sayacSeri ? ` • Sayaç: <strong>${f.sayacSeri}</strong> (${f.sayacMarka || "-"})` : ""}
-            </div>
-            <div class="job-info-box">
-              <div class="info-line"><span class="info-label">İş / Endeks Nedeni:</span> <strong>${f.durumNotu || "Sebep Belirtilmemiş"}</strong></div>
-              <div class="info-line"><span class="info-label">Düzenli Adres:</span> ${f.rawAddress || "-"}</div>
-              <div id="${webBoxId}" class="web-result-box hidden"></div>
-            </div>
-            <div class="fault-card-actions">
-              <a class="btn btn-primary" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">🗺️ Git</a>
-              <button class="btn btn-info" onclick="window.__researchOnWeb('${webBoxId}', '${safeQuery}', '${safeGrp}')">🌐 Araştır</button>
-              <button class="btn btn-success" onclick="window.__openFaultReasonModal('${f.id}')">✓ Tamamlandı</button>
-            </div>
-          </article>
-        `;
-      }).join("");
-
-      if (filteredFaults.length > faultVisibleLimit) {
-        el.faultLoadMoreWrap.classList.remove("hidden");
-        el.faultLoadMoreBtn.textContent = `Daha Fazla Hatalı Kayıt Göster (${slice.length} / ${filteredFaults.length})`;
-      } else {
-        el.faultLoadMoreWrap.classList.add("hidden");
-      }
-    }
-
-    el.faultPersonSelect.addEventListener("change", () => { selectedFaultPerson = el.faultPersonSelect.value; selectedFaultGroup = "ALL"; populateFaultFilters(); applyFaultFilters(true); });
-    el.faultGroupSelect.addEventListener("change", () => { selectedFaultGroup = el.faultGroupSelect.value; applyFaultFilters(true); });
-    el.faultJobReasonSelect.addEventListener("change", () => { selectedFaultJobReason = el.faultJobReasonSelect.value; applyFaultFilters(true); });
-    el.faultTypeSelect.addEventListener("change", () => { selectedFaultType = el.faultTypeSelect.value; applyFaultFilters(true); });
-    el.faultSearchInput.addEventListener("input", () => { faultSearchQuery = el.faultSearchInput.value; applyFaultFilters(true); });
-    el.faultLoadMoreBtn.addEventListener("click", () => { faultVisibleLimit += PAGE_SIZE; renderFaultList(); });
-
-    el.faultExcelInput.addEventListener("change", async e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      try {
-        el.adminStatus.textContent = "⏳ Hatalı adres / koordinat Excel dosyası okunuyor...";
-        const buf = await file.arrayBuffer();
-        const wb = XLSX.read(buf, { type: "array", raw: false });
-        const collected = [];
-        let totalCoordsAdded = 0;
-
-        for (const sheetName of wb.SheetNames) {
-          const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: "", raw: false });
-          totalCoordsAdded += ingestCoordPairsFromRows(rows);
-          for (let i = 0; i < rows.length; i++) {
-            const r = rows[i];
-            const tesisatVal = pickFlexible(r, ["tesisat", "abone"]);
-            const adresVal = pickFlexible(r, ["adres", "rawAddress"]);
-            const coordVal = pickFlexible(r, ["koordinat", "enlem", "boylam", "coord"]);
-            if (!tesisatVal && !adresVal && !coordVal) continue;
-            collected.push(classifyFaultRow({
-              ...r,
-              rawAddress: adresVal || (coordVal ? `Koordinat: ${coordVal}` : ""),
-              id: `fl_${sheetName}_${i + 1}_${tesisatVal || "x"}`
-            }));
-          }
-        }
-        setFaultItems(collected, true, true);
-        switchModule("FAULT");
-        switchFaultSubTab("ACTIVE");
-        el.adminStatus.textContent = `✅ Tamamlandı (${totalCoordsAdded} koordinat): Toplam ${allFaults.length} kayıt hazır.`;
-      } catch (err) {
-        el.adminStatus.textContent = "❌ Hatalı adres Excel hatası: " + err.message;
-      } finally { e.target.value = ""; }
-    });
-
-    function saveToLocalCache(jobsObj) {
-      try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), count: Object.keys(jobsObj).length, jobs: jobsObj })); } catch (e) {}
-    }
-
-    function loadFromLocalCache() {
-      try {
-        const raw = localStorage.getItem(LOCAL_CACHE_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.jobs && typeof parsed.jobs === "object") return parsed.jobs;
-      } catch (e) {}
-      return null;
-    }
-
-    function pickColumn(row, keywords) {
-      if (!row || typeof row !== "object") return "";
-      for (const k of Object.keys(row)) {
-        const nk = asciiKey(k);
-        if (keywords.some(kw => nk.includes(asciiKey(kw)))) {
-          const val = String(row[k] ?? "").trim();
-          if (val) return val;
-        }
-      }
-      return "";
-    }
-
-    function cleanCollection(items, baseExisting = []) {
-      const normalizedIncoming = [];
-      (items || []).forEach((item, idx) => {
-        if (!item || typeof item !== "object") return;
-        const rec = normalizeRecord(item, item.id || `kayit_${idx + 1}`);
-        if (rec.tesisatNo || rec.seriNo || rec.settlement || rec.koordinat) {
-          normalizedIncoming.push(rec);
-        }
-      });
-
-      const mergedResult = mergeByTesisat(baseExisting, normalizedIncoming);
-      return {
-        items: mergedResult.items,
-        mergedCount: mergedResult.mergedCount,
-        addedCount: mergedResult.addedCount
-      };
-    }
-
-    function syncCollection(rawList, opts = {}) {
-      const { syncServer = false, reason = "güncelleme", resetPaging = false, appendMode = false } = opts;
-      if (aiCycleLock) return;
-      aiCycleLock = true;
-
-      try {
-        const base = appendMode ? allJobs : [];
-        const res = cleanCollection(rawList, base);
-        const payload = {};
-        res.items.forEach((j, idx) => {
-          const safeId = String(j.id || `job_${idx + 1}`).replace(/[.#$/\[\]]/g, "_").slice(0, 120);
-          payload[safeId] = { ...j, id: safeId };
-        });
-
-        allJobs = Object.values(payload);
-        saveToLocalCache(payload);
-        populateFilters();
-        applyFilters(resetPaging);
-
-        if (syncServer && allJobs.length > 0) {
-          const digest = `${allJobs.length}_${allJobs.filter(x => x.completed).length}_${allJobs[0]?.id || ""}_${Date.now()}`;
-          lastServerPushHash = digest;
-          set(ref(db, `${DB_PATH}/jobs`), payload)
-            .then(() => {
-              el.adminStatus.textContent = `✅ (${reason}): ${res.mergedCount} aynı tesisat birleştirildi, ${res.addedCount} yeni/ekstra kayıt eklendi (Toplam: ${allJobs.length}).`;
-            })
-            .catch(err => {
-              el.adminStatus.textContent = `✅ (${reason}): ${res.mergedCount} birleştirildi, ${res.addedCount} eklendi (Sunucu: ${err.message})`;
-            });
-        } else if (allJobs.length > 0) {
-          el.adminStatus.textContent = `✅ ${allJobs.length} kayıt hazır.`;
-        }
-      } finally {
-        aiCycleLock = false;
-      }
-    }
-
-    function formatSettlementLabel(j) {
-      const cleanLabel = stripNoiseFromSettlementName(j.settlement, (DISTRICTS[j.district] || {}).ilce);
-      if (!cleanLabel) return "";
-      return j.category === "KOY" ? `${properTr(cleanLabel)} Köyü` : `${properTr(cleanLabel)} Mah.`;
-    }
-
-    function populateFilters() {
-      const pool = allJobs.filter(j => {
-        if (!showCompleted && j.completed) return false;
-        if (selectedCat !== "ALL" && j.category !== selectedCat) return false;
-        return true;
-      });
-
-      const districts = Array.from(new Set(pool.map(j => j.district))).sort((a, b) => a.localeCompare(b, "tr"));
-      el.districtSelect.innerHTML = `<option value="ALL">Tüm İlçeler (${districts.length})</option>` +
-        districts.map(d => `<option value="${d}">${d}</option>`).join("");
-      if (!districts.includes(selectedDistrict)) selectedDistrict = "ALL";
-      el.districtSelect.value = selectedDistrict;
-
-      const sPool = pool.filter(j => selectedDistrict === "ALL" || j.district === selectedDistrict);
-      const uniqueMap = new Map();
-      sPool.forEach(j => {
-        const formatted = formatSettlementLabel(j);
-        if (!formatted) return;
-        const k = asciiKey(formatted);
-        const prev = uniqueMap.get(k);
-        if (!prev) {
-          uniqueMap.set(k, { label: formatted, category: j.category, count: 1 });
-        } else {
-          prev.count += 1;
-        }
-      });
-
-      const settlements = Array.from(uniqueMap.values()).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "tr"));
-      const ph = selectedCat === "KOY" ? "Tüm Köyler" : selectedCat === "MAHALLE" ? "Tüm Mahalleler" : "Mahalle / Köy Seçin";
-      el.settlementSelect.innerHTML = `<option value="ALL">${ph} (${settlements.length})</option>` +
-        settlements.map(s => {
-          const icon = s.category === "KOY" ? "🌾" : "🏙️";
-          return `<option value="${s.label}">${icon} ${s.label} (${s.count})</option>`;
-        }).join("");
-
-      if (!settlements.some(s => asciiKey(s.label) === asciiKey(selectedSettlement))) selectedSettlement = "ALL";
-      el.settlementSelect.value = selectedSettlement;
-    }
-
-    function applyFilters(resetPaging = true) {
-      if (resetPaging) visibleLimit = PAGE_SIZE;
-      const q = asciiKey(searchQuery);
-
-      const list = allJobs.filter(j => {
-        if (!showCompleted && j.completed) return false;
-        if (selectedCat !== "ALL" && j.category !== selectedCat) return false;
-        if (selectedDistrict !== "ALL" && j.district !== selectedDistrict) return false;
-        if (selectedSettlement !== "ALL" && asciiKey(j.settlement) !== asciiKey(selectedSettlement)) return false;
-        if (selectedMeter !== "ALL" && j.meterType !== selectedMeter) return false;
-        if (q && !asciiKey(`${j.tesisatNo} ${j.seriNo} ${j.district} ${j.settlement} ${j.openAddress || ""} ${j.koordinat || ""}`).includes(q)) return false;
-        return true;
-      });
-
-      if (sortMode === "SETTLEMENT") {
-        list.sort((a, b) => a.settlement.localeCompare(b.settlement, "tr") || a.tesisatNo.localeCompare(b.tesisatNo, "tr"));
-      } else if (sortMode === "TESISAT") {
-        list.sort((a, b) => a.tesisatNo.localeCompare(b.tesisatNo, "tr", { numeric: true }));
-      }
-
-      filteredJobs = list;
-      updateCounters();
-      renderList();
-    }
-
-    function updateCounters() {
-      const total = allJobs.length;
-      const done = allJobs.filter(j => j.completed).length;
-      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-      el.doneCounter.textContent = `${done} / ${total}`;
-      el.filteredCountLabel.textContent = `Ekranda Kalan: ${filteredJobs.length}`;
-      el.percentLabel.textContent = `%${pct}`;
-      el.progressFill.style.width = `${pct}%`;
-    }
-
-    const catTag = c => c === "KOY"
-      ? `<span class="tag tag-koy">🌾 Köy</span>`
-      : `<span class="tag tag-mahalle">🏙️ Mahalle</span>`;
-
-    function renderList() {
-      if (!filteredJobs.length) {
-        el.jobsContainer.innerHTML = `<div class="empty-box">Seçili filtrelere uygun kayıt bulunamadı.</div>`;
-        el.loadMoreWrap.classList.add("hidden");
-        return;
-      }
-
-      const slice = filteredJobs.slice(0, visibleLimit);
-
-      el.jobsContainer.innerHTML = slice.map((j, idx) => {
-        const meterLabel = j.meterType === "TRI" ? "Trifaze Sayaç" : "Monofaze Sayaç";
-        const addressText = j.openAddress || `${j.settlement}, ${j.district} / ${j.il || "Edirne"}`;
-        const resolvedCoord = getCoordForTesisat(j.tesisatNo, j.koordinat);
-        const mapsUrl = buildGoogleMapsCoordUrl(resolvedCoord, addressText, j.district, j.il);
-        const webBoxId = `web_saha_${j.id}_${idx}`;
-        const safeQuery = `${j.settlement} ${addressText}`.replace(/'/g, "\\'");
-        const safeDist = (j.district || "Edirne Merkez").replace(/'/g, "\\'");
-
-        return `
-          <article class="job-card">
-            <div class="job-top">
-              <div class="job-title">${j.displayTitle}</div>
-              ${catTag(j.category)}
-            </div>
-            <div class="job-meta">
-              ${j.seriNo ? `Seri: <strong>${j.seriNo}</strong> • ` : ""}
-              <strong>${j.settlement}</strong> (${j.district}) • ${j.meterType === "TRI" ? "Trifaze" : "Monofaze"}
-              ${resolvedCoord ? ` • Coord: <strong>${resolvedCoord}</strong>` : ""}
-            </div>
-            <div class="job-info-box">
-              <div class="info-line"><span class="info-label">Açık Adres:</span> ${addressText}</div>
-              <div class="info-line">${meterLabel} • ${j.district} / ${j.il || "Edirne"}</div>
-              <div id="${webBoxId}" class="web-result-box hidden"></div>
-            </div>
-            <div class="job-actions">
-              <a class="btn btn-primary" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">🗺️ Git</a>
-              <button class="btn btn-info" onclick="window.__researchOnWeb('${webBoxId}', '${safeQuery}', '${safeDist}')">🌐 Araştır</button>
-              <button class="btn ${j.completed ? "btn-secondary" : "btn-success"}" onclick="window.__toggleJob('${j.id}', ${!j.completed})">
-                ${j.completed ? "↩️ Bekleyene Al" : "✓ İşi Tamamla"}
-              </button>
-            </div>
-          </article>
-        `;
-      }).join("");
-
-      if (filteredJobs.length > visibleLimit) {
-        el.loadMoreWrap.classList.remove("hidden");
-        el.loadMoreBtn.textContent = `Daha Fazla Göster (${slice.length} / ${filteredJobs.length})`;
-      } else {
-        el.loadMoreWrap.classList.add("hidden");
-      }
-    }
-
-    window.__toggleJob = async (id, nextState) => {
-      try {
-        await update(ref(db, `${DB_PATH}/jobs/${id}`), { completed: Boolean(nextState), completedAt: nextState ? Date.now() : null });
-      } catch (e) { alert("Güncelleme hatası: " + e.message); }
-    };
-
-    document.querySelectorAll(".cat-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        selectedCat = btn.dataset.cat; selectedSettlement = "ALL";
-        populateFilters(); applyFilters(true);
-      });
-    });
-
-    document.querySelectorAll(".chip-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        selectedMeter = btn.dataset.meter;
-        applyFilters(true);
-      });
-    });
-
-    el.sortSelect.addEventListener("change", () => { sortMode = el.sortSelect.value; applyFilters(true); });
-    el.districtSelect.addEventListener("change", () => {
-      selectedDistrict = el.districtSelect.value; selectedSettlement = "ALL";
-      populateFilters(); applyFilters(true);
-    });
-    el.settlementSelect.addEventListener("change", () => {
-      selectedSettlement = el.settlementSelect.value;
-      applyFilters(true);
-    });
-
-    let tmr = null;
-    el.searchInput.addEventListener("input", () => {
-      clearTimeout(tmr);
-      tmr = setTimeout(() => { searchQuery = el.searchInput.value; applyFilters(true); }, 180);
-    });
-
-    el.loadMoreBtn.addEventListener("click", () => { visibleLimit += PAGE_SIZE; renderList(); });
-
-    el.menuBtn.addEventListener("click", () => { el.pinError.textContent = ""; el.pinInput.value = ""; el.menuModal.classList.add("open"); el.pinInput.focus(); });
-    el.pinCloseBtn.addEventListener("click", () => el.menuModal.classList.remove("open"));
-    el.pinSubmitBtn.addEventListener("click", () => {
-      if (el.pinInput.value.trim() === ADMIN_PIN) { isAdmin = true; el.adminPanel.classList.remove("hidden"); el.menuModal.classList.remove("open"); }
-      else { el.pinError.textContent = "PIN hatalı."; }
-    });
-
-    el.logoutAdminBtn.addEventListener("click", () => {
-      isAdmin = false; showCompleted = false;
-      el.showCompletedToggle.textContent = "✓ Tamamlananlar";
-      el.adminPanel.classList.add("hidden");
-      populateFilters(); applyFilters(true);
-    });
-
-    el.repairDbBtn.addEventListener("click", async () => {
-      try {
-        if (!allJobs.length && !allFaults.length) { el.adminStatus.textContent = "Düzenlenecek kayıt yok."; return; }
-        el.adminStatus.textContent = "⏳ Tesisat numaralarına göre birleştirme ve düzenleme yapılıyor...";
-        if (allJobs.length) {
-          syncCollection(allJobs, { syncServer: true, reason: "tesisat birleştirme", resetPaging: false, appendMode: false });
-        }
-        if (allFaults.length) {
-          setFaultItems(allFaults, true, false);
-        }
-      } catch (e) { el.adminStatus.textContent = "❌ Hata: " + e.message; }
-    });
-
-    el.showCompletedToggle.addEventListener("click", () => {
-      showCompleted = !showCompleted;
-      el.showCompletedToggle.textContent = showCompleted ? "⏳ Bekleyenler" : "✓ Tamamlananlar";
-      populateFilters(); applyFilters(true);
-    });
-
-    el.clearAllBtn.addEventListener("click", async () => {
-      try {
-        if (!confirm("Tüm kayıtlar silinsin mi?")) return;
-        localStorage.removeItem(LOCAL_CACHE_KEY);
-        localStorage.removeItem(FAULT_CACHE_KEY);
-        localStorage.removeItem(COMPLETED_FAULTS_CACHE_KEY);
-        dynamicCoordMap = {};
-        await remove(ref(db, `${DB_PATH}/jobs`));
-        await remove(ref(db, `${DB_PATH}/fault_addresses`));
-        await remove(ref(db, `${DB_PATH}/completed_faults`));
-        allJobs = []; allFaults = []; completedFaults = []; lastServerPushHash = "";
-        setFaultItems([], false, false); renderCompletedFaults(); populateFilters(); applyFilters(true);
-        el.adminStatus.textContent = "Tüm kayıtlar silindi.";
-      } catch (e) { el.adminStatus.textContent = "❌ Hata: " + e.message; }
-    });
-
-    async function pushRows(rows) {
-      if (!rows || !rows.length) { el.adminStatus.textContent = "Dosyada kayıt bulunamadı."; return; }
-      el.adminStatus.textContent = `⏳ ${rows.length} satır tesisat numarasına göre birleştirilip ekleniyor...`;
-      syncCollection(rows, { syncServer: true, reason: "ekstra yükleme & birleştirme", resetPaging: true, appendMode: true });
-    }
-
-    el.excelInput.addEventListener("change", async e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      try {
-        el.adminStatus.textContent = "⏳ Excel dosyasındaki tüm sayfalar okunuyor...";
-        const buf = await file.arrayBuffer();
-        const wb = XLSX.read(buf, { type: "array", cellDates: true });
-        const collected = [];
-        for (const sheetName of wb.SheetNames) {
-          const sheet = wb.Sheets[sheetName];
-          const json = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
-          ingestCoordPairsFromRows(json);
-          const nonEmpty = json.filter(row => Object.values(row).some(v => String(v ?? "").trim() !== ""));
-          nonEmpty.forEach((row, i) => {
-            const tesisatNo = pickColumn(row, ["tesisat", "installation", "abone no", "sayac no"]).replace(/\D/g, "").trim();
-            const seriNo = pickColumn(row, ["seri", "serial", "sayaç seri", "sayac seri"]);
-            const aboneAdi = pickColumn(row, ["abone", "unvan", "ünvan", "musteri", "müşteri", "ad soyad", "ekip", "personel"]);
-            const settlement = pickColumn(row, ["mahalle", "koy", "köy", "yerlesim", "yerleşim", "mah"]);
-            const district = pickColumn(row, ["ilce", "ilçe", "district", "planlama grubu2"]);
-            const meterType = pickColumn(row, ["sayac tipi", "sayaç tipi", "faz", "tip", "meter"]);
-            const rawCoord = pickColumn(row, ["koordinat", "enlem", "boylam", "coord"]);
-            const koordinat = getCoordForTesisat(tesisatNo, rawCoord);
-            const fallback = Object.values(row).map(v => String(v ?? "").trim()).filter(Boolean).join(" ");
-            collected.push(normalizeRecord({
-              id: `xl_${sheetName}_${i + 1}_${tesisatNo || "t"}_${seriNo || "s"}_${Date.now()}`,
-              tesisatNo, seriNo, koordinat, aboneAdi, _rawSource: fallback, settlement, district, meterType, completed: false
-            }, `xl_${sheetName}_${i + 1}`));
-          });
-        }
-        await pushRows(collected);
-      } catch (err) { el.adminStatus.textContent = "❌ Excel hatası: " + err.message; }
-      finally { e.target.value = ""; }
-    });
-
-    el.pdfInput.addEventListener("change", async e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      try {
-        el.adminStatus.textContent = "⏳ PDF dosyası okunuyor...";
-        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-        const buf = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-        const lines = [];
-        for (let p = 1; p <= pdf.numPages; p++) {
-          const page = await pdf.getPage(p);
-          const tc = await page.getTextContent();
-          tc.items.map(it => it.str).join(" ").split(/\n|\s{3,}/).forEach(ch => {
-            const t = ch.trim();
-            if (t.length > 6) lines.push(t);
-          });
-        }
-        const mapped = lines.slice(0, 3000).map((line, i) => normalizeRecord({
-          id: `pdf_${i + 1}_${Date.now()}`, _rawSource: line, completed: false
-        }, `pdf_${i + 1}`));
-        await pushRows(mapped);
-      } catch (err) { el.adminStatus.textContent = "❌ PDF hatası: " + err.message; }
-      finally { e.target.value = ""; }
-    });
-
-    const cachedJobs = loadFromLocalCache();
-    if (cachedJobs && Object.keys(cachedJobs).length > 0) {
-      syncCollection(Object.values(cachedJobs), { syncServer: false, reason: "yerel hafıza", resetPaging: true, appendMode: false });
-    }
-
-    const cachedCompletedFaults = loadCompletedFaultsCache();
-    if (cachedCompletedFaults.length > 0) {
-      completedFaults = cachedCompletedFaults;
-      completedFaults.forEach(cf => {
-        if (cf.completedBy && cf.completedBy !== "Belirtilmedi") {
-          rememberPersonnelMapping(cf.completedBy, cf.tesisatNo, cf.planGrubu);
-        }
-      });
-    }
-
-    const cachedFaults = loadFaultCache();
-    if (cachedFaults.length > 0) setFaultItems(cachedFaults, false, false);
-
-    syncPersonnelDatalist();
-    updateFaultBadges();
-    renderCompletedFaults();
-
-    setInterval(() => {
-      if (completedFaults.length > 0) {
-        const before = completedFaults.length;
-        completedFaults = purgeExpiredCompletedFaults(completedFaults);
-        if (completedFaults.length !== before) {
-          saveCompletedFaultsCache(completedFaults);
-          updateFaultBadges();
-          renderCompletedFaults();
-        }
-      }
-    }, 60 * 60 * 1000);
-
-    onValue(ref(db, "/"), snap => {
-      el.syncStatus.className = "sync-status sync-ok";
-      el.syncStatus.textContent = "🟢 Sunucu Bağlı";
-
-      const val = snap.val();
-      const serverJobs = extractJobs(val);
-      if (serverJobs.length > 0) {
-        syncCollection(serverJobs, { syncServer: false, reason: "canlı sunucu", resetPaging: false, appendMode: false });
-      } else if (!allJobs.length) {
-        allJobs = []; populateFilters(); applyFilters(false);
-      }
-
-      const doneFaultObj = val?.completed_faults || val?.[DB_PATH]?.completed_faults;
-      if (doneFaultObj && typeof doneFaultObj === "object") {
-        const doneList = purgeExpiredCompletedFaults(Object.values(doneFaultObj).filter(x => x && typeof x === "object"));
-        completedFaults = doneList;
-        completedFaults.forEach(cf => {
-          if (cf.completedBy && cf.completedBy !== "Belirtilmedi") {
-            rememberPersonnelMapping(cf.completedBy, cf.tesisatNo, cf.planGrubu);
-          }
-        });
-        saveCompletedFaultsCache(completedFaults);
-        syncPersonnelDatalist();
-        updateFaultBadges();
-        renderCompletedFaults();
-      }
-
-      const faultObj = val?.fault_addresses || val?.[DB_PATH]?.fault_addresses;
-      if (faultObj && typeof faultObj === "object") {
-        const list = Object.values(faultObj).filter(x => x && typeof x === "object");
-        if (list.length > 0) setFaultItems(list, false, false);
-      }
-    }, err => {
-      el.syncStatus.className = "sync-status sync-err";
-      el.syncStatus.textContent = "❌ Bağlantı Hatası (Yerel Hafıza)";
-      if (allJobs.length > 0) el.adminStatus.textContent = `Yerel hafızadaki ${allJobs.length} kayıt ekranda.`;
-      else el.adminStatus.textContent = err.message;
-    });
-  </script>
+<div class="container">
+<header class="topbar">
+<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+<span class="badge">TREDAŞ</span>
+<div><h1 class="app-title">Edirne & Kırklareli Saha</h1><div id="syncStatus" class="sync sync-busy">⏳ Sunucu bekleniyor...</div></div>
+</div>
+<div id="doneCounter" class="pill">0 / 0</div>
+<button id="menuBtn" class="menu-btn">⋮</button>
+</header>
+
+<div class="mod-switch">
+<button id="tabSahaBtn" class="mod-btn active">📋 Saha İş Listesi</button>
+<button id="tabFaultBtn" class="mod-btn">⚠️ Hatalı Adres (<span id="faultBadge">0</span>) • ✓ (<span id="doneFaultBadge">0</span>)</button>
+</div>
+
+<div id="adminPanel" class="admin hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong>🔐 YETKİLİ PANELİ</strong><button id="logoutBtn" class="btn btn-sec" style="padding:4px 9px;font-size:11.5px">Çıkış</button></div>
+<div class="admin-grid">
+<label class="btn btn-p" style="cursor:pointer">📊 Saha Excel Yükle<input type="file" id="excelInput" accept=".xlsx,.xls,.csv" hidden /></label>
+<label class="btn btn-w" style="cursor:pointer">⚠️ Hatalı Excel Yükle<input type="file" id="faultExcelInput" accept=".xlsx,.xls,.csv" hidden /></label>
+<button id="repairBtn" class="btn btn-sec">🤖 Birleştir & Düzenle</button>
+<button id="showDoneBtn" class="btn btn-sec">✓ Tamamlananlar</button>
+<button id="clearBtn" class="btn btn-d">🗑️ Tümünü Sil</button>
+</div><div id="adminStatus" class="note"></div>
+</div>
+
+<div id="sahaModule">
+<section class="card">
+<div class="cat-grid">
+<button class="cat-btn active" data-cat="ALL">Tümü</button>
+<button class="cat-btn" data-cat="MAHALLE">🏙️ Mahalleler</button>
+<button class="cat-btn" data-cat="KOY">🌾 Köyler</button>
+</div>
+<div class="filter-grid"><select id="districtSelect"><option value="ALL">Tüm İlçeler</option></select><select id="settlementSelect"><option value="ALL">Tüm Mahalle / Köyler</option></select></div>
+<input id="searchInput" type="text" placeholder="Tesisat No, Seri No, Mahalle, Köy, Yol veya Adres ara..." />
+<div class="controls"><div style="display:flex;gap:6px;flex-wrap:wrap">
+<button class="chip active" data-meter="ALL">Tümü</button><button class="chip" data-meter="MONO">Monofaze</button><button class="chip" data-meter="TRI">Trifaze</button></div>
+<select id="sortSelect" style="width:auto;min-width:175px;padding:6px 9px;font-size:11.5px">
+<option value="DEFAULT">Sırala: Varsayılan</option>
+<option value="SETTLEMENT">Sırala: Mahalle / Köy (A-Z)</option>
+<option value="TESISAT">Sırala: Tesisat No</option>
+<option value="ROTA">Sırala: Rota (Akıllı - En Yakın)</option>
+</select></div>
+</section>
+<section class="card"><div class="progress-head"><span id="filteredLabel">Ekranda Kalan: 0</span><span id="percentLabel">%0</span></div><div class="progress"><div id="progressFill" class="progress-fill"></div></div></section>
+<div id="jobsContainer"></div>
+<div id="loadMoreWrap" class="hidden" style="margin-top:8px"><button id="loadMoreBtn" class="btn btn-sec" style="width:100%">Daha Fazla Göster</button></div>
+</div>
+
+<div id="faultModule" class="hidden">
+<div class="mod-switch">
+<button id="faultActiveBtn" class="mod-btn active">⚠️ Bekleyen Hatalı (<span id="faultActiveCount">0</span>)</button>
+<button id="faultDoneBtn" class="mod-btn">✓ Tamamlananlar (<span id="faultDoneCount">0</span>)</button>
+</div>
+<div id="faultActiveSection">
+<section class="card"><div style="font-size:12px;font-weight:800;color:#fbbf24;margin-bottom:6px">👷 Personel / Ekip</div><div id="faultPersonPills" class="pill-wrap"></div></section>
+<section class="card">
+<div style="font-size:12px;font-weight:800;color:#fbbf24;margin-bottom:6px">⚠️ Hatalı Filtreler</div>
+<div class="filter-grid"><select id="faultPersonSelect"><option value="ALL">Tüm Personeller</option></select><select id="faultGroupSelect"><option value="ALL">Tüm Gruplar / İlçeler</option></select></div>
+<div class="filter-grid"><select id="faultReasonSelect"><option value="ALL">Tüm İş / Arıza Nedenleri</option></select><select id="faultTypeSelect"><option value="ALL">Tüm Adres Tipleri</option><option value="MISSING_SETTLEMENT">Mahalle / Köy Eksik</option><option value="IL_AS_DISTRICT">İl Alanında İlçe Yazılı</option><option value="DASH_OR_TRUNCATED">Eksik / Kesik / (- -) Adres</option><option value="METER_ERR">Modem / Sayaç Hatası</option></select></div>
+<input id="faultSearchInput" type="text" placeholder="Tesisat, Personel, İş Nedeni, Adres veya Seri No ara..." />
+</section>
+<section class="card"><div class="progress-head"><span id="faultCountLabel">Listelenen: 0</span><span id="faultTotalLabel">Toplam: 0</span></div></section>
+<div id="faultContainer"></div>
+<div id="faultLoadMoreWrap" class="hidden" style="margin-top:8px"><button id="faultLoadMoreBtn" class="btn btn-sec" style="width:100%">Daha Fazla Göster</button></div>
+</div>
+<div id="faultDoneSection" class="hidden">
+<section class="card"><div style="font-size:12px;font-weight:800;color:#fbbf24;margin-bottom:6px">✓ Tamamlanan Hatalı Kayıtlar (1 Ay Sonra Silinir)</div><input id="doneFaultSearch" type="text" placeholder="Tesisat, Yapan Kişi, İş veya Not ara..." /></section>
+<div id="doneFaultContainer"></div>
+</div>
+</div>
+</div>
+
+<div id="faultModal" class="backdrop"><div class="modal">
+<h3 style="margin-top:0">Tamamlandı - İş / Hata Notu</h3><p id="faultTargetInfo" style="font-size:11.5px;color:var(--muted)"></p>
+<label class="label">Yapan Kişi / Ekip</label><input id="actorInput" list="personDatalist" type="text" placeholder="Personel / ekip adı..." style="margin-bottom:7px" /><datalist id="personDatalist"></datalist>
+<label class="label">Ne Hata / İş Vardı?</label><input id="errorInput" type="text" placeholder="Örn: Modem IP ve Port Geçersiz..." style="margin-bottom:7px" />
+<label class="label">Neden Yapıldı? (Hızlı Seçim)</label>
+<div class="reason-grid">
+<button type="button" class="reason-btn" data-reason="IP / Port Güncellendi">🌐 IP / Port Güncellendi</button>
+<button type="button" class="reason-btn" data-reason="Kablo / Sayaç Bağlantısı Düzeltildi">🔌 Kablo / Sayaç Düzeltildi</button>
+<button type="button" class="reason-btn" data-reason="Merkezi Okuma / İş Emri Kontrol Edildi">📋 Okuma / İş Emri Kontrol</button>
+<button type="button" class="reason-btn" data-reason="Modem Enerji / Ping Sorunu Giderildi">⚡ Enerji / Ping Giderildi</button>
+</div>
+<label class="label">Açıklama Notu</label><textarea id="reasonInput" placeholder="Ne yapıldı, neden yapıldı..." style="margin-bottom:9px"></textarea>
+<div style="display:flex;gap:8px"><button id="confirmFaultBtn" class="btn btn-s" style="flex:1">Kaydet ve Tamamla</button><button id="cancelFaultBtn" class="btn btn-sec" style="flex:1">İptal</button></div>
+</div></div>
+
+<div id="menuModal" class="backdrop"><div class="modal">
+<h3 style="margin-top:0">Yetkili Girişi</h3><p style="font-size:12.5px;color:var(--muted)">Excel yükleme için PIN girin.</p>
+<input id="pinInput" type="password" inputmode="numeric" placeholder="PIN (1923)" style="margin-bottom:10px" />
+<div style="display:flex;gap:8px"><button id="pinBtn" class="btn btn-p" style="flex:1">Giriş</button><button id="pinCloseBtn" class="btn btn-sec" style="flex:1">Kapat</button></div>
+<div id="pinError" style="color:var(--red);font-size:12px;margin-top:8px"></div>
+</div></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBKtYaeuAiY1Pb8NspS2eiD8PA6aTksw24",
+  authDomain: "edirne-sayac-saha.firebaseapp.com",
+  databaseURL: "https://edirne-sayac-saha-default-rtdb.firebaseio.com",
+  projectId: "edirne-sayac-saha",
+  storageBucket: "edirne-sayac-saha.firebasestorage.app",
+  messagingSenderId: "587813278589",
+  appId: "1:587813278589:web:0b800320e74013555e3214",
+  measurementId: "G-8NZ19TQY38"
+};
+
+const DB_PATH = "edirne_saha_v1";
+const ADMIN_PIN = "1923";
+const PAGE_SIZE = 40;
+const RETENTION_MS = 30*24*60*60*1000;
+
+const DISTRICTS = {
+  "Edirne Merkez":{lat:41.6771,lon:26.5557,il:"Edirne",ilce:"Merkez"},
+  "Keşan":{lat:40.8559,lon:26.6303,il:"Edirne",ilce:"Keşan"},
+  "Uzunköprü":{lat:41.2686,lon:26.6894,il:"Edirne",ilce:"Uzunköprü"},
+  "İpsala":{lat:40.9167,lon:26.3833,il:"Edirne",ilce:"İpsala"},
+  "Havsa":{lat:41.55,lon:26.8167,il:"Edirne",ilce:"Havsa"},
+  "Meriç":{lat:41.1889,lon:26.4167,il:"Edirne",ilce:"Meriç"},
+  "Enez":{lat:40.725,lon:26.0833,il:"Edirne",ilce:"Enez"},
+  "Süloğlu":{lat:41.7667,lon:26.9,il:"Edirne",ilce:"Süloğlu"},
+  "Lalapaşa":{lat:41.8389,lon:26.7361,il:"Edirne",ilce:"Lalapaşa"},
+  "Kırklareli Merkez":{lat:41.7333,lon:27.2167,il:"Kırklareli",ilce:"Merkez"},
+  "Lüleburgaz":{lat:41.4056,lon:27.3569,il:"Kırklareli",ilce:"Lüleburgaz"},
+  "Babaeski":{lat:41.4333,lon:27.0917,il:"Kırklareli",ilce:"Babaeski"},
+  "Vize":{lat:41.5736,lon:27.7667,il:"Kırklareli",ilce:"Vize"},
+  "Pınarhisar":{lat:41.6222,lon:27.5139,il:"Kırklareli",ilce:"Pınarhisar"},
+  "Demirköy":{lat:41.8222,lon:27.7583,il:"Kırklareli",ilce:"Demirköy"},
+  "Pehlivanköy":{lat:41.35,lon:27.1833,il:"Kırklareli",ilce:"Pehlivanköy"},
+  "Kofçaz":{lat:41.9333,lon:27.1833,il:"Kırklareli",ilce:"Kofçaz"}
+};
+
+const trLower = s => (s||"").toString().toLocaleLowerCase("tr-TR").trim();
+const asciiKey = s => trLower(s).replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c").replace(/[^a-z0-9.\s]/g," ").replace(/\s+/g," ").trim();
+const properTr = s => trLower(s).replace(/\s+/g," ").split(" ").filter(Boolean).map(w=>w.charAt(0).toLocaleUpperCase("tr-TR")+w.slice(1)).join(" ").trim();
+function parseCoord(v){ if(!v) return ""; const s=String(v).trim().replace(/,/g,"."); const m=s.match(/^\s*([+-]?\d+(?:\.\d+)?)\s*(?:[,;/\s]+|-)\s*([+-]?\d+(?:\.\d+)?)\s*$/); if(!m) return ""; const lat=parseFloat(m[1]), lon=parseFloat(m[2]); if(!isFinite(lat)||!isFinite(lon)||(lat===0&&lon===0)) return ""; return `${lat.toFixed(6)},${lon.toFixed(6)}`; }
+function mapsUrl(coord,addr,group,il){ const c=parseCoord(coord); if(c) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c)}`; const q=`${addr||""} ${group||""} ${il||"Edirne"}`.trim(); return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`; }
+
+let dynamicCoords = {};
+function getCoord(tes, fb){ const t=String(tes||"").replace(/\D/g,""); if(t&&dynamicCoords[t]) return dynamicCoords[t]; return parseCoord(fb); }
+function pick(row, keys){ if(!row) return ""; for(const k of Object.keys(row)){ const ak=asciiKey(k); if(!ak||ak.startsWith("unnamed")) continue; if(keys.some(t=>ak===asciiKey(t)||ak.includes(asciiKey(t)))){ const v=String(row[k]??"").trim(); if(v&&v.toLowerCase()!=="nan") return v; } } return ""; }
+function detectDistrict(text){ const n=asciiKey(text||""); const isK=n.includes("kirklareli"); let base=isK?"Kırklareli Merkez":"Edirne Merkez"; for(const [key,meta] of Object.entries(DISTRICTS)){ const ik=asciiKey(meta.ilce); if(ik!=="merkez" && new RegExp(`(^|[^a-z0-9])${ik}([^a-z0-9]|$)`).test(n)) return key; } return base; }
+
+function normalizeJob(raw,key){
+  const rawText=[raw.rawAddress,raw.adres,raw.ADRES,raw.address,raw.settlement,raw.district,raw.aboneAdi].filter(Boolean).join(" | ");
+  let tes=String(raw.tesisatNo||raw["Tesisat No"]||"").replace(/\D/g,"").trim();
+  let seri=String(raw.seriNo||raw["Seri No"]||"").trim();
+  if(!tes){ const m=rawText.match(/\b(\d{7,12})\b/); if(m) tes=m[1]; }
+  const coord=getCoord(tes, raw.koordinat||raw["KOORDİNAT"]||"");
+  const district=DISTRICTS[raw.district]?raw.district:detectDistrict(rawText);
+  const meta=DISTRICTS[district]||{il:"Edirne",ilce:district};
+  const isKoy=/\bkoy\b|\bköy/i.test(rawText);
+  const settRaw=raw.settlement||raw["Mahalle"]||raw["Köy"]||"";
+  const settlement=settRaw?properTr(settRaw):`${meta.ilce} Merkez`;
+  const cat=isKoy?"KOY":"MAHALLE";
+  const mNorm=asciiKey(`${raw.meterType||""} ${rawText}`);
+  const meter=(mNorm.includes("tri")||mNorm.includes("trifaze"))?"TRI":"MONO";
+  const title=tes?`Tesisat: ${tes}`:(seri?`Sayaç: ${seri}`:properTr(raw.aboneAdi||settlement));
+  return {id:String(raw.id||key),tesisatNo:tes,seriNo:seri,koordinat:coord,displayTitle:title,district,il:meta.il,category:cat,settlement:isKoy?`${settlement} Köyü`:`${settlement} Mah.`,openAddress:raw.rawAddress||raw.adres||`${settlement}, ${meta.ilce} / ${meta.il}`,meterType:meter,completed:!!raw.completed,completedAt:raw.completedAt||null};
+}
+function classifyFault(row){
+  const tes=pick(row,["tesisat","abone","sozlesme","numara"]).replace(/\D/g,"").trim();
+  const rawAddress=pick(row,["adres","mahalle","koy","sokak","cadde"])||"";
+  const ilRaw=pick(row,["il","sehir"])||"";
+  const plan=pick(row,["planlama grubu2","planlama","grup","ilce","bolge"])||ilRaw||"Genel";
+  let personel=pick(row,["ekip","personel","gorevli","okuyucu","saha","sorumlu","ad soyad"])||"Bilinmeyen Personel";
+  const modemSeri=pick(row,["modem seri"])||""; const modemMarka=pick(row,["modem marka"])||"";
+  const sayacSeri=pick(row,["sayac seri","sayaç seri","seri"])||""; const sayacMarka=pick(row,["sayac marka","sayaç marka","marka"])||"";
+  const durum=pick(row,["endeks olmama nedeni","durum","ariza","aciklama","not","sebep","hata"])||"Sebep Belirtilmemiş";
+  const coord=getCoord(tes, pick(row,["koordinat","enlem","boylam"]));
+  const flags=[];
+  if(!/\b(?:MAH|KÖY|KOY)\b/i.test(rawAddress)) flags.push("MISSING_SETTLEMENT");
+  if(/^(?:KEŞAN|LÜLEBURGAZ)$/i.test(ilRaw)) flags.push("IL_AS_DISTRICT");
+  if(/-\s*-/.test(rawAddress)||rawAddress.length<18) flags.push("DASH_OR_TRUNCATED");
+  if(durum!=="Sebep Belirtilmemiş") flags.push("METER_ERR");
+  return {id:String(row.id||`fault_${Date.now()}_${Math.random().toString(36).slice(2,7)}`).replace(/[#.$\/\[\]]/g,"_"),tesisatNo:tes,personel:properTr(personel),ilRaw,planGrubu:plan,rawAddress,modemSeri,modemMarka,sayacSeri,sayacMarka,durumNotu:durum,koordinat:coord,flags};
+}
+function mergeByTes(existing,incoming){
+  const map=new Map(), order=[]; let merged=0, added=0;
+  const keyOf=(it,i)=>{ const t=String(it.tesisatNo||"").replace(/\D/g,""); if(t) return `tes_${t}`; const s=String(it.seriNo||it.sayacSeri||"").trim(); if(s) return `ser_${s}`; return `row_${i}`; };
+  (existing||[]).forEach((it,i)=>{ const k=keyOf(it,i); map.set(k,{...it}); order.push(k); });
+  (incoming||[]).forEach((it,i)=>{ const k=keyOf(it,order.length+i); if(map.has(k)){ const p=map.get(k); map.set(k,{...p,...it,tesisatNo:it.tesisatNo||p.tesisatNo,koordinat:it.koordinat||p.koordinat,completed:p.completed||it.completed}); merged++; } else { map.set(k,{...it}); order.push(k); added++; } });
+  return {items:order.map(k=>map.get(k)),mergedCount:merged,addedCount:added};
+}
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+let allJobs=[], filteredJobs=[], visibleLimit=PAGE_SIZE, selCat="ALL", selDist="ALL", selSett="ALL", selMeter="ALL", sortMode="DEFAULT", searchQ="", showDone=false, isAdmin=false;
+let allFaults=[], doneFaults=[], filteredFaults=[], faultLimit=PAGE_SIZE, selFPerson="ALL", selFGroup="ALL", selFReason="ALL", selFType="ALL", faultQ="", doneFaultQ="", pendingId=null, selReason="";
+
+const $ = id => document.getElementById(id);
+const els = { sync:$("syncStatus"), counter:$("doneCounter"), jobs:$("jobsContainer"), faultBox:$("faultContainer"), doneFaultBox:$("doneFaultContainer") };
+
+function switchModule(m){
+  $("tabSahaBtn").classList.toggle("active", m==="SAHA");
+  $("tabFaultBtn").classList.toggle("active", m==="FAULT");
+  $("sahaModule").classList.toggle("hidden", m!=="SAHA");
+  $("faultModule").classList.toggle("hidden", m!=="FAULT");
+}
+function switchFaultSub(s){
+  $("faultActiveBtn").classList.toggle("active", s==="ACTIVE");
+  $("faultDoneBtn").classList.toggle("active", s==="DONE");
+  $("faultActiveSection").classList.toggle("hidden", s!=="ACTIVE");
+  $("faultDoneSection").classList.toggle("hidden", s!=="DONE");
+  if(s==="DONE") renderDoneFaults();
+}
+$("tabSahaBtn").onclick=()=>switchModule("SAHA");
+$("tabFaultBtn").onclick=()=>switchModule("FAULT");
+$("faultActiveBtn").onclick=()=>switchFaultSub("ACTIVE");
+$("faultDoneBtn").onclick=()=>switchFaultSub("DONE");
+$("menuBtn").onclick=()=>{ $("menuModal").classList.add("open"); $("pinInput").focus(); };
+$("pinCloseBtn").onclick=()=>$("menuModal").classList.remove("open");
+$("pinBtn").onclick=()=>{ if($("pinInput").value.trim()===ADMIN_PIN){ isAdmin=true; $("adminPanel").classList.remove("hidden"); $("menuModal").classList.remove("open"); $("pinError").textContent=""; } else $("pinError").textContent="PIN hatalı!"; };
+$("logoutBtn").onclick=()=>{ isAdmin=false; $("adminPanel").classList.add("hidden"); };
+$("showDoneBtn").onclick=()=>{ showDone=!showDone; $("showDoneBtn").textContent=showDone?"✓ Tamamlananları Gizle":"✓ Tamamlananlar"; applyFilters(); };
+$("clearBtn").onclick=()=>{ if(!confirm("Tüm kayıtlar silinsin mi?")) return; allJobs=[]; allFaults=[]; doneFaults=[]; saveAll(true); };
+$("repairBtn").onclick=()=>{ const r1=mergeByTes([], allJobs); allJobs=r1.items; const r2=mergeByTes([], allFaults); allFaults=r2.items; saveAll(true); $("adminStatus").textContent=`✅ Birleştirildi: ${r1.mergedCount+r2.mergedCount} tekrar giderildi.`; };
+
+function saveAll(push=false){
+  try{ localStorage.setItem("tredas_saha", JSON.stringify(allJobs)); localStorage.setItem("tredas_fault", JSON.stringify(allFaults)); localStorage.setItem("tredas_donefault", JSON.stringify(doneFaults)); }catch(e){}
+  updateBadges(); populateFilters(); applyFilters(); applyFaultFilters();
+  if(push){ const o1={}; allJobs.slice(0,3500).forEach((j,i)=>o1[j.id||`j${i}`]=j); set(ref(db,`${DB_PATH}/jobs`),o1).catch(()=>{}); const o2={}; allFaults.slice(0,3500).forEach((f,i)=>o2[f.id||`f${i}`]=f); set(ref(db,`${DB_PATH}/fault_addresses`),o2).catch(()=>{}); const o3={}; doneFaults.slice(0,500).forEach((f,i)=>o3[f.id||`d${i}`]=f); set(ref(db,`${DB_PATH}/completed_faults`),o3).catch(()=>{}); }
+}
+function updateBadges(){
+  $("faultBadge").textContent=allFaults.length; $("doneFaultBadge").textContent=doneFaults.length;
+  $("faultActiveCount").textContent=allFaults.length; $("faultDoneCount").textContent=doneFaults.length;
+  const done=allJobs.filter(j=>j.completed).length; els.counter.textContent=`${done} / ${allJobs.length}`;
+}
+function populateFilters(){
+  const dists=[...new Set(allJobs.map(j=>j.district).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
+  $("districtSelect").innerHTML=`<option value="ALL">Tüm İlçeler</option>`+dists.map(d=>`<option value="${d}">${d}</option>`).join("");
+  $("districtSelect").value=selDist;
+  const setts=[...new Set(allJobs.filter(j=>selDist==="ALL"||j.district===selDist).map(j=>j.settlement).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
+  $("settlementSelect").innerHTML=`<option value="ALL">Tüm Mahalle / Köyler</option>`+setts.map(s=>`<option value="${s}">${s}</option>`).join("");
+  $("settlementSelect").value=selSett;
+  const persons=[...new Set(allFaults.map(f=>f.personel).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
+  $("faultPersonSelect").innerHTML=`<option value="ALL">Tüm Personeller</option>`+persons.map(p=>`<option value="${p}">${p} (${allFaults.filter(f=>f.personel===p).length})</option>`).join("");
+  $("faultPersonSelect").value=selFPerson;
+  const groups=[...new Set(allFaults.map(f=>f.planGrubu).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
+  $("faultGroupSelect").innerHTML=`<option value="ALL">Tüm Gruplar / İlçeler</option>`+groups.map(g=>`<option value="${g}">${g}</option>`).join("");
+  $("faultGroupSelect").value=selFGroup;
+  const reasons=[...new Set(allFaults.map(f=>f.durumNotu).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
+  $("faultReasonSelect").innerHTML=`<option value="ALL">Tüm İş / Arıza Nedenleri</option>`+reasons.map(r=>`<option value="${r}">${r}</option>`).join("");
+  $("faultReasonSelect").value=selFReason;
+  $("faultPersonPills").innerHTML=persons.map(p=>`<button class="d-pill ${selFPerson===p?"active":""}" data-p="${p}">${p} (${allFaults.filter(f=>f.personel===p).length})</button>`).join("")||`<span style="color:var(--muted)">Henüz personel yok</span>`;
+  document.querySelectorAll("#faultPersonPills .d-pill").forEach(b=>b.onclick=()=>{ selFPerson=b.dataset.p; saveAll(false); });
+  const dl=$("personDatalist"); dl.innerHTML=persons.map(p=>`<option value="${p}"></option>`).join("");
+}
+
+function sortByRota(list){
+  return [...list].sort((a,b)=>{
+    const d=(a.district||"").localeCompare(b.district||"","tr"); if(d!==0) return d;
+    const s=(a.settlement||"").localeCompare(b.settlement||"","tr"); if(s!==0) return s;
+    return (a.tesisatNo||"").localeCompare(b.tesisatNo||"");
+  });
+}
+
+function applyFilters(){
+  let list=[...allJobs];
+  if(selCat!=="ALL") list=list.filter(j=>j.category===selCat);
+  if(selDist!=="ALL") list=list.filter(j=>j.district===selDist);
+  if(selSett!=="ALL") list=list.filter(j=>j.settlement===selSett);
+  if(selMeter!=="ALL") list=list.filter(j=>j.meterType===selMeter);
+  if(searchQ){ const q=asciiKey(searchQ); list=list.filter(j=>asciiKey(`${j.tesisatNo} ${j.seriNo} ${j.settlement} ${j.openAddress} ${j.district} ${j.displayTitle}`).includes(q)); }
+  if(!showDone) list=list.filter(j=>!j.completed);
+  if(sortMode==="SETTLEMENT") list.sort((a,b)=>a.settlement.localeCompare(b.settlement,"tr"));
+  else if(sortMode==="TESISAT") list.sort((a,b)=>a.tesisatNo.localeCompare(b.tesisatNo));
+  else if(sortMode==="ROTA") list=sortByRota(list);
+  filteredJobs=list;
+  const done=allJobs.filter(j=>j.completed).length; els.counter.textContent=`${done} / ${allJobs.length}`;
+  const pct=allJobs.length?Math.round(done/allJobs.length*100):0; $("percentLabel").textContent=`%${pct}`; $("progressFill").style.width=`${pct}%`;
+  $("filteredLabel").textContent=`Ekranda Kalan: ${list.length}`;
+  const shown=list.slice(0,visibleLimit);
+  if(!shown.length){ els.jobs.innerHTML=`<div class="empty">Kayıt bulunamadı. ${isAdmin?"Excel yükleyin.":""}</div>`; }
+  else els.jobs.innerHTML=shown.map(renderJob).join("");
+  $("loadMoreWrap").classList.toggle("hidden", list.length<=visibleLimit);
+}
+function renderJob(j){
+  const tag=j.category==="KOY"?`<span class="tag tag-k">🌾 Köy</span>`:`<span class="tag tag-m">🏙️ Mahalle</span>`;
+  const status=j.completed?`<span class="tag tag-d">✓ Tamam</span>`:`<span class="tag tag-e">Bekliyor</span>`;
+  const maps=mapsUrl(j.koordinat,j.openAddress,j.district,j.il);
+  return `<div class="job ${j.completed?"done":""}">
+  <div class="job-top"><span class="job-title">${j.displayTitle}</span><span style="display:flex;gap:4px">${tag}${status}</span></div>
+  <div class="job-meta">${j.settlement} • ${j.district} / ${j.il} • ${j.meterType==="TRI"?"Trifaze":"Monofaze"} ${j.seriNo?`• Seri: ${j.seriNo}`:""} ${j.koordinat?`• 📍 ${j.koordinat}`:""}</div>
+  <div class="info">${j.openAddress}</div>
+  <div class="actions">
+  <a class="btn btn-i" href="${maps}" target="_blank">📍 Haritada Aç</a>
+  <a class="btn btn-sec" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(j.koordinat||j.openAddress)}" target="_blank">🧭 Yol Tarifi</a>
+  <button class="btn ${j.completed?"btn-sec":"btn-s"}" onclick="window.__toggleJob('${j.id}')">${j.completed?"↩ Geri Al":"✓ Tamamla"}</button>
+  </div></div>`;
+}
+window.__toggleJob=(id)=>{ const j=allJobs.find(x=>x.id===id); if(!j) return; j.completed=!j.completed; j.completedAt=j.completed?Date.now():null; saveAll(true); };
+
+function applyFaultFilters(reset=false){
+  if(reset) faultLimit=PAGE_SIZE;
+  let list=[...allFaults];
+  if(selFPerson!=="ALL") list=list.filter(f=>f.personel===selFPerson);
+  if(selFGroup!=="ALL") list=list.filter(f=>f.planGrubu===selFGroup);
+  if(selFReason!=="ALL") list=list.filter(f=>f.durumNotu===selFReason);
+  if(selFType!=="ALL") list=list.filter(f=>(f.flags||[]).includes(selFType));
+  if(faultQ){ const q=asciiKey(faultQ); list=list.filter(f=>asciiKey(`${f.tesisatNo} ${f.personel} ${f.planGrubu} ${f.rawAddress} ${f.durumNotu} ${f.sayacSeri}`).includes(q)); }
+  filteredFaults=list;
+  $("faultCountLabel").textContent=`Listelenen: ${list.length}`; $("faultTotalLabel").textContent=`Toplam: ${allFaults.length}`;
+  const shown=list.slice(0,faultLimit);
+  if(!shown.length) $("faultContainer").innerHTML=`<div class="empty">Hatalı kayıt yok.</div>`;
+  else $("faultContainer").innerHTML=shown.map(renderFault).join("");
+  $("faultLoadMoreWrap").classList.toggle("hidden", list.length<=faultLimit);
+}
+function renderFault(f){
+  const maps=mapsUrl(f.koordinat,f.rawAddress,f.planGrubu,f.ilRaw);
+  return `<div class="job err">
+  <div class="job-top"><span class="job-title">Tesisat: ${f.tesisatNo||"-"}</span><span class="tag tag-e">⚠️ Hatalı</span></div>
+  <div class="job-meta">👷 ${f.personel} • ${f.planGrubu} ${f.ilRaw?`• ${f.ilRaw}`:""} ${f.sayacSeri?`• Sayaç: ${f.sayacSeri}`:""} ${f.modemSeri?`• Modem: ${f.modemSeri}`:""}</div>
+  <div class="info"><span style="color:#fbbf24;font-weight:700">Adres:</span> ${f.rawAddress||"-"}<br><span style="color:#34d399;font-weight:800">İş / Hata:</span> ${f.durumNotu||"-"}<br><span style="color:var(--muted);font-size:11.5px">${f.koordinat?`📍 ${f.koordinat}`:"Koordinat yok"}</span></div>
+  <div class="actions">
+  <a class="btn btn-i" href="${maps}" target="_blank">📍 Haritada Aç</a>
+  <button class="btn btn-s" onclick="window.__openFault('${f.id}')">✓ Tamamla</button>
+  <button class="btn btn-d" onclick="window.__delFault('${f.id}')">🗑️ Sil</button>
+  </div></div>`;
+}
+window.__delFault=(id)=>{ if(!confirm("Bu hatalı kayıt silinsin mi?")) return; allFaults=allFaults.filter(f=>f.id!==id); saveAll(true); };
+window.__openFault=(id)=>{ const t=allFaults.find(x=>x.id===id); if(!t) return; pendingId=id; selReason=""; $("actorInput").value=t.personel!=="Bilinmeyen Personel"?t.personel:""; $("errorInput").value=t.durumNotu||""; $("reasonInput").value=""; document.querySelectorAll(".reason-btn").forEach(b=>b.classList.remove("sel")); $("faultTargetInfo").textContent=`Tesisat: ${t.tesisatNo||"-"} • Ekip: ${t.personel} • İş: ${t.durumNotu}`; $("faultModal").classList.add("open"); };
+document.querySelectorAll(".reason-btn").forEach(b=>b.onclick=()=>{ document.querySelectorAll(".reason-btn").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); selReason=b.dataset.reason; const cur=$("reasonInput").value.trim(); $("reasonInput").value=cur?`${selReason} - ${cur}`:selReason; });
+$("cancelFaultBtn").onclick=()=>{ pendingId=null; $("faultModal").classList.remove("open"); };
+$("confirmFaultBtn").onclick=()=>{
+  if(!pendingId) return;
+  const actor=$("actorInput").value.trim()||"Belirtilmedi";
+  const err=$("errorInput").value.trim()||"Adres / okuma hatası";
+  const note=($("reasonInput").value||selReason||"").trim();
+  if(!note){ $("reasonInput").focus(); return; }
+  const idx=allFaults.findIndex(f=>f.id===pendingId); if(idx<0) return;
+  const item=allFaults[idx]; allFaults.splice(idx,1);
+  const now=Date.now();
+  doneFaults.unshift({...item,completedBy:actor,detectedError:err,reasonNote:note,completedAtMs:now,expiresAt:now+RETENTION_MS});
+  pendingId=null; $("faultModal").classList.remove("open"); saveAll(true); switchFaultSub("DONE");
+};
+function renderDoneFaults(){
+  let list=[...doneFaults];
+  const now=Date.now(); list=list.filter(f=>!f.expiresAt||now<f.expiresAt);
+  if(doneFaultQ){ const q=asciiKey(doneFaultQ); list=list.filter(f=>asciiKey(`${f.tesisatNo} ${f.completedBy} ${f.durumNotu} ${f.reasonNote}`).includes(q)); }
+  if(!list.length){ $("doneFaultContainer").innerHTML=`<div class="empty">Tamamlanan hatalı kayıt yok.</div>`; return; }
+  $("doneFaultContainer").innerHTML=list.slice(0,60).map(f=>`<div class="job done"><div class="job-top"><span class="job-title">Tesisat: ${f.tesisatNo||"-"}</span><span class="tag tag-d">✓ Tamam</span></div><div class="job-meta">👷 ${f.completedBy||"-"} • ${new Date(f.completedAtMs||Date.now()).toLocaleDateString("tr-TR")}</div><div class="info"><span style="color:#fbbf24;font-weight:700">Hata:</span> ${f.detectedError||f.durumNotu}<br><span style="color:#34d399;font-weight:800">Yapılan:</span> ${f.reasonNote||"-"}<br><span style="color:var(--muted);font-size:11.5px">${f.rawAddress||""}</span></div></div>`).join("");
+}
+
+document.querySelectorAll(".cat-btn").forEach(b=>b.onclick=()=>{ document.querySelectorAll(".cat-btn").forEach(x=>x.classList.remove("active")); b.classList.add("active"); selCat=b.dataset.cat; visibleLimit=PAGE_SIZE; applyFilters(); });
+document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{ document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active")); b.classList.add("active"); selMeter=b.dataset.meter; applyFilters(); });
+$("districtSelect").onchange=e=>{ selDist=e.target.value; selSett="ALL"; populateFilters(); applyFilters(); };
+$("settlementSelect").onchange=e=>{ selSett=e.target.value; applyFilters(); };
+$("searchInput").oninput=e=>{ searchQ=e.target.value; applyFilters(); };
+$("sortSelect").onchange=e=>{ sortMode=e.target.value; applyFilters(); };
+$("loadMoreBtn").onclick=()=>{ visibleLimit+=PAGE_SIZE; applyFilters(); };
+$("faultPersonSelect").onchange=e=>{ selFPerson=e.target.value; saveAll(false); };
+$("faultGroupSelect").onchange=e=>{ selFGroup=e.target.value; applyFaultFilters(true); };
+$("faultReasonSelect").onchange=e=>{ selFReason=e.target.value; applyFaultFilters(true); };
+$("faultTypeSelect").onchange=e=>{ selFType=e.target.value; applyFaultFilters(true); };
+$("faultSearchInput").oninput=e=>{ faultQ=e.target.value; applyFaultFilters(true); };
+$("faultLoadMoreBtn").onclick=()=>{ faultLimit+=PAGE_SIZE; applyFaultFilters(); };
+$("doneFaultSearch").oninput=e=>{ doneFaultQ=e.target.value; renderDoneFaults(); };
+
+async function readExcel(file){
+  const data=await file.arrayBuffer(); const wb=XLSX.read(data,{type:"array"});
+  const ws=wb.Sheets[wb.SheetNames[0]]; return XLSX.utils.sheet_to_json(ws,{defval:""});
+}
+$("excelInput").onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return; $("adminStatus").textContent="⏳ Okunuyor...";
+  try{
+    const rows=await readExcel(f);
+    let added=0; rows.forEach(r=>{ const c=pick(r,["koordinat","enlem","boylam"]); const t=pick(r,["tesisat","abone","sozlesme"]).replace(/\D/g,""); if(t&&parseCoord(c)) dynamicCoords[t]=parseCoord(c); });
+    const jobs=rows.map((r,i)=>normalizeJob({id:`j_${Date.now()}_${i}`,tesisatNo:pick(r,["tesisat","abone"]),seriNo:pick(r,["seri"]),settlement:pick(r,["mahalle","koy","yerlesim"]),district:pick(r,["ilce","planlama"]),rawAddress:pick(r,["adres"]),koordinat:pick(r,["koordinat"]),meterType:pick(r,["sayac tipi","faz"]),aboneAdi:pick(r,["abone adi","musteri"])} ,`j_${i}`)).filter(j=>j.tesisatNo||j.seriNo||j.openAddress);
+    const res=mergeByTes(allJobs,jobs); allJobs=res.items;
+    $("adminStatus").textContent=`✅ Saha: ${res.mergedCount} güncellendi, ${res.addedCount} yeni eklendi. Toplam: ${allJobs.length}`;
+    saveAll(true);
+  }catch(err){ $("adminStatus").textContent="⚠️ Hata: "+err.message; }
+  e.target.value="";
+};
+$("faultExcelInput").onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return; $("adminStatus").textContent="⏳ Hatalı Excel okunuyor...";
+  try{
+    const rows=await readExcel(f);
+    const faults=rows.map(r=>classifyFault(r)).filter(x=>x.rawAddress||x.tesisatNo||x.koordinat);
+    const res=mergeByTes(allFaults,faults); allFaults=res.items;
+    $("adminStatus").textContent=`✅ Hatalı: ${res.mergedCount} güncellendi, ${res.addedCount} yeni eklendi. Toplam: ${allFaults.length}`;
+    saveAll(true); switchModule("FAULT");
+  }catch(err){ $("adminStatus").textContent="⚠️ Hata: "+err.message; }
+  e.target.value="";
+};
+
+// İlk yükleme - Local + Firebase
+try{ const lj=JSON.parse(localStorage.getItem("tredas_saha")||"[]"); if(Array.isArray(lj)&&lj.length) allJobs=lj; const lf=JSON.parse(localStorage.getItem("tredas_fault")||"[]"); if(Array.isArray(lf)) allFaults=lf; const ld=JSON.parse(localStorage.getItem("tredas_donefault")||"[]"); if(Array.isArray(ld)) doneFaults=ld; }catch(e){}
+saveAll(false);
+onValue(ref(db,DB_PATH),(snap)=>{
+  const v=snap.val();
+  if(!v) { $("syncStatus").textContent="✅ Canlı Bağlı - Henüz Veri Yok"; $("syncStatus").className="sync sync-ok"; return; }
+  if(v.jobs){ const arr=Array.isArray(v.jobs)?v.jobs:Object.values(v.jobs); allJobs=arr.map((j,i)=>normalizeJob(j,i)); }
+  if(v.fault_addresses){ const arr=Array.isArray(v.fault_addresses)?v.fault_addresses:Object.values(v.fault_addresses); allFaults=arr; }
+  if(v.completed_faults){ const arr=Array.isArray(v.completed_faults)?v.completed_faults:Object.values(v.completed_faults); doneFaults=arr; }
+  $("syncStatus").textContent="✅ Canlı Bağlı"; $("syncStatus").className="sync sync-ok";
+  saveAll(false);
+},(err)=>{ $("syncStatus").textContent="⚠️ Bağlantı Hatası: "+err.message; $("syncStatus").className="sync sync-err"; });
+</script>
 </body>
 </html>
