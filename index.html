@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>TREDAŞ - Edirne & Kırklareli Saha Paneli</title>
+<title>TREDAŞ - Edirne & Kırklareli Saha Paneli - FINAL 2 DOSYA</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 :root{--bg:#0b1120;--card:#111827;--soft:#1e293b;--input:#0f172a;--border:#334155;--txt:#f8fafc;--muted:#94a3b8;--accent:#f59e0b;--blue:#2563eb;--green:#10b981;--red:#ef4444}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--txt);font-size:13.5px;line-height:1.4}
-.container{max-width:960px;margin:0 auto;padding:10px 10px 72px}
+.container{max-width:960px;margin:0 auto;padding:10px 10px 80px}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:9px 12px;margin-bottom:10px;position:sticky;top:6px;z-index:900}
 .badge{background:var(--accent);color:#090d16;font-weight:900;font-size:11px;padding:4px 7px;border-radius:6px}
 .app-title{font-size:13.5px;font-weight:800;margin:0}
@@ -48,7 +49,7 @@ textarea{resize:vertical;min-height:62px}
 .btn-p{background:var(--blue);border-color:var(--blue);color:#fff}.btn-i{background:rgba(37,99,235,.22);border-color:#60a5fa;color:#dbeafe}.btn-s{background:var(--green);border-color:var(--green);color:#052e16}.btn-sec{background:var(--soft);color:#fff}.btn-w{background:var(--accent);border-color:var(--accent);color:#111827}.btn-d{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.55);color:#fecaca}
 .admin{border:1px solid rgba(245,158,11,.55);background:rgba(245,158,11,.08);border-radius:12px;padding:10px 12px;margin-bottom:10px}
 .admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:6px;margin-top:8px}
-.note{font-size:11.5px;color:var(--muted);margin-top:6px}
+.note{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.5}
 .reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
 .reason-btn{background:var(--input);color:#fff;border:1px solid var(--border);border-radius:8px;padding:7px 8px;font-size:11.5px;font-weight:700;cursor:pointer;text-align:left}
 .reason-btn.sel{background:rgba(16,185,129,.22);border-color:var(--green);color:#a7f3d0}
@@ -80,14 +81,24 @@ textarea{resize:vertical;min-height:62px}
 </div>
 
 <div id="adminPanel" class="admin hidden">
-<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong>🔐 YETKİLİ PANELİ</strong><button id="logoutBtn" class="btn btn-sec" style="padding:4px 9px;font-size:11.5px">Çıkış</button></div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong>🔐 YETKİLİ PANELİ - PIN 1923</strong><button id="logoutBtn" class="btn btn-sec" style="padding:4px 9px;font-size:11.5px">Çıkış</button></div>
+<div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px 10px;margin-top:8px;font-size:12px;line-height:1.6">
+<b style="color:#fbbf24">Nasıl Yükleyeceksin?</b><br>
+<b>1.</b> Önce <b>1. DOSYA</b> ya bas, İsim + Tesisat + Sayaç dosyasını seç<br>
+<b>2.</b> Sonra <b>2. DOSYA</b> ya bas, Koordinat dosyasını seç, haritalar düzelir<br>
+<b>Not:</b> Yüklerken sayfayı kapatma, <b>✅ Bitti</b> yazana kadar bekle.
+</div>
 <div class="admin-grid">
-<label class="btn btn-p" style="cursor:pointer">📊 Saha Excel Yükle<input type="file" id="excelInput" accept=".xlsx,.xls,.csv" hidden /></label>
-<label class="btn btn-w" style="cursor:pointer">⚠️ Hatalı Excel Yükle<input type="file" id="faultExcelInput" accept=".xlsx,.xls,.csv" hidden /></label>
+<label class="btn btn-p" style="cursor:pointer">📊 1. DOSYA: İsim + Tesisat Listesi<input type="file" id="excelMainInput" accept=".xlsx,.xls,.csv" hidden /></label>
+<label class="btn btn-w" style="cursor:pointer">📍 2. DOSYA: Koordinat Düzeltme<input type="file" id="excelCoordInput" accept=".xlsx,.xls,.csv" hidden /></label>
+<label class="btn btn-sec" style="cursor:pointer">⚠️ Hatalı Excel Yükle<input type="file" id="faultExcelInput" accept=".xlsx,.xls,.csv" hidden /></label>
+<label class="btn btn-sec" style="cursor:pointer">📄 PDF Yükle<input type="file" id="pdfInput" accept=".pdf" hidden /></label>
 <button id="repairBtn" class="btn btn-sec">🤖 Birleştir & Düzenle</button>
 <button id="showDoneBtn" class="btn btn-sec">✓ Tamamlananlar</button>
 <button id="clearBtn" class="btn btn-d">🗑️ Tümünü Sil</button>
-</div><div id="adminStatus" class="note"></div>
+</div>
+<div id="adminStatus" class="note">Henüz dosya yüklenmedi.</div>
+<div id="adminDetail" class="note" style="color:#a7f3d0"></div>
 </div>
 
 <div id="sahaModule">
@@ -98,7 +109,7 @@ textarea{resize:vertical;min-height:62px}
 <button class="cat-btn" data-cat="KOY">🌾 Köyler</button>
 </div>
 <div class="filter-grid"><select id="districtSelect"><option value="ALL">Tüm İlçeler</option></select><select id="settlementSelect"><option value="ALL">Tüm Mahalle / Köyler</option></select></div>
-<input id="searchInput" type="text" placeholder="Tesisat No, Seri No, Mahalle, Köy, Yol veya Adres ara..." />
+<input id="searchInput" type="text" placeholder="Tesisat No, Sayaç No, İsim, Mahalle, Köy ara..." />
 <div class="controls"><div style="display:flex;gap:6px;flex-wrap:wrap">
 <button class="chip active" data-meter="ALL">Tümü</button><button class="chip" data-meter="MONO">Monofaze</button><button class="chip" data-meter="TRI">Trifaze</button></div>
 <select id="sortSelect" style="width:auto;min-width:175px;padding:6px 9px;font-size:11.5px">
@@ -131,7 +142,7 @@ textarea{resize:vertical;min-height:62px}
 <div id="faultLoadMoreWrap" class="hidden" style="margin-top:8px"><button id="faultLoadMoreBtn" class="btn btn-sec" style="width:100%">Daha Fazla Göster</button></div>
 </div>
 <div id="faultDoneSection" class="hidden">
-<section class="card"><div style="font-size:12px;font-weight:800;color:#fbbf24;margin-bottom:6px">✓ Tamamlanan Hatalı Kayıtlar (1 Ay Sonra Silinir)</div><input id="doneFaultSearch" type="text" placeholder="Tesisat, Yapan Kişi, İş veya Not ara..." /></section>
+<section class="card"><div style="font-size:12px;font-weight:800;color:#fbbf24;margin-bottom:6px">✓ Tamamlanan Hatalı Kayıtlar</div><input id="doneFaultSearch" type="text" placeholder="Tesisat, Yapan Kişi, İş veya Not ara..." /></section>
 <div id="doneFaultContainer"></div>
 </div>
 </div>
@@ -153,7 +164,7 @@ textarea{resize:vertical;min-height:62px}
 </div></div>
 
 <div id="menuModal" class="backdrop"><div class="modal">
-<h3 style="margin-top:0">Yetkili Girişi</h3><p style="font-size:12.5px;color:var(--muted)">Excel yükleme için PIN girin.</p>
+<h3 style="margin-top:0">Yetkili Girişi</h3><p style="font-size:12.5px;color:var(--muted)">Excel / PDF yükleme için PIN girin.</p>
 <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN (1923)" style="margin-bottom:10px" />
 <div style="display:flex;gap:8px"><button id="pinBtn" class="btn btn-p" style="flex:1">Giriş</button><button id="pinCloseBtn" class="btn btn-sec" style="flex:1">Kapat</button></div>
 <div id="pinError" style="color:var(--red);font-size:12px;margin-top:8px"></div>
@@ -161,7 +172,7 @@ textarea{resize:vertical;min-height:62px}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBKtYaeuAiY1Pb8NspS2eiD8PA6aTksw24",
@@ -173,11 +184,11 @@ const firebaseConfig = {
   appId: "1:587813278589:web:0b800320e74013555e3214",
   measurementId: "G-8NZ19TQY38"
 };
-
 const DB_PATH = "edirne_saha_v1";
 const ADMIN_PIN = "1923";
 const PAGE_SIZE = 40;
 const RETENTION_MS = 30*24*60*60*1000;
+if(window.pdfjsLib){ pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; }
 
 const DISTRICTS = {
   "Edirne Merkez":{lat:41.6771,lon:26.5557,il:"Edirne",ilce:"Merkez"},
@@ -202,54 +213,143 @@ const DISTRICTS = {
 const trLower = s => (s||"").toString().toLocaleLowerCase("tr-TR").trim();
 const asciiKey = s => trLower(s).replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c").replace(/[^a-z0-9.\s]/g," ").replace(/\s+/g," ").trim();
 const properTr = s => trLower(s).replace(/\s+/g," ").split(" ").filter(Boolean).map(w=>w.charAt(0).toLocaleUpperCase("tr-TR")+w.slice(1)).join(" ").trim();
-function parseCoord(v){ if(!v) return ""; const s=String(v).trim().replace(/,/g,"."); const m=s.match(/^\s*([+-]?\d+(?:\.\d+)?)\s*(?:[,;/\s]+|-)\s*([+-]?\d+(?:\.\d+)?)\s*$/); if(!m) return ""; const lat=parseFloat(m[1]), lon=parseFloat(m[2]); if(!isFinite(lat)||!isFinite(lon)||(lat===0&&lon===0)) return ""; return `${lat.toFixed(6)},${lon.toFixed(6)}`; }
-function mapsUrl(coord,addr,group,il){ const c=parseCoord(coord); if(c) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c)}`; const q=`${addr||""} ${group||""} ${il||"Edirne"}`.trim(); return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`; }
+
+// ================= KOORDİNAT DÜZELTME - SENİN FORMATA ÖZEL =================
+// Senin formatın: 40,6480246177778-26,1829201622222
+// Yani: Enlem virgüllü - Boylam virgüllü
+function cleanCoord(raw){
+  if(!raw) return "";
+  let s = String(raw).trim();
+  if(!s || s.length < 5) return "";
+  // Boşlukları temizle ama - ayırıcısını koru
+  s = s.replace(/\s+/g, "");
+  let latStr = "", lonStr = "";
+  // 1. En sağlam yol: 40,648...-26,182... deseni
+  const m = s.match(/^(\d{1,2}[.,]\d+)-(\d{1,2}[.,]\d+)$/);
+  if(m){
+    latStr = m[1]; lonStr = m[2];
+  } else if(s.includes("-")){
+    // Genel - ile bölme, baştaki eksi değilse
+    const idx = s.indexOf("-", 2);
+    if(idx > 0){
+      latStr = s.slice(0, idx);
+      lonStr = s.slice(idx+1);
+    }
+  } else if(s.includes(";")){ const p=s.split(";"); latStr=p[0]; lonStr=p[1]; }
+  else if(s.includes("/")){ const p=s.split("/"); latStr=p[0]; lonStr=p[1]; }
+  else return "";
+
+  if(!latStr || !lonStr) return "";
+  const lat = parseFloat(latStr.replace(",", "."));
+  const lon = parseFloat(lonStr.replace(",", "."));
+  if(!isFinite(lat) || !isFinite(lon)) return "";
+  if(lat < 35 || lat > 43 || lon < 22 || lon > 33) return "";
+  if(lat === 0 && lon === 0) return "";
+  return `${lat.toFixed(7)},${lon.toFixed(7)}`;
+}
+function parseCoord(v){ return cleanCoord(v); }
+function fixedMapsUrl(coord, addr, group, il){
+  const c = cleanCoord(coord);
+  if(c) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c)}`;
+  const q = `${addr||""} ${group||""} ${il||"Edirne"}`.trim() || "Edirne";
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+}
+function mapsUrl(coord,addr,group,il){ return fixedMapsUrl(coord,addr,group,il); }
+function navUrl(coord, addr){
+  const c = cleanCoord(coord);
+  if(c) return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(c)}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addr||"Edirne")}`;
+}
 
 let dynamicCoords = {};
-function getCoord(tes, fb){ const t=String(tes||"").replace(/\D/g,""); if(t&&dynamicCoords[t]) return dynamicCoords[t]; return parseCoord(fb); }
-function pick(row, keys){ if(!row) return ""; for(const k of Object.keys(row)){ const ak=asciiKey(k); if(!ak||ak.startsWith("unnamed")) continue; if(keys.some(t=>ak===asciiKey(t)||ak.includes(asciiKey(t)))){ const v=String(row[k]??"").trim(); if(v&&v.toLowerCase()!=="nan") return v; } } return ""; }
-function detectDistrict(text){ const n=asciiKey(text||""); const isK=n.includes("kirklareli"); let base=isK?"Kırklareli Merkez":"Edirne Merkez"; for(const [key,meta] of Object.entries(DISTRICTS)){ const ik=asciiKey(meta.ilce); if(ik!=="merkez" && new RegExp(`(^|[^a-z0-9])${ik}([^a-z0-9]|$)`).test(n)) return key; } return base; }
+function getCoord(tes, fb){ const t=String(tes||"").replace(/\D/g,""); if(t&&dynamicCoords[t]) return dynamicCoords[t]; return cleanCoord(fb); }
 
-function normalizeJob(raw,key){
-  const rawText=[raw.rawAddress,raw.adres,raw.ADRES,raw.address,raw.settlement,raw.district,raw.aboneAdi].filter(Boolean).join(" | ");
-  let tes=String(raw.tesisatNo||raw["Tesisat No"]||"").replace(/\D/g,"").trim();
-  let seri=String(raw.seriNo||raw["Seri No"]||"").trim();
-  if(!tes){ const m=rawText.match(/\b(\d{7,12})\b/); if(m) tes=m[1]; }
-  const coord=getCoord(tes, raw.koordinat||raw["KOORDİNAT"]||"");
-  const district=DISTRICTS[raw.district]?raw.district:detectDistrict(rawText);
-  const meta=DISTRICTS[district]||{il:"Edirne",ilce:district};
-  const isKoy=/\bkoy\b|\bköy/i.test(rawText);
-  const settRaw=raw.settlement||raw["Mahalle"]||raw["Köy"]||"";
-  const settlement=settRaw?properTr(settRaw):`${meta.ilce} Merkez`;
-  const cat=isKoy?"KOY":"MAHALLE";
-  const mNorm=asciiKey(`${raw.meterType||""} ${rawText}`);
-  const meter=(mNorm.includes("tri")||mNorm.includes("trifaze"))?"TRI":"MONO";
-  const title=tes?`Tesisat: ${tes}`:(seri?`Sayaç: ${seri}`:properTr(raw.aboneAdi||settlement));
-  return {id:String(raw.id||key),tesisatNo:tes,seriNo:seri,koordinat:coord,displayTitle:title,district,il:meta.il,category:cat,settlement:isKoy?`${settlement} Köyü`:`${settlement} Mah.`,openAddress:raw.rawAddress||raw.adres||`${settlement}, ${meta.ilce} / ${meta.il}`,meterType:meter,completed:!!raw.completed,completedAt:raw.completedAt||null};
+// Sütun bulma - Başlık ne yazarsa yazsın bulur
+function pick(row, keys){
+  if(!row) return "";
+  for(const k of Object.keys(row)){
+    const ak = asciiKey(k);
+    if(!ak || ak.startsWith("unnamed")) continue;
+    for(const want of keys){
+      const wk = asciiKey(want);
+      if(ak === wk || ak.includes(wk) || wk.includes(ak)){
+        const v = String(row[k] ?? "").trim();
+        if(v && v.toLowerCase() !== "nan" && v !== "") return v;
+      }
+    }
+  }
+  return "";
+}
+function detectDistrict(text){
+  const n = asciiKey(text||"");
+  const isK = n.includes("kirklareli");
+  let base = isK ? "Kırklareli Merkez" : "Edirne Merkez";
+  for(const [key, meta] of Object.entries(DISTRICTS)){
+    const ik = asciiKey(meta.ilce);
+    if(ik !== "merkez" && new RegExp(`(^|[^a-z0-9])${ik}([^a-z0-9]|$)`).test(n)) return key;
+  }
+  return base;
+}
+
+function normalizeJob(raw, key){
+  const rawText = [raw.rawAddress, raw.adres, raw.ADRES, raw.address, raw.settlement, raw.district, raw.aboneAdi].filter(Boolean).join(" | ");
+  let tes = String(raw.tesisatNo || raw["Tesisat No"] || "").replace(/\D/g,"").trim();
+  let seri = String(raw.seriNo || raw["Seri No"] || "").trim();
+  if(!tes){
+    const m = rawText.match(/\b(\d{7,12})\b/);
+    if(m) tes = m[1];
+  }
+  const coord = getCoord(tes, raw.koordinat || raw["KOORDİNAT"] || "");
+  const district = DISTRICTS[raw.district] ? raw.district : detectDistrict(rawText + " " + (raw.district||""));
+  const meta = DISTRICTS[district] || {il:"Edirne", ilce:district};
+  const isKoy = /\bkoy\b|\bköy/i.test(rawText);
+  const settRaw = raw.settlement || raw["Mahalle"] || raw["Köy"] || "";
+  const settlement = settRaw ? properTr(settRaw) : `${meta.ilce} Merkez`;
+  const cat = isKoy ? "KOY" : "MAHALLE";
+  const mNorm = asciiKey(`${raw.meterType||""} ${rawText}`);
+  const meter = (mNorm.includes("tri") || mNorm.includes("trifaze")) ? "TRI" : "MONO";
+  const title = tes ? `Tesisat: ${tes}` : (seri ? `Sayaç: ${seri}` : properTr(raw.aboneAdi || settlement));
+  return {id:String(raw.id||key), tesisatNo:tes, seriNo:seri, koordinat:coord, displayTitle:title, district, il:meta.il, category:cat, settlement:isKoy?`${settlement} Köyü`:`${settlement} Mah.`, openAddress:raw.rawAddress||raw.adres||`${settlement}, ${meta.ilce} / ${meta.il}`, meterType:meter, completed:!!raw.completed, completedAt:raw.completedAt||null, aboneAdi: raw.aboneAdi || ""};
 }
 function classifyFault(row){
-  const tes=pick(row,["tesisat","abone","sozlesme","numara"]).replace(/\D/g,"").trim();
-  const rawAddress=pick(row,["adres","mahalle","koy","sokak","cadde"])||"";
-  const ilRaw=pick(row,["il","sehir"])||"";
-  const plan=pick(row,["planlama grubu2","planlama","grup","ilce","bolge"])||ilRaw||"Genel";
-  let personel=pick(row,["ekip","personel","gorevli","okuyucu","saha","sorumlu","ad soyad"])||"Bilinmeyen Personel";
-  const modemSeri=pick(row,["modem seri"])||""; const modemMarka=pick(row,["modem marka"])||"";
-  const sayacSeri=pick(row,["sayac seri","sayaç seri","seri"])||""; const sayacMarka=pick(row,["sayac marka","sayaç marka","marka"])||"";
-  const durum=pick(row,["endeks olmama nedeni","durum","ariza","aciklama","not","sebep","hata"])||"Sebep Belirtilmemiş";
-  const coord=getCoord(tes, pick(row,["koordinat","enlem","boylam"]));
-  const flags=[];
+  const tes = pick(row, ["tesisat","abone","sozlesme","numara"]).replace(/\D/g,"").trim();
+  const rawAddress = pick(row, ["adres","mahalle","koy","sokak","cadde"]) || "";
+  const ilRaw = pick(row, ["il","sehir"]) || "";
+  const plan = pick(row, ["planlama grubu2","planlama","grup","ilce","bolge"]) || ilRaw || "Genel";
+  let personel = pick(row, ["ekip","personel","gorevli","okuyucu","saha","sorumlu","ad soyad"]) || "Bilinmeyen Personel";
+  const modemSeri = pick(row, ["modem seri"]) || "";
+  const modemMarka = pick(row, ["modem marka"]) || "";
+  const sayacSeri = pick(row, ["sayac seri","sayaç seri","seri"]) || "";
+  const sayacMarka = pick(row, ["sayac marka","sayaç marka","marka"]) || "";
+  const durum = pick(row, ["endeks olmama nedeni","durum","ariza","aciklama","not","sebep","hata"]) || "Sebep Belirtilmemiş";
+  const coord = getCoord(tes, pick(row, ["koordinat","enlem","boylam"]));
+  const flags = [];
   if(!/\b(?:MAH|KÖY|KOY)\b/i.test(rawAddress)) flags.push("MISSING_SETTLEMENT");
   if(/^(?:KEŞAN|LÜLEBURGAZ)$/i.test(ilRaw)) flags.push("IL_AS_DISTRICT");
-  if(/-\s*-/.test(rawAddress)||rawAddress.length<18) flags.push("DASH_OR_TRUNCATED");
-  if(durum!=="Sebep Belirtilmemiş") flags.push("METER_ERR");
-  return {id:String(row.id||`fault_${Date.now()}_${Math.random().toString(36).slice(2,7)}`).replace(/[#.$\/\[\]]/g,"_"),tesisatNo:tes,personel:properTr(personel),ilRaw,planGrubu:plan,rawAddress,modemSeri,modemMarka,sayacSeri,sayacMarka,durumNotu:durum,koordinat:coord,flags};
+  if(/-\s*-/.test(rawAddress) || rawAddress.length < 18) flags.push("DASH_OR_TRUNCATED");
+  if(durum !== "Sebep Belirtilmemiş") flags.push("METER_ERR");
+  return {id:String(row.id||`fault_${Date.now()}_${Math.random().toString(36).slice(2,7)}`).replace(/[#.$\/\[\]]/g,"_"), tesisatNo:tes, personel:properTr(personel), ilRaw, planGrubu:plan, rawAddress, modemSeri, modemMarka, sayacSeri, sayacMarka, durumNotu:durum, koordinat:coord, flags};
 }
-function mergeByTes(existing,incoming){
-  const map=new Map(), order=[]; let merged=0, added=0;
-  const keyOf=(it,i)=>{ const t=String(it.tesisatNo||"").replace(/\D/g,""); if(t) return `tes_${t}`; const s=String(it.seriNo||it.sayacSeri||"").trim(); if(s) return `ser_${s}`; return `row_${i}`; };
-  (existing||[]).forEach((it,i)=>{ const k=keyOf(it,i); map.set(k,{...it}); order.push(k); });
-  (incoming||[]).forEach((it,i)=>{ const k=keyOf(it,order.length+i); if(map.has(k)){ const p=map.get(k); map.set(k,{...p,...it,tesisatNo:it.tesisatNo||p.tesisatNo,koordinat:it.koordinat||p.koordinat,completed:p.completed||it.completed}); merged++; } else { map.set(k,{...it}); order.push(k); added++; } });
-  return {items:order.map(k=>map.get(k)),mergedCount:merged,addedCount:added};
+function mergeByTes(existing, incoming){
+  const map = new Map(), order = [];
+  let merged = 0, added = 0;
+  const keyOf = (it, i) => {
+    const t = String(it.tesisatNo||"").replace(/\D/g,"");
+    if(t) return `tes_${t}`;
+    const s = String(it.seriNo||it.sayacSeri||"").trim();
+    if(s) return `ser_${s}`;
+    return `row_${i}_${Math.random().toString(36).slice(2,6)}`;
+  };
+  (existing||[]).forEach((it,i)=>{ const k=keyOf(it,i); if(!map.has(k)) order.push(k); map.set(k,{...it}); });
+  (incoming||[]).forEach((it,i)=>{
+    const k = keyOf(it, order.length+i);
+    if(map.has(k)){
+      const p = map.get(k);
+      map.set(k, {...p, ...it, tesisatNo: it.tesisatNo || p.tesisatNo, koordinat: it.koordinat || p.koordinat, completed: p.completed || it.completed, aboneAdi: it.aboneAdi || p.aboneAdi});
+      merged++;
+    } else { map.set(k, {...it}); order.push(k); added++; }
+  });
+  return {items: order.map(k=>map.get(k)), mergedCount:merged, addedCount:added};
 }
 
 const app = initializeApp(firebaseConfig);
@@ -282,13 +382,43 @@ $("pinCloseBtn").onclick=()=>$("menuModal").classList.remove("open");
 $("pinBtn").onclick=()=>{ if($("pinInput").value.trim()===ADMIN_PIN){ isAdmin=true; $("adminPanel").classList.remove("hidden"); $("menuModal").classList.remove("open"); $("pinError").textContent=""; } else $("pinError").textContent="PIN hatalı!"; };
 $("logoutBtn").onclick=()=>{ isAdmin=false; $("adminPanel").classList.add("hidden"); };
 $("showDoneBtn").onclick=()=>{ showDone=!showDone; $("showDoneBtn").textContent=showDone?"✓ Tamamlananları Gizle":"✓ Tamamlananlar"; applyFilters(); };
-$("clearBtn").onclick=()=>{ if(!confirm("Tüm kayıtlar silinsin mi?")) return; allJobs=[]; allFaults=[]; doneFaults=[]; saveAll(true); };
+$("clearBtn").onclick=()=>{ if(!confirm("Tüm kayıtlar silinsin mi? Emin misin abim?")) return; allJobs=[]; allFaults=[]; doneFaults=[]; saveAll(true); $("adminStatus").textContent="🗑️ Temizlendi, şimdi 1. dosyayı yükle."; };
 $("repairBtn").onclick=()=>{ const r1=mergeByTes([], allJobs); allJobs=r1.items; const r2=mergeByTes([], allFaults); allFaults=r2.items; saveAll(true); $("adminStatus").textContent=`✅ Birleştirildi: ${r1.mergedCount+r2.mergedCount} tekrar giderildi.`; };
 
+// ================= FIREBASE - PARÇA PARÇA, EKSİKSİZ GÖNDERME =================
+async function pushToFirebase(){
+  $("adminStatus").textContent = `⏳ Sunucuya gönderiliyor... ${allJobs.length} saha + ${allFaults.length} hatalı, kapatma abim!`;
+  try{
+    const CHUNK = 800;
+    // Eski parçaları temizle - önce ana jobs'u yaz
+    if(allJobs.length === 0){
+      await set(ref(db, `${DB_PATH}/jobs`), null);
+    } else {
+      for(let start=0; start<allJobs.length; start+=CHUNK){
+        const o={};
+        allJobs.slice(start, start+CHUNK).forEach((j,i)=>{ o[j.id||`j${start+i}`]=j; });
+        if(start===0){
+          await set(ref(db, `${DB_PATH}/jobs`), o);
+        } else {
+          await set(ref(db, `${DB_PATH}/jobs_part_${Math.floor(start/CHUNK)}`), o);
+        }
+        $("adminStatus").textContent = `⏳ Gönderiliyor... ${Math.min(start+CHUNK, allJobs.length)} / ${allJobs.length} - Kapatma!`;
+        await new Promise(r=>setTimeout(r,120));
+      }
+    }
+    const o2={}; allFaults.slice(0,8000).forEach((f,i)=>o2[f.id||`f${i}`]=f); await set(ref(db, `${DB_PATH}/fault_addresses`), o2);
+    const o3={}; doneFaults.slice(0,500).forEach((f,i)=>o3[f.id||`d${i}`]=f); await set(ref(db, `${DB_PATH}/completed_faults`), o3);
+    $("adminStatus").textContent = `✅ Tamam abim! ${allJobs.length} saha + ${allFaults.length} hatalı sunucuya gitti. Ekibin telefonunda görünecek.`;
+  }catch(e){ $("adminStatus").textContent = "⚠️ Gönderme hatası: "+e.message+" - Telefonunda kayıtlı, tekrar dene."; }
+}
 function saveAll(push=false){
-  try{ localStorage.setItem("tredas_saha", JSON.stringify(allJobs)); localStorage.setItem("tredas_fault", JSON.stringify(allFaults)); localStorage.setItem("tredas_donefault", JSON.stringify(doneFaults)); }catch(e){}
+  try{
+    localStorage.setItem("tredas_saha", JSON.stringify(allJobs));
+    localStorage.setItem("tredas_fault", JSON.stringify(allFaults));
+    localStorage.setItem("tredas_donefault", JSON.stringify(doneFaults));
+  }catch(e){ $("adminStatus").textContent="⚠️ Telefon hafızası dolu!"; }
   updateBadges(); populateFilters(); applyFilters(); applyFaultFilters();
-  if(push){ const o1={}; allJobs.slice(0,3500).forEach((j,i)=>o1[j.id||`j${i}`]=j); set(ref(db,`${DB_PATH}/jobs`),o1).catch(()=>{}); const o2={}; allFaults.slice(0,3500).forEach((f,i)=>o2[f.id||`f${i}`]=f); set(ref(db,`${DB_PATH}/fault_addresses`),o2).catch(()=>{}); const o3={}; doneFaults.slice(0,500).forEach((f,i)=>o3[f.id||`d${i}`]=f); set(ref(db,`${DB_PATH}/completed_faults`),o3).catch(()=>{}); }
+  if(push){ pushToFirebase(); }
 }
 function updateBadges(){
   $("faultBadge").textContent=allFaults.length; $("doneFaultBadge").textContent=doneFaults.length;
@@ -315,7 +445,6 @@ function populateFilters(){
   document.querySelectorAll("#faultPersonPills .d-pill").forEach(b=>b.onclick=()=>{ selFPerson=b.dataset.p; saveAll(false); });
   const dl=$("personDatalist"); dl.innerHTML=persons.map(p=>`<option value="${p}"></option>`).join("");
 }
-
 function sortByRota(list){
   return [...list].sort((a,b)=>{
     const d=(a.district||"").localeCompare(b.district||"","tr"); if(d!==0) return d;
@@ -323,14 +452,13 @@ function sortByRota(list){
     return (a.tesisatNo||"").localeCompare(b.tesisatNo||"");
   });
 }
-
 function applyFilters(){
   let list=[...allJobs];
   if(selCat!=="ALL") list=list.filter(j=>j.category===selCat);
   if(selDist!=="ALL") list=list.filter(j=>j.district===selDist);
   if(selSett!=="ALL") list=list.filter(j=>j.settlement===selSett);
   if(selMeter!=="ALL") list=list.filter(j=>j.meterType===selMeter);
-  if(searchQ){ const q=asciiKey(searchQ); list=list.filter(j=>asciiKey(`${j.tesisatNo} ${j.seriNo} ${j.settlement} ${j.openAddress} ${j.district} ${j.displayTitle}`).includes(q)); }
+  if(searchQ){ const q=asciiKey(searchQ); list=list.filter(j=>asciiKey(`${j.tesisatNo} ${j.seriNo} ${j.settlement} ${j.openAddress} ${j.district} ${j.displayTitle} ${j.aboneAdi||""}`).includes(q)); }
   if(!showDone) list=list.filter(j=>!j.completed);
   if(sortMode==="SETTLEMENT") list.sort((a,b)=>a.settlement.localeCompare(b.settlement,"tr"));
   else if(sortMode==="TESISAT") list.sort((a,b)=>a.tesisatNo.localeCompare(b.tesisatNo));
@@ -338,28 +466,29 @@ function applyFilters(){
   filteredJobs=list;
   const done=allJobs.filter(j=>j.completed).length; els.counter.textContent=`${done} / ${allJobs.length}`;
   const pct=allJobs.length?Math.round(done/allJobs.length*100):0; $("percentLabel").textContent=`%${pct}`; $("progressFill").style.width=`${pct}%`;
-  $("filteredLabel").textContent=`Ekranda Kalan: ${list.length}`;
+  $("filteredLabel").textContent=`Ekranda Kalan: ${list.length} | Toplam: ${allJobs.length}`;
   const shown=list.slice(0,visibleLimit);
-  if(!shown.length){ els.jobs.innerHTML=`<div class="empty">Kayıt bulunamadı. ${isAdmin?"Excel yükleyin.":""}</div>`; }
+  if(!shown.length){ els.jobs.innerHTML=`<div class="empty">Kayıt bulunamadı. ${isAdmin?"1. dosyayı yükleyin.":""}</div>`; }
   else els.jobs.innerHTML=shown.map(renderJob).join("");
   $("loadMoreWrap").classList.toggle("hidden", list.length<=visibleLimit);
 }
 function renderJob(j){
   const tag=j.category==="KOY"?`<span class="tag tag-k">🌾 Köy</span>`:`<span class="tag tag-m">🏙️ Mahalle</span>`;
   const status=j.completed?`<span class="tag tag-d">✓ Tamam</span>`:`<span class="tag tag-e">Bekliyor</span>`;
-  const maps=mapsUrl(j.koordinat,j.openAddress,j.district,j.il);
+  const maps=fixedMapsUrl(j.koordinat,j.openAddress,j.district,j.il);
+  const nav=navUrl(j.koordinat,j.openAddress);
+  const coordText = j.koordinat ? `📍 ${j.koordinat}` : `📍 Koordinat yok - 2. dosyayı yükle`;
   return `<div class="job ${j.completed?"done":""}">
   <div class="job-top"><span class="job-title">${j.displayTitle}</span><span style="display:flex;gap:4px">${tag}${status}</span></div>
-  <div class="job-meta">${j.settlement} • ${j.district} / ${j.il} • ${j.meterType==="TRI"?"Trifaze":"Monofaze"} ${j.seriNo?`• Seri: ${j.seriNo}`:""} ${j.koordinat?`• 📍 ${j.koordinat}`:""}</div>
+  <div class="job-meta">${j.aboneAdi?`${j.aboneAdi} • `:""}${j.settlement} • ${j.district} / ${j.il} • ${j.meterType==="TRI"?"Trifaze":"Monofaze"} ${j.seriNo?`• Sayaç: ${j.seriNo}`:""} • ${coordText}</div>
   <div class="info">${j.openAddress}</div>
   <div class="actions">
   <a class="btn btn-i" href="${maps}" target="_blank">📍 Haritada Aç</a>
-  <a class="btn btn-sec" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(j.koordinat||j.openAddress)}" target="_blank">🧭 Yol Tarifi</a>
+  <a class="btn btn-sec" href="${nav}" target="_blank">🧭 Yol Tarifi</a>
   <button class="btn ${j.completed?"btn-sec":"btn-s"}" onclick="window.__toggleJob('${j.id}')">${j.completed?"↩ Geri Al":"✓ Tamamla"}</button>
   </div></div>`;
 }
 window.__toggleJob=(id)=>{ const j=allJobs.find(x=>x.id===id); if(!j) return; j.completed=!j.completed; j.completedAt=j.completed?Date.now():null; saveAll(true); };
-
 function applyFaultFilters(reset=false){
   if(reset) faultLimit=PAGE_SIZE;
   let list=[...allFaults];
@@ -376,7 +505,7 @@ function applyFaultFilters(reset=false){
   $("faultLoadMoreWrap").classList.toggle("hidden", list.length<=faultLimit);
 }
 function renderFault(f){
-  const maps=mapsUrl(f.koordinat,f.rawAddress,f.planGrubu,f.ilRaw);
+  const maps=fixedMapsUrl(f.koordinat,f.rawAddress,f.planGrubu,f.ilRaw);
   return `<div class="job err">
   <div class="job-top"><span class="job-title">Tesisat: ${f.tesisatNo||"-"}</span><span class="tag tag-e">⚠️ Hatalı</span></div>
   <div class="job-meta">👷 ${f.personel} • ${f.planGrubu} ${f.ilRaw?`• ${f.ilRaw}`:""} ${f.sayacSeri?`• Sayaç: ${f.sayacSeri}`:""} ${f.modemSeri?`• Modem: ${f.modemSeri}`:""}</div>
@@ -410,7 +539,6 @@ function renderDoneFaults(){
   if(!list.length){ $("doneFaultContainer").innerHTML=`<div class="empty">Tamamlanan hatalı kayıt yok.</div>`; return; }
   $("doneFaultContainer").innerHTML=list.slice(0,60).map(f=>`<div class="job done"><div class="job-top"><span class="job-title">Tesisat: ${f.tesisatNo||"-"}</span><span class="tag tag-d">✓ Tamam</span></div><div class="job-meta">👷 ${f.completedBy||"-"} • ${new Date(f.completedAtMs||Date.now()).toLocaleDateString("tr-TR")}</div><div class="info"><span style="color:#fbbf24;font-weight:700">Hata:</span> ${f.detectedError||f.durumNotu}<br><span style="color:#34d399;font-weight:800">Yapılan:</span> ${f.reasonNote||"-"}<br><span style="color:var(--muted);font-size:11.5px">${f.rawAddress||""}</span></div></div>`).join("");
 }
-
 document.querySelectorAll(".cat-btn").forEach(b=>b.onclick=()=>{ document.querySelectorAll(".cat-btn").forEach(x=>x.classList.remove("active")); b.classList.add("active"); selCat=b.dataset.cat; visibleLimit=PAGE_SIZE; applyFilters(); });
 document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{ document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active")); b.classList.add("active"); selMeter=b.dataset.meter; applyFilters(); });
 $("districtSelect").onchange=e=>{ selDist=e.target.value; selSett="ALL"; populateFilters(); applyFilters(); };
@@ -426,41 +554,189 @@ $("faultSearchInput").oninput=e=>{ faultQ=e.target.value; applyFaultFilters(true
 $("faultLoadMoreBtn").onclick=()=>{ faultLimit+=PAGE_SIZE; applyFaultFilters(); };
 $("doneFaultSearch").oninput=e=>{ doneFaultQ=e.target.value; renderDoneFaults(); };
 
-async function readExcel(file){
-  const data=await file.arrayBuffer(); const wb=XLSX.read(data,{type:"array"});
-  const ws=wb.Sheets[wb.SheetNames[0]]; return XLSX.utils.sheet_to_json(ws,{defval:""});
+// ================= EXCEL OKUMA - TAM, EKSİKSİZ =================
+async function readExcelFull(file){
+  const data = await file.arrayBuffer();
+  const wb = XLSX.read(data, {type:"array", cellDates:false});
+  let bestRows = [];
+  // En çok satırı olan sayfayı al
+  for(const name of wb.SheetNames){
+    const ws = wb.Sheets[name];
+    const rows = XLSX.utils.sheet_to_json(ws, {defval:"", raw:false});
+    if(rows.length > bestRows.length) bestRows = rows;
+  }
+  return bestRows;
 }
-$("excelInput").onchange=async e=>{
-  const f=e.target.files[0]; if(!f) return; $("adminStatus").textContent="⏳ Okunuyor...";
+
+// ============ 1. DOSYA: İSİM + TESİSAT + SAYAÇ ============
+$("excelMainInput").onchange = async e => {
+  const f = e.target.files[0]; if(!f) return;
+  $("adminStatus").textContent = "⏳ 1. Dosya okunuyor... Kapatma abim!";
+  $("adminDetail").textContent = "";
   try{
-    const rows=await readExcel(f);
-    let added=0; rows.forEach(r=>{ const c=pick(r,["koordinat","enlem","boylam"]); const t=pick(r,["tesisat","abone","sozlesme"]).replace(/\D/g,""); if(t&&parseCoord(c)) dynamicCoords[t]=parseCoord(c); });
-    const jobs=rows.map((r,i)=>normalizeJob({id:`j_${Date.now()}_${i}`,tesisatNo:pick(r,["tesisat","abone"]),seriNo:pick(r,["seri"]),settlement:pick(r,["mahalle","koy","yerlesim"]),district:pick(r,["ilce","planlama"]),rawAddress:pick(r,["adres"]),koordinat:pick(r,["koordinat"]),meterType:pick(r,["sayac tipi","faz"]),aboneAdi:pick(r,["abone adi","musteri"])} ,`j_${i}`)).filter(j=>j.tesisatNo||j.seriNo||j.openAddress);
-    const res=mergeByTes(allJobs,jobs); allJobs=res.items;
-    $("adminStatus").textContent=`✅ Saha: ${res.mergedCount} güncellendi, ${res.addedCount} yeni eklendi. Toplam: ${allJobs.length}`;
+    const rows = await readExcelFull(f);
+    $("adminStatus").textContent = `⏳ Excel'de ${rows.length} satır var, işleniyor...`;
+    const jobs = [];
+    let atlanan = 0;
+    for(let i=0;i<rows.length;i++){
+      const r = rows[i];
+      const allText = Object.values(r).join(" ");
+      const low = allText.toLowerCase();
+      // ÜST BAŞLIKLARI ATLA: Edirne / Trakya / TREDAŞ / Bölge Müdürlüğü
+      if((low.includes("trakya") || low.includes("tredaş") || low.includes("bölge müdürlüğü") || low.includes("dağıtım")) && !/\d{7,}/.test(allText)){ atlanan++; continue; }
+      if(low.includes("tesisat") && low.includes("sayaç") && low.includes("isim")) continue;
+      if(low.includes("sıra") && low.includes("tesisat") && !/\d{7,}/.test(allText)) continue;
+      if(!allText.trim()){ atlanan++; continue; }
+
+      let tes = pick(r, ["tesisat","abone","sözleşme","sozlesme"]).replace(/\D/g,"").trim();
+      // Tesisat 10-12 hane değilse, satırdaki uzun sayıyı dene
+      if(!tes || tes.length < 7){
+        const m2 = allText.match(/\b(\d{10,12})\b/);
+        if(m2) tes = m2[1];
+      }
+      let seri = pick(r, ["sayaç","sayac","seri","modem"]);
+      let isim = pick(r, ["isim","ad soyad","abone adı","müşteri","musteri","ad"]);
+      let adres = pick(r, ["adres","mahalle","köy","koy","sokak","cadde"]);
+      let ilce = pick(r, ["ilçe","ilce","planlama","bölge","bolge"]);
+
+      if(!tes && !seri){ atlanan++; continue; }
+
+      const job = normalizeJob({
+        id: `j_${tes||seri}_${i}`,
+        tesisatNo: tes, seriNo: seri,
+        settlement: pick(r, ["mahalle","koy","yerleşim"]) || adres,
+        district: ilce,
+        rawAddress: adres || `${isim||""} - ${ilce||""}`.trim() || `Tesisat ${tes}`,
+        koordinat: "",
+        meterType: pick(r, ["faz","tip"]),
+        aboneAdi: isim
+      }, `j_${i}`);
+      jobs.push(job);
+
+      if(i % 400 === 0){
+        $("adminStatus").textContent = `⏳ İşleniyor... ${i} / ${rows.length}`;
+        await new Promise(res=>setTimeout(res,5));
+      }
+    }
+    const res = mergeByTes(allJobs, jobs);
+    allJobs = res.items;
+    $("adminStatus").textContent = `✅ 1. Dosya Bitti!`;
+    $("adminDetail").textContent = `Excel: ${rows.length} satır | Atlanan başlık/boş: ${atlanan} | Alınan: ${jobs.length} iş | Toplam listede: ${allJobs.length} | Şimdi 2. dosyayı yükle, haritalar düzelir.`;
     saveAll(true);
-  }catch(err){ $("adminStatus").textContent="⚠️ Hata: "+err.message; }
-  e.target.value="";
+  }catch(err){ $("adminStatus").textContent = "⚠️ Hata: " + err.message; }
+  e.target.value = "";
 };
+
+// ============ 2. DOSYA: SADECE KOORDİNAT DÜZELTME ============
+$("excelCoordInput").onchange = async e => {
+  const f = e.target.files[0]; if(!f) return;
+  $("adminStatus").textContent = "⏳ 2. Dosya okunuyor, koordinatlar düzeltiliyor... Kapatma!";
+  $("adminDetail").textContent = "";
+  try{
+    const rows = await readExcelFull(f);
+    let coordMap = {};
+    let bozuk = 0, baslik = 0;
+
+    rows.forEach(r => {
+      const allText = Object.values(r).join(" ");
+      const low = allText.toLowerCase();
+      if(low.includes("tesisat") && low.includes("koordinat")){ baslik++; return; }
+      if((low.includes("trakya") || low.includes("tredaş")) && !/\d{7,}/.test(allText)){ baslik++; return; }
+
+      let tes = pick(r, ["tesisat","abone","sözleşme","sozlesme"]).replace(/\D/g,"").trim();
+      if(!tes){
+        const m2 = allText.match(/\b(\d{10,12})\b/);
+        if(m2) tes = m2[1];
+      }
+      let cRaw = pick(r, ["koordinat","kordinat","konum","enlem","boylam","lat","lon"]);
+      if(!cRaw){
+        // Sütun adı bulunamadıysa, satırdaki koordinat desenini bul: 40,xxx-26,xxx
+        const cm = allText.match(/\d{1,2}[.,]\d{4,}\s*-\s*\d{1,2}[.,]\d{4,}/);
+        if(cm) cRaw = cm[0];
+      }
+      if(!tes) return;
+      const c = cleanCoord(cRaw);
+      if(c) coordMap[tes] = c;
+      else bozuk++;
+    });
+
+    let duzelen = 0, bulunamayan = 0, zatenVar = 0;
+    allJobs.forEach(j => {
+      const t = String(j.tesisatNo||"").replace(/\D/g,"");
+      if(!t) return;
+      if(coordMap[t]){
+        if(j.koordinat === coordMap[t]) zatenVar++;
+        else { j.koordinat = coordMap[t]; duzelen++; }
+      } else {
+        bulunamayan++;
+      }
+    });
+
+    $("adminStatus").textContent = `✅ 2. Dosya Bitti!`;
+    $("adminDetail").textContent = `Koordinat dosyası: ${rows.length} satır | Bulunan koordinat: ${Object.keys(coordMap).length} | Düzelen: ${duzelen} iş | Zaten doğru olan: ${zatenVar} | Eşleşmeyen: ${bulunamayan} | Bozuk koordinat: ${bozuk}. Şimdi bir kayıtta Haritada Aç de, pin tam düşecek.`;
+    if(duzelen === 0 && zatenVar === 0){
+      $("adminDetail").textContent += " ⚠️ Hiç eşleşmedi! 2 dosyadaki Tesisat No'lar aynı mı? Birinde başında 0 olabilir, kontrol et abim.";
+    }
+    saveAll(true);
+  }catch(err){ $("adminStatus").textContent = "⚠️ Hata: " + err.message; }
+  e.target.value = "";
+};
+
 $("faultExcelInput").onchange=async e=>{
   const f=e.target.files[0]; if(!f) return; $("adminStatus").textContent="⏳ Hatalı Excel okunuyor...";
   try{
-    const rows=await readExcel(f);
+    const rows=await readExcelFull(f);
     const faults=rows.map(r=>classifyFault(r)).filter(x=>x.rawAddress||x.tesisatNo||x.koordinat);
     const res=mergeByTes(allFaults,faults); allFaults=res.items;
-    $("adminStatus").textContent=`✅ Hatalı: ${res.mergedCount} güncellendi, ${res.addedCount} yeni eklendi. Toplam: ${allFaults.length}`;
+    $("adminStatus").textContent=`✅ Hatalı: ${rows.length} satır okundu, ${res.addedCount} yeni. Toplam: ${allFaults.length}`;
     saveAll(true); switchModule("FAULT");
   }catch(err){ $("adminStatus").textContent="⚠️ Hata: "+err.message; }
   e.target.value="";
 };
 
-// İlk yükleme - Local + Firebase
+$("pdfInput").onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  $("adminStatus").textContent="⏳ PDF okunuyor, bekle abim...";
+  try{
+    if(!window.pdfjsLib){ $("adminStatus").textContent="⚠️ PDF kütüphanesi yüklenemedi, interneti kontrol et."; return; }
+    const buf=await f.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+    let fullText="";
+    for(let i=1;i<=pdf.numPages;i++){
+      const page=await pdf.getPage(i);
+      const txt=await page.getTextContent();
+      fullText+=txt.items.map(x=>x.str).join(" ")+"\n";
+      $("adminStatus").textContent=`⏳ PDF okunuyor... ${i}/${pdf.numPages} sayfa`;
+      await new Promise(r=>setTimeout(r,10));
+    }
+    const lines=fullText.split("\n");
+    let faults=[];
+    lines.forEach((line,idx)=>{
+      const tesMatch=line.match(/\b(\d{10,12})\b/);
+      if(tesMatch){
+        const coordMatch=line.match(/(\d{2}[.,]\d{3,6})\D+(\d{2}[.,]\d{3,6})/);
+        let coord="";
+        if(coordMatch) coord=cleanCoord(coordMatch[1]+"-"+coordMatch[2]);
+        faults.push({id:`pdf_${Date.now()}_${idx}`,tesisatNo:tesMatch[1],personel:"PDF'ten Aktarıldı",planGrubu:"Genel",rawAddress:line.slice(0,250),durumNotu:"PDF Kaydı - Detay için PDF'e bak",koordinat:coord,flags:["DASH_OR_TRUNCATED"]});
+      }
+    });
+    if(!faults.length){ $("adminStatus").textContent="⚠️ PDF'de tesisat no bulunamadı. PDF taranmış fotoğraf ise okunamaz, Excel'i dene."; return; }
+    const res=mergeByTes(allFaults,faults); allFaults=res.items;
+    $("adminStatus").textContent=`✅ PDF: ${faults.length} kayıt bulundu, ${res.addedCount} yeni eklendi. Toplam: ${allFaults.length}`;
+    saveAll(true); switchModule("FAULT");
+  }catch(err){ $("adminStatus").textContent="⚠️ PDF Hatası: "+err.message; }
+  e.target.value="";
+};
+
 try{ const lj=JSON.parse(localStorage.getItem("tredas_saha")||"[]"); if(Array.isArray(lj)&&lj.length) allJobs=lj; const lf=JSON.parse(localStorage.getItem("tredas_fault")||"[]"); if(Array.isArray(lf)) allFaults=lf; const ld=JSON.parse(localStorage.getItem("tredas_donefault")||"[]"); if(Array.isArray(ld)) doneFaults=ld; }catch(e){}
 saveAll(false);
 onValue(ref(db,DB_PATH),(snap)=>{
   const v=snap.val();
   if(!v) { $("syncStatus").textContent="✅ Canlı Bağlı - Henüz Veri Yok"; $("syncStatus").className="sync sync-ok"; return; }
-  if(v.jobs){ const arr=Array.isArray(v.jobs)?v.jobs:Object.values(v.jobs); allJobs=arr.map((j,i)=>normalizeJob(j,i)); }
+  let allFromParts=[];
+  if(v.jobs){ const arr=Array.isArray(v.jobs)?v.jobs:Object.values(v.jobs); allFromParts=allFromParts.concat(arr); }
+  Object.keys(v).forEach(k=>{ if(k.startsWith("jobs_part_")){ const arr=Object.values(v[k]); allFromParts=allFromParts.concat(arr); } });
+  if(allFromParts.length) allJobs=allFromParts.map((j,i)=>normalizeJob(j,i));
   if(v.fault_addresses){ const arr=Array.isArray(v.fault_addresses)?v.fault_addresses:Object.values(v.fault_addresses); allFaults=arr; }
   if(v.completed_faults){ const arr=Array.isArray(v.completed_faults)?v.completed_faults:Object.values(v.completed_faults); doneFaults=arr; }
   $("syncStatus").textContent="✅ Canlı Bağlı"; $("syncStatus").className="sync sync-ok";
