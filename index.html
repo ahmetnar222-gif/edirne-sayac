@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>TREDAŞ - Edirne & Kırklareli Saha Paneli - FINAL 2 DOSYA</title>
+<title>TREDAŞ - Edirne & Kırklareli Saha - DOSYANA GÖRE DÜZELTİLDİ</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
@@ -14,8 +14,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,san
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:9px 12px;margin-bottom:10px;position:sticky;top:6px;z-index:900}
 .badge{background:var(--accent);color:#090d16;font-weight:900;font-size:11px;padding:4px 7px;border-radius:6px}
 .app-title{font-size:13.5px;font-weight:800;margin:0}
-.sync{font-size:11px;font-weight:700}
-.sync-ok{color:#34d399}.sync-err{color:#f87171}.sync-busy{color:#fbbf24}
+.sync{font-size:11px;font-weight:700}.sync-ok{color:#34d399}.sync-err{color:#f87171}.sync-busy{color:#fbbf24}
 .pill{background:var(--soft);border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:12px;font-weight:800;white-space:nowrap}
 .menu-btn{background:var(--soft);color:#fff;border:1px solid var(--border);border-radius:8px;width:34px;height:34px;font-size:17px;cursor:pointer}
 .mod-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
@@ -83,13 +82,14 @@ textarea{resize:vertical;min-height:62px}
 <div id="adminPanel" class="admin hidden">
 <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong>🔐 YETKİLİ PANELİ - PIN 1923</strong><button id="logoutBtn" class="btn btn-sec" style="padding:4px 9px;font-size:11.5px">Çıkış</button></div>
 <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px 10px;margin-top:8px;font-size:12px;line-height:1.6">
-<b style="color:#fbbf24">Nasıl Yükleyeceksin?</b><br>
-<b>1.</b> Önce <b>1. DOSYA</b> ya bas, İsim + Tesisat + Sayaç dosyasını seç<br>
-<b>2.</b> Sonra <b>2. DOSYA</b> ya bas, Koordinat dosyasını seç, haritalar düzelir<br>
-<b>Not:</b> Yüklerken sayfayı kapatma, <b>✅ Bitti</b> yazana kadar bekle.
+<b style="color:#fbbf24">Senin Dosyalarına Göre Sıra:</b><br>
+<b>1.</b> <b>1. DOSYA</b> -> <b>10.000 KWH Edirne Listesi</b> dosyasını seç (1983 iş gelecek)<br>
+<b>2.</b> <b>2. DOSYA</b> -> <b>EDİRNE Koordinat</b> dosyasını seç (1564 koordinat düzelecek)<br>
+<b>3.</b> <b>2. DOSYA</b> -> <b>KIRKLARELİ Koordinat</b> dosyasını da aynı butonla seç (1770 koordinat daha)<br>
+<b>Not:</b> Kırklareli listesi sende yok, sadece koordinatı var. Önce Edirne listesini yükle.
 </div>
 <div class="admin-grid">
-<label class="btn btn-p" style="cursor:pointer">📊 1. DOSYA: İsim + Tesisat Listesi<input type="file" id="excelMainInput" accept=".xlsx,.xls,.csv" hidden /></label>
+<label class="btn btn-p" style="cursor:pointer">📊 1. DOSYA: İsim + Tesisat Listesi (LİSTE)<input type="file" id="excelMainInput" accept=".xlsx,.xls,.csv" hidden /></label>
 <label class="btn btn-w" style="cursor:pointer">📍 2. DOSYA: Koordinat Düzeltme<input type="file" id="excelCoordInput" accept=".xlsx,.xls,.csv" hidden /></label>
 <label class="btn btn-sec" style="cursor:pointer">⚠️ Hatalı Excel Yükle<input type="file" id="faultExcelInput" accept=".xlsx,.xls,.csv" hidden /></label>
 <label class="btn btn-sec" style="cursor:pointer">📄 PDF Yükle<input type="file" id="pdfInput" accept=".pdf" hidden /></label>
@@ -109,14 +109,14 @@ textarea{resize:vertical;min-height:62px}
 <button class="cat-btn" data-cat="KOY">🌾 Köyler</button>
 </div>
 <div class="filter-grid"><select id="districtSelect"><option value="ALL">Tüm İlçeler</option></select><select id="settlementSelect"><option value="ALL">Tüm Mahalle / Köyler</option></select></div>
-<input id="searchInput" type="text" placeholder="Tesisat No, Sayaç No, İsim, Mahalle, Köy ara..." />
+<input id="searchInput" type="text" placeholder="Tesisat No, Seri No (LUN-...), İlçe, Köy, Adres ara..." />
 <div class="controls"><div style="display:flex;gap:6px;flex-wrap:wrap">
 <button class="chip active" data-meter="ALL">Tümü</button><button class="chip" data-meter="MONO">Monofaze</button><button class="chip" data-meter="TRI">Trifaze</button></div>
 <select id="sortSelect" style="width:auto;min-width:175px;padding:6px 9px;font-size:11.5px">
 <option value="DEFAULT">Sırala: Varsayılan</option>
 <option value="SETTLEMENT">Sırala: Mahalle / Köy (A-Z)</option>
 <option value="TESISAT">Sırala: Tesisat No</option>
-<option value="ROTA">Sırala: Rota (Akıllı - En Yakın)</option>
+<option value="ROTA">Sırala: Rota (İlçe + Köy)</option>
 </select></div>
 </section>
 <section class="card"><div class="progress-head"><span id="filteredLabel">Ekranda Kalan: 0</span><span id="percentLabel">%0</span></div><div class="progress"><div id="progressFill" class="progress-fill"></div></div></section>
@@ -214,57 +214,40 @@ const trLower = s => (s||"").toString().toLocaleLowerCase("tr-TR").trim();
 const asciiKey = s => trLower(s).replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c").replace(/[^a-z0-9.\s]/g," ").replace(/\s+/g," ").trim();
 const properTr = s => trLower(s).replace(/\s+/g," ").split(" ").filter(Boolean).map(w=>w.charAt(0).toLocaleUpperCase("tr-TR")+w.slice(1)).join(" ").trim();
 
-// ================= KOORDİNAT DÜZELTME - SENİN FORMATA ÖZEL =================
-// Senin formatın: 40,6480246177778-26,1829201622222
-// Yani: Enlem virgüllü - Boylam virgüllü
+// KOORDİNAT: 40,6480246177778-26,1829201622222 ve 41,5122986928571-27,0681196285714
 function cleanCoord(raw){
   if(!raw) return "";
-  let s = String(raw).trim();
+  let s = String(raw).trim().replace(/\s+/g,"");
   if(!s || s.length < 5) return "";
-  // Boşlukları temizle ama - ayırıcısını koru
-  s = s.replace(/\s+/g, "");
-  let latStr = "", lonStr = "";
-  // 1. En sağlam yol: 40,648...-26,182... deseni
+  let latStr="", lonStr="";
   const m = s.match(/^(\d{1,2}[.,]\d+)-(\d{1,2}[.,]\d+)$/);
-  if(m){
-    latStr = m[1]; lonStr = m[2];
-  } else if(s.includes("-")){
-    // Genel - ile bölme, baştaki eksi değilse
-    const idx = s.indexOf("-", 2);
-    if(idx > 0){
-      latStr = s.slice(0, idx);
-      lonStr = s.slice(idx+1);
-    }
+  if(m){ latStr=m[1]; lonStr=m[2]; }
+  else if(s.includes("-")){
+    const idx = s.indexOf("-",2);
+    if(idx>0){ latStr=s.slice(0,idx); lonStr=s.slice(idx+1); }
   } else if(s.includes(";")){ const p=s.split(";"); latStr=p[0]; lonStr=p[1]; }
   else if(s.includes("/")){ const p=s.split("/"); latStr=p[0]; lonStr=p[1]; }
   else return "";
-
-  if(!latStr || !lonStr) return "";
-  const lat = parseFloat(latStr.replace(",", "."));
-  const lon = parseFloat(lonStr.replace(",", "."));
-  if(!isFinite(lat) || !isFinite(lon)) return "";
-  if(lat < 35 || lat > 43 || lon < 22 || lon > 33) return "";
-  if(lat === 0 && lon === 0) return "";
+  if(!latStr||!lonStr) return "";
+  const lat=parseFloat(latStr.replace(",","."));
+  const lon=parseFloat(lonStr.replace(",","."));
+  if(!isFinite(lat)||!isFinite(lon)) return "";
+  if(lat<35||lat>43||lon<22||lon>33) return "";
+  if(lat===0&&lon===0) return "";
   return `${lat.toFixed(7)},${lon.toFixed(7)}`;
 }
-function parseCoord(v){ return cleanCoord(v); }
 function fixedMapsUrl(coord, addr, group, il){
   const c = cleanCoord(coord);
   if(c) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c)}`;
   const q = `${addr||""} ${group||""} ${il||"Edirne"}`.trim() || "Edirne";
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 }
-function mapsUrl(coord,addr,group,il){ return fixedMapsUrl(coord,addr,group,il); }
 function navUrl(coord, addr){
   const c = cleanCoord(coord);
   if(c) return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(c)}`;
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addr||"Edirne")}`;
 }
 
-let dynamicCoords = {};
-function getCoord(tes, fb){ const t=String(tes||"").replace(/\D/g,""); if(t&&dynamicCoords[t]) return dynamicCoords[t]; return cleanCoord(fb); }
-
-// Sütun bulma - Başlık ne yazarsa yazsın bulur
 function pick(row, keys){
   if(!row) return "";
   for(const k of Object.keys(row)){
@@ -272,9 +255,9 @@ function pick(row, keys){
     if(!ak || ak.startsWith("unnamed")) continue;
     for(const want of keys){
       const wk = asciiKey(want);
-      if(ak === wk || ak.includes(wk) || wk.includes(ak)){
+      if(ak===wk || ak.includes(wk)){
         const v = String(row[k] ?? "").trim();
-        if(v && v.toLowerCase() !== "nan" && v !== "") return v;
+        if(v && v.toLowerCase()!=="nan" && v!=="") return v;
       }
     }
   }
@@ -286,30 +269,39 @@ function detectDistrict(text){
   let base = isK ? "Kırklareli Merkez" : "Edirne Merkez";
   for(const [key, meta] of Object.entries(DISTRICTS)){
     const ik = asciiKey(meta.ilce);
-    if(ik !== "merkez" && new RegExp(`(^|[^a-z0-9])${ik}([^a-z0-9]|$)`).test(n)) return key;
+    if(ik!=="merkez" && new RegExp(`(^|[^a-z0-9])${ik}([^a-z0-9]|$)`).test(n)) return key;
   }
   return base;
 }
 
 function normalizeJob(raw, key){
   const rawText = [raw.rawAddress, raw.adres, raw.ADRES, raw.address, raw.settlement, raw.district, raw.aboneAdi].filter(Boolean).join(" | ");
-  let tes = String(raw.tesisatNo || raw["Tesisat No"] || "").replace(/\D/g,"").trim();
-  let seri = String(raw.seriNo || raw["Seri No"] || "").trim();
-  if(!tes){
-    const m = rawText.match(/\b(\d{7,12})\b/);
-    if(m) tes = m[1];
+  let tes = String(raw.tesisatNo || "").replace(/\D/g,"").trim();
+  let seri = String(raw.seriNo || "").trim();
+  if(!tes){ const m=rawText.match(/\b(\d{7,12})\b/); if(m) tes=m[1]; }
+  const coord = cleanCoord(raw.koordinat || "");
+  // İlçe düzeltme: EDİRNE yazıyorsa Merkez, KEŞAN vs ise o ilçe
+  let districtRaw = String(raw.district||"").trim();
+  let district = districtRaw;
+  // Senin dosyada ilçe sütunu: EDİRNE, KEŞAN, UZUNKÖPRÜ... EDİRNE = Merkez demek
+  if(!districtRaw || asciiKey(districtRaw)==="edirne") district = "Edirne Merkez";
+  else {
+    // KEŞAN -> Keşan, UZUNKÖPRÜ -> Uzunköprü gibi eşleştir
+    const found = Object.keys(DISTRICTS).find(k => asciiKey(k)===asciiKey(districtRaw) || asciiKey(DISTRICTS[k].ilce)===asciiKey(districtRaw));
+    if(found) district = found;
+    else district = detectDistrict(rawText + " " + districtRaw);
   }
-  const coord = getCoord(tes, raw.koordinat || raw["KOORDİNAT"] || "");
-  const district = DISTRICTS[raw.district] ? raw.district : detectDistrict(rawText + " " + (raw.district||""));
   const meta = DISTRICTS[district] || {il:"Edirne", ilce:district};
-  const isKoy = /\bkoy\b|\bköy/i.test(rawText);
-  const settRaw = raw.settlement || raw["Mahalle"] || raw["Köy"] || "";
+  // Köy mü Mahalle mi: Yerleşim yeri + Mahalleye bak
+  // Senin dosyada Mahalle = KÖYÜN KENDİSİ ise köy, yoksa mahalle
+  const isKoy = /köy/i.test(rawText) || /koy/i.test(rawText);
+  const settRaw = raw.settlement || "";
   const settlement = settRaw ? properTr(settRaw) : `${meta.ilce} Merkez`;
   const cat = isKoy ? "KOY" : "MAHALLE";
   const mNorm = asciiKey(`${raw.meterType||""} ${rawText}`);
   const meter = (mNorm.includes("tri") || mNorm.includes("trifaze")) ? "TRI" : "MONO";
   const title = tes ? `Tesisat: ${tes}` : (seri ? `Sayaç: ${seri}` : properTr(raw.aboneAdi || settlement));
-  return {id:String(raw.id||key), tesisatNo:tes, seriNo:seri, koordinat:coord, displayTitle:title, district, il:meta.il, category:cat, settlement:isKoy?`${settlement} Köyü`:`${settlement} Mah.`, openAddress:raw.rawAddress||raw.adres||`${settlement}, ${meta.ilce} / ${meta.il}`, meterType:meter, completed:!!raw.completed, completedAt:raw.completedAt||null, aboneAdi: raw.aboneAdi || ""};
+  return {id:String(raw.id||key), tesisatNo:tes, seriNo:seri, koordinat:coord, displayTitle:title, district, il:meta.il, category:cat, settlement: isKoy ? `${settlement} Köyü` : `${settlement} Mah.`, openAddress: raw.rawAddress||raw.adres||`${settlement}, ${meta.ilce} / ${meta.il}`, meterType:meter, completed:!!raw.completed, completedAt:raw.completedAt||null, aboneAdi: raw.aboneAdi||""};
 }
 function classifyFault(row){
   const tes = pick(row, ["tesisat","abone","sozlesme","numara"]).replace(/\D/g,"").trim();
@@ -322,57 +314,45 @@ function classifyFault(row){
   const sayacSeri = pick(row, ["sayac seri","sayaç seri","seri"]) || "";
   const sayacMarka = pick(row, ["sayac marka","sayaç marka","marka"]) || "";
   const durum = pick(row, ["endeks olmama nedeni","durum","ariza","aciklama","not","sebep","hata"]) || "Sebep Belirtilmemiş";
-  const coord = getCoord(tes, pick(row, ["koordinat","enlem","boylam"]));
-  const flags = [];
+  const coord = cleanCoord(pick(row, ["koordinat","enlem","boylam"]));
+  const flags=[];
   if(!/\b(?:MAH|KÖY|KOY)\b/i.test(rawAddress)) flags.push("MISSING_SETTLEMENT");
   if(/^(?:KEŞAN|LÜLEBURGAZ)$/i.test(ilRaw)) flags.push("IL_AS_DISTRICT");
-  if(/-\s*-/.test(rawAddress) || rawAddress.length < 18) flags.push("DASH_OR_TRUNCATED");
-  if(durum !== "Sebep Belirtilmemiş") flags.push("METER_ERR");
+  if(/-\s*-/.test(rawAddress)||rawAddress.length<18) flags.push("DASH_OR_TRUNCATED");
+  if(durum!=="Sebep Belirtilmemiş") flags.push("METER_ERR");
   return {id:String(row.id||`fault_${Date.now()}_${Math.random().toString(36).slice(2,7)}`).replace(/[#.$\/\[\]]/g,"_"), tesisatNo:tes, personel:properTr(personel), ilRaw, planGrubu:plan, rawAddress, modemSeri, modemMarka, sayacSeri, sayacMarka, durumNotu:durum, koordinat:coord, flags};
 }
 function mergeByTes(existing, incoming){
-  const map = new Map(), order = [];
-  let merged = 0, added = 0;
-  const keyOf = (it, i) => {
-    const t = String(it.tesisatNo||"").replace(/\D/g,"");
+  const map=new Map(), order=[];
+  let merged=0, added=0;
+  const keyOf=(it,i)=>{
+    const t=String(it.tesisatNo||"").replace(/\D/g,"");
     if(t) return `tes_${t}`;
-    const s = String(it.seriNo||it.sayacSeri||"").trim();
+    const s=String(it.seriNo||it.sayacSeri||"").trim();
     if(s) return `ser_${s}`;
-    return `row_${i}_${Math.random().toString(36).slice(2,6)}`;
+    return `row_${i}`;
   };
   (existing||[]).forEach((it,i)=>{ const k=keyOf(it,i); if(!map.has(k)) order.push(k); map.set(k,{...it}); });
   (incoming||[]).forEach((it,i)=>{
-    const k = keyOf(it, order.length+i);
+    const k=keyOf(it,order.length+i);
     if(map.has(k)){
-      const p = map.get(k);
-      map.set(k, {...p, ...it, tesisatNo: it.tesisatNo || p.tesisatNo, koordinat: it.koordinat || p.koordinat, completed: p.completed || it.completed, aboneAdi: it.aboneAdi || p.aboneAdi});
+      const p=map.get(k);
+      map.set(k,{...p,...it, tesisatNo:it.tesisatNo||p.tesisatNo, koordinat:it.koordinat||p.koordinat, completed:p.completed||it.completed, aboneAdi:it.aboneAdi||p.aboneAdi});
       merged++;
-    } else { map.set(k, {...it}); order.push(k); added++; }
+    } else { map.set(k,{...it}); order.push(k); added++; }
   });
-  return {items: order.map(k=>map.get(k)), mergedCount:merged, addedCount:added};
+  return {items:order.map(k=>map.get(k)), mergedCount:merged, addedCount:added};
 }
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 let allJobs=[], filteredJobs=[], visibleLimit=PAGE_SIZE, selCat="ALL", selDist="ALL", selSett="ALL", selMeter="ALL", sortMode="DEFAULT", searchQ="", showDone=false, isAdmin=false;
 let allFaults=[], doneFaults=[], filteredFaults=[], faultLimit=PAGE_SIZE, selFPerson="ALL", selFGroup="ALL", selFReason="ALL", selFType="ALL", faultQ="", doneFaultQ="", pendingId=null, selReason="";
-
 const $ = id => document.getElementById(id);
 const els = { sync:$("syncStatus"), counter:$("doneCounter"), jobs:$("jobsContainer"), faultBox:$("faultContainer"), doneFaultBox:$("doneFaultContainer") };
 
-function switchModule(m){
-  $("tabSahaBtn").classList.toggle("active", m==="SAHA");
-  $("tabFaultBtn").classList.toggle("active", m==="FAULT");
-  $("sahaModule").classList.toggle("hidden", m!=="SAHA");
-  $("faultModule").classList.toggle("hidden", m!=="FAULT");
-}
-function switchFaultSub(s){
-  $("faultActiveBtn").classList.toggle("active", s==="ACTIVE");
-  $("faultDoneBtn").classList.toggle("active", s==="DONE");
-  $("faultActiveSection").classList.toggle("hidden", s!=="ACTIVE");
-  $("faultDoneSection").classList.toggle("hidden", s!=="DONE");
-  if(s==="DONE") renderDoneFaults();
-}
+function switchModule(m){ $("tabSahaBtn").classList.toggle("active", m==="SAHA"); $("tabFaultBtn").classList.toggle("active", m==="FAULT"); $("sahaModule").classList.toggle("hidden", m!=="SAHA"); $("faultModule").classList.toggle("hidden", m!=="FAULT"); }
+function switchFaultSub(s){ $("faultActiveBtn").classList.toggle("active", s==="ACTIVE"); $("faultDoneBtn").classList.toggle("active", s==="DONE"); $("faultActiveSection").classList.toggle("hidden", s!=="ACTIVE"); $("faultDoneSection").classList.toggle("hidden", s!=="DONE"); if(s==="DONE") renderDoneFaults(); }
 $("tabSahaBtn").onclick=()=>switchModule("SAHA");
 $("tabFaultBtn").onclick=()=>switchModule("FAULT");
 $("faultActiveBtn").onclick=()=>switchFaultSub("ACTIVE");
@@ -385,38 +365,27 @@ $("showDoneBtn").onclick=()=>{ showDone=!showDone; $("showDoneBtn").textContent=
 $("clearBtn").onclick=()=>{ if(!confirm("Tüm kayıtlar silinsin mi? Emin misin abim?")) return; allJobs=[]; allFaults=[]; doneFaults=[]; saveAll(true); $("adminStatus").textContent="🗑️ Temizlendi, şimdi 1. dosyayı yükle."; };
 $("repairBtn").onclick=()=>{ const r1=mergeByTes([], allJobs); allJobs=r1.items; const r2=mergeByTes([], allFaults); allFaults=r2.items; saveAll(true); $("adminStatus").textContent=`✅ Birleştirildi: ${r1.mergedCount+r2.mergedCount} tekrar giderildi.`; };
 
-// ================= FIREBASE - PARÇA PARÇA, EKSİKSİZ GÖNDERME =================
 async function pushToFirebase(){
   $("adminStatus").textContent = `⏳ Sunucuya gönderiliyor... ${allJobs.length} saha + ${allFaults.length} hatalı, kapatma abim!`;
   try{
-    const CHUNK = 800;
-    // Eski parçaları temizle - önce ana jobs'u yaz
-    if(allJobs.length === 0){
-      await set(ref(db, `${DB_PATH}/jobs`), null);
-    } else {
+    const CHUNK=800;
+    if(allJobs.length===0){ await set(ref(db, `${DB_PATH}/jobs`), null); }
+    else {
       for(let start=0; start<allJobs.length; start+=CHUNK){
-        const o={};
-        allJobs.slice(start, start+CHUNK).forEach((j,i)=>{ o[j.id||`j${start+i}`]=j; });
-        if(start===0){
-          await set(ref(db, `${DB_PATH}/jobs`), o);
-        } else {
-          await set(ref(db, `${DB_PATH}/jobs_part_${Math.floor(start/CHUNK)}`), o);
-        }
+        const o={}; allJobs.slice(start, start+CHUNK).forEach((j,i)=>{ o[j.id||`j${start+i}`]=j; });
+        if(start===0) await set(ref(db, `${DB_PATH}/jobs`), o);
+        else await set(ref(db, `${DB_PATH}/jobs_part_${Math.floor(start/CHUNK)}`), o);
         $("adminStatus").textContent = `⏳ Gönderiliyor... ${Math.min(start+CHUNK, allJobs.length)} / ${allJobs.length} - Kapatma!`;
         await new Promise(r=>setTimeout(r,120));
       }
     }
     const o2={}; allFaults.slice(0,8000).forEach((f,i)=>o2[f.id||`f${i}`]=f); await set(ref(db, `${DB_PATH}/fault_addresses`), o2);
     const o3={}; doneFaults.slice(0,500).forEach((f,i)=>o3[f.id||`d${i}`]=f); await set(ref(db, `${DB_PATH}/completed_faults`), o3);
-    $("adminStatus").textContent = `✅ Tamam abim! ${allJobs.length} saha + ${allFaults.length} hatalı sunucuya gitti. Ekibin telefonunda görünecek.`;
-  }catch(e){ $("adminStatus").textContent = "⚠️ Gönderme hatası: "+e.message+" - Telefonunda kayıtlı, tekrar dene."; }
+    $("adminStatus").textContent = `✅ Tamam abim! ${allJobs.length} saha + ${allFaults.length} hatalı sunucuya gitti.`;
+  }catch(e){ $("adminStatus").textContent = "⚠️ Gönderme hatası: "+e.message; }
 }
 function saveAll(push=false){
-  try{
-    localStorage.setItem("tredas_saha", JSON.stringify(allJobs));
-    localStorage.setItem("tredas_fault", JSON.stringify(allFaults));
-    localStorage.setItem("tredas_donefault", JSON.stringify(doneFaults));
-  }catch(e){ $("adminStatus").textContent="⚠️ Telefon hafızası dolu!"; }
+  try{ localStorage.setItem("tredas_saha", JSON.stringify(allJobs)); localStorage.setItem("tredas_fault", JSON.stringify(allFaults)); localStorage.setItem("tredas_donefault", JSON.stringify(doneFaults)); }catch(e){}
   updateBadges(); populateFilters(); applyFilters(); applyFaultFilters();
   if(push){ pushToFirebase(); }
 }
@@ -427,31 +396,20 @@ function updateBadges(){
 }
 function populateFilters(){
   const dists=[...new Set(allJobs.map(j=>j.district).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
-  $("districtSelect").innerHTML=`<option value="ALL">Tüm İlçeler</option>`+dists.map(d=>`<option value="${d}">${d}</option>`).join("");
-  $("districtSelect").value=selDist;
+  $("districtSelect").innerHTML=`<option value="ALL">Tüm İlçeler</option>`+dists.map(d=>`<option value="${d}">${d}</option>`).join(""); $("districtSelect").value=selDist;
   const setts=[...new Set(allJobs.filter(j=>selDist==="ALL"||j.district===selDist).map(j=>j.settlement).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
-  $("settlementSelect").innerHTML=`<option value="ALL">Tüm Mahalle / Köyler</option>`+setts.map(s=>`<option value="${s}">${s}</option>`).join("");
-  $("settlementSelect").value=selSett;
+  $("settlementSelect").innerHTML=`<option value="ALL">Tüm Mahalle / Köyler</option>`+setts.map(s=>`<option value="${s}">${s}</option>`).join(""); $("settlementSelect").value=selSett;
   const persons=[...new Set(allFaults.map(f=>f.personel).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
-  $("faultPersonSelect").innerHTML=`<option value="ALL">Tüm Personeller</option>`+persons.map(p=>`<option value="${p}">${p} (${allFaults.filter(f=>f.personel===p).length})</option>`).join("");
-  $("faultPersonSelect").value=selFPerson;
+  $("faultPersonSelect").innerHTML=`<option value="ALL">Tüm Personeller</option>`+persons.map(p=>`<option value="${p}">${p} (${allFaults.filter(f=>f.personel===p).length})</option>`).join(""); $("faultPersonSelect").value=selFPerson;
   const groups=[...new Set(allFaults.map(f=>f.planGrubu).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
-  $("faultGroupSelect").innerHTML=`<option value="ALL">Tüm Gruplar / İlçeler</option>`+groups.map(g=>`<option value="${g}">${g}</option>`).join("");
-  $("faultGroupSelect").value=selFGroup;
+  $("faultGroupSelect").innerHTML=`<option value="ALL">Tüm Gruplar / İlçeler</option>`+groups.map(g=>`<option value="${g}">${g}</option>`).join(""); $("faultGroupSelect").value=selFGroup;
   const reasons=[...new Set(allFaults.map(f=>f.durumNotu).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
-  $("faultReasonSelect").innerHTML=`<option value="ALL">Tüm İş / Arıza Nedenleri</option>`+reasons.map(r=>`<option value="${r}">${r}</option>`).join("");
-  $("faultReasonSelect").value=selFReason;
+  $("faultReasonSelect").innerHTML=`<option value="ALL">Tüm İş / Arıza Nedenleri</option>`+reasons.map(r=>`<option value="${r}">${r}</option>`).join(""); $("faultReasonSelect").value=selFReason;
   $("faultPersonPills").innerHTML=persons.map(p=>`<button class="d-pill ${selFPerson===p?"active":""}" data-p="${p}">${p} (${allFaults.filter(f=>f.personel===p).length})</button>`).join("")||`<span style="color:var(--muted)">Henüz personel yok</span>`;
   document.querySelectorAll("#faultPersonPills .d-pill").forEach(b=>b.onclick=()=>{ selFPerson=b.dataset.p; saveAll(false); });
   const dl=$("personDatalist"); dl.innerHTML=persons.map(p=>`<option value="${p}"></option>`).join("");
 }
-function sortByRota(list){
-  return [...list].sort((a,b)=>{
-    const d=(a.district||"").localeCompare(b.district||"","tr"); if(d!==0) return d;
-    const s=(a.settlement||"").localeCompare(b.settlement||"","tr"); if(s!==0) return s;
-    return (a.tesisatNo||"").localeCompare(b.tesisatNo||"");
-  });
-}
+function sortByRota(list){ return [...list].sort((a,b)=>{ const d=(a.district||"").localeCompare(b.district||"","tr"); if(d!==0) return d; const s=(a.settlement||"").localeCompare(b.settlement||"","tr"); if(s!==0) return s; return (a.tesisatNo||"").localeCompare(b.tesisatNo||""); }); }
 function applyFilters(){
   let list=[...allJobs];
   if(selCat!=="ALL") list=list.filter(j=>j.category===selCat);
@@ -480,7 +438,7 @@ function renderJob(j){
   const coordText = j.koordinat ? `📍 ${j.koordinat}` : `📍 Koordinat yok - 2. dosyayı yükle`;
   return `<div class="job ${j.completed?"done":""}">
   <div class="job-top"><span class="job-title">${j.displayTitle}</span><span style="display:flex;gap:4px">${tag}${status}</span></div>
-  <div class="job-meta">${j.aboneAdi?`${j.aboneAdi} • `:""}${j.settlement} • ${j.district} / ${j.il} • ${j.meterType==="TRI"?"Trifaze":"Monofaze"} ${j.seriNo?`• Sayaç: ${j.seriNo}`:""} • ${coordText}</div>
+  <div class="job-meta">${j.settlement} • ${j.district} / ${j.il} • ${j.meterType==="TRI"?"Trifaze":"Monofaze"} ${j.seriNo?`• Sayaç: ${j.seriNo}`:""} • ${coordText}</div>
   <div class="info">${j.openAddress}</div>
   <div class="actions">
   <a class="btn btn-i" href="${maps}" target="_blank">📍 Haritada Aç</a>
@@ -554,104 +512,162 @@ $("faultSearchInput").oninput=e=>{ faultQ=e.target.value; applyFaultFilters(true
 $("faultLoadMoreBtn").onclick=()=>{ faultLimit+=PAGE_SIZE; applyFaultFilters(); };
 $("doneFaultSearch").oninput=e=>{ doneFaultQ=e.target.value; renderDoneFaults(); };
 
-// ================= EXCEL OKUMA - TAM, EKSİKSİZ =================
-async function readExcelFull(file){
-  const data = await file.arrayBuffer();
-  const wb = XLSX.read(data, {type:"array", cellDates:false});
-  let bestRows = [];
-  // En çok satırı olan sayfayı al
-  for(const name of wb.SheetNames){
-    const ws = wb.Sheets[name];
-    const rows = XLSX.utils.sheet_to_json(ws, {defval:"", raw:false});
-    if(rows.length > bestRows.length) bestRows = rows;
+// ============ SENİN DOSYALARINA ÖZEL AKILLI OKUMA ============
+// Hata buradaydı: En çok satırlı sayfayı almak İlçe Grupları sayfasını alıyordu.
+// Şimdi: LİSTE sayfasını tercih ediyor, grup satırlarını atlıyor.
+function scoreSheet(name, rows){
+  const lname = asciiKey(name);
+  let score = 0;
+  if(lname==="liste") score += 100;
+  if(lname.includes("kalan") && lname.includes("tesisat")) score += 50;
+  if(lname.includes("koordinat")) score += 40;
+  if(lname.includes("grup")) score -= 100;
+  if(lname==="pivot") score -= 100;
+  if(lname==="sayfa1") score -= 100;
+  // İlk satırda Tesisat + Seri veya Tesisat + Koordinat var mı?
+  if(rows.length>0){
+    const h = rows[0].join(" ").toLowerCase();
+    if(h.includes("tesisat") && h.includes("seri")) score += 80;
+    if(h.includes("tesisat") && h.includes("koordinat")) score += 80;
+    if(h.includes("tesisat") && h.includes("adres")) score += 60;
   }
-  return bestRows;
+  score += Math.min(rows.length, 2000) / 100;
+  return score;
 }
 
-// ============ 1. DOSYA: İSİM + TESİSAT + SAYAÇ ============
+async function readExcelSmart(file, wantType){
+  // wantType: "LIST" veya "COORD" veya "ANY"
+  const data = await file.arrayBuffer();
+  const wb = XLSX.read(data, {type:"array"});
+  let best = null, bestScore = -9999, bestName = "";
+  for(const name of wb.SheetNames){
+    const ws = wb.Sheets[name];
+    const aoa = XLSX.utils.sheet_to_json(ws, {header:1, defval:"", raw:false});
+    // Boş satırları temizle ama başlığı koru
+    const filtered = aoa.filter(r => r.some(c => String(c||"").trim()!==""));
+    if(filtered.length < 2) continue;
+    let s = scoreSheet(name, filtered);
+    // İstenen tipe göre bonus
+    if(wantType==="LIST"){
+      const h = filtered[0].join(" ").toLowerCase();
+      if(h.includes("seri") || h.includes("adres")) s += 50;
+      if(h.includes("koordinat") && !h.includes("seri")) s -= 80;
+    }
+    if(wantType==="COORD"){
+      const h = filtered[0].join(" ").toLowerCase();
+      if(h.includes("koordinat")) s += 60;
+      if(h.includes("seri") && h.includes("adres")) s -= 60;
+    }
+    if(s > bestScore){ bestScore=s; best=filtered; bestName=name; }
+  }
+  if(!best) return {headers:[], rows:[]};
+  // Başlık satırını bul: Tesisat yazan ilk satır
+  let headerIdx = 0;
+  for(let i=0;i<Math.min(best.length, 6);i++){
+    const joined = best[i].join(" ").toLowerCase();
+    if(joined.includes("tesisat")){ headerIdx=i; break; }
+  }
+  const headers = best[headerIdx].map(h=>String(h||"").trim());
+  const rows = [];
+  for(let i=headerIdx+1;i<best.length;i++){
+    const arr = best[i];
+    const obj = {};
+    headers.forEach((h, idx)=>{ obj[h||`COL${idx}`] = arr[idx] ?? ""; });
+    // Tamamen boşsa atla
+    if(Object.values(obj).every(v=>String(v||"").trim()==="")) continue;
+    rows.push(obj);
+  }
+  return {headers, rows, sheetName:bestName};
+}
+
+function isGroupRow(obj){
+  // İlçe Grupları sayfasındaki: EDİRNE - 559 kayıt gibi satırlar
+  const vals = Object.values(obj).map(v=>String(v||"").trim());
+  const joined = vals.join(" ").toLowerCase();
+  if(/^\d+\s*kayıt$/i.test(vals[1]||"") || joined.includes("kayıt")) return true;
+  if(vals[0] && !/\d{7,}/.test(vals[0]) && (vals[1]||"").toLowerCase().includes("kayıt")) return true;
+  // Tesisat yoksa ve 2. sütun boşsa grup satırıdır
+  const tes = String(obj["Tesisat"]||obj["TESİSAT"]||"").replace(/\D/g,"");
+  if(!tes && vals.filter(v=>v!=="").length <= 2) return true;
+  return false;
+}
+
+// 1. DOSYA: LİSTE
 $("excelMainInput").onchange = async e => {
   const f = e.target.files[0]; if(!f) return;
-  $("adminStatus").textContent = "⏳ 1. Dosya okunuyor... Kapatma abim!";
+  $("adminStatus").textContent = "⏳ 1. Dosya okunuyor, doğru sayfa aranıyor... Kapatma!";
   $("adminDetail").textContent = "";
   try{
-    const rows = await readExcelFull(f);
-    $("adminStatus").textContent = `⏳ Excel'de ${rows.length} satır var, işleniyor...`;
+    const {rows, sheetName} = await readExcelSmart(f, "LIST");
+    $("adminStatus").textContent = `⏳ ${sheetName} sayfası bulundu: ${rows.length} satır, işleniyor...`;
     const jobs = [];
     let atlanan = 0;
     for(let i=0;i<rows.length;i++){
       const r = rows[i];
-      const allText = Object.values(r).join(" ");
-      const low = allText.toLowerCase();
-      // ÜST BAŞLIKLARI ATLA: Edirne / Trakya / TREDAŞ / Bölge Müdürlüğü
-      if((low.includes("trakya") || low.includes("tredaş") || low.includes("bölge müdürlüğü") || low.includes("dağıtım")) && !/\d{7,}/.test(allText)){ atlanan++; continue; }
-      if(low.includes("tesisat") && low.includes("sayaç") && low.includes("isim")) continue;
-      if(low.includes("sıra") && low.includes("tesisat") && !/\d{7,}/.test(allText)) continue;
-      if(!allText.trim()){ atlanan++; continue; }
-
-      let tes = pick(r, ["tesisat","abone","sözleşme","sozlesme"]).replace(/\D/g,"").trim();
-      // Tesisat 10-12 hane değilse, satırdaki uzun sayıyı dene
+      if(isGroupRow(r)){ atlanan++; continue; }
+      // Senin LİSTE sütunların tam adı:
+      // Tesisat | Malzeme | Yapı şekli metni | Seri numarası | ilçe | Yerleşim yeri | Mahalle | AÇIK ADRES | AÇIKLAMA
+      let tes = String(r["Tesisat"]||r["TESİSAT"]||"").replace(/\D/g,"").trim();
       if(!tes || tes.length < 7){
-        const m2 = allText.match(/\b(\d{10,12})\b/);
+        // Sayı olarak gelmişse veya başka sütundaysa ara
+        const all = Object.values(r).join(" ");
+        const m2 = all.match(/\b(\d{10})\b/);
         if(m2) tes = m2[1];
       }
-      let seri = pick(r, ["sayaç","sayac","seri","modem"]);
-      let isim = pick(r, ["isim","ad soyad","abone adı","müşteri","musteri","ad"]);
-      let adres = pick(r, ["adres","mahalle","köy","koy","sokak","cadde"]);
-      let ilce = pick(r, ["ilçe","ilce","planlama","bölge","bolge"]);
+      let seri = String(r["Seri numarası"]||r["Seri Numarası"]||r["Seri"]||"").trim();
+      let yapi = String(r["Yapı şekli metni"]||r["Yapı Şekli"]||"").trim(); // Trifaze Sayaç / Monofaze Sayaç
+      let ilce = String(r["ilçe"]||r["İlçe"]||r["ILCE"]||"").trim();
+      let yerlesim = String(r["Yerleşim yeri"]||r["Yerlesim"]||"").trim();
+      let mahalle = String(r["Mahalle"]||r["MAHALLE"]||"").trim();
+      let adres = String(r["AÇIK ADRES"]||r["Açık Adres"]||r["ADRES"]||"").trim();
 
       if(!tes && !seri){ atlanan++; continue; }
 
       const job = normalizeJob({
         id: `j_${tes||seri}_${i}`,
         tesisatNo: tes, seriNo: seri,
-        settlement: pick(r, ["mahalle","koy","yerleşim"]) || adres,
+        settlement: yerlesim || mahalle || adres,
         district: ilce,
-        rawAddress: adres || `${isim||""} - ${ilce||""}`.trim() || `Tesisat ${tes}`,
+        rawAddress: adres || `${yerlesim} ${mahalle}`.trim() || `Tesisat ${tes}`,
         koordinat: "",
-        meterType: pick(r, ["faz","tip"]),
-        aboneAdi: isim
+        meterType: yapi,
+        aboneAdi: ""
       }, `j_${i}`);
+      // Yerleşim + Mahalleyi açık adrese ekle, köy mü mahalle mi belli olsun
+      job.settlement = yerlesim ? properTr(yerlesim) + (mahalle && mahalle.toUpperCase()!=="KÖYÜN KENDİSİ" ? ` - ${properTr(mahalle)}` : " Köyü") : job.settlement;
       jobs.push(job);
-
-      if(i % 400 === 0){
-        $("adminStatus").textContent = `⏳ İşleniyor... ${i} / ${rows.length}`;
-        await new Promise(res=>setTimeout(res,5));
-      }
+      if(i % 400 === 0){ $("adminStatus").textContent = `⏳ İşleniyor... ${i} / ${rows.length}`; await new Promise(res=>setTimeout(res,5)); }
     }
     const res = mergeByTes(allJobs, jobs);
     allJobs = res.items;
     $("adminStatus").textContent = `✅ 1. Dosya Bitti!`;
-    $("adminDetail").textContent = `Excel: ${rows.length} satır | Atlanan başlık/boş: ${atlanan} | Alınan: ${jobs.length} iş | Toplam listede: ${allJobs.length} | Şimdi 2. dosyayı yükle, haritalar düzelir.`;
+    $("adminDetail").textContent = `Sayfa: ${sheetName} | Excel: ${rows.length} satır | Atlanan grup/boş: ${atlanan} | Alınan: ${jobs.length} iş | Toplam: ${allJobs.length} | Şimdi 2. dosyayı yükle.`;
     saveAll(true);
   }catch(err){ $("adminStatus").textContent = "⚠️ Hata: " + err.message; }
   e.target.value = "";
 };
 
-// ============ 2. DOSYA: SADECE KOORDİNAT DÜZELTME ============
+// 2. DOSYA: KOORDİNAT DÜZELTME - Edirne ve Kırklareli için aynı buton
 $("excelCoordInput").onchange = async e => {
   const f = e.target.files[0]; if(!f) return;
   $("adminStatus").textContent = "⏳ 2. Dosya okunuyor, koordinatlar düzeltiliyor... Kapatma!";
   $("adminDetail").textContent = "";
   try{
-    const rows = await readExcelFull(f);
+    const {rows, sheetName} = await readExcelSmart(f, "COORD");
     let coordMap = {};
     let bozuk = 0, baslik = 0;
-
     rows.forEach(r => {
-      const allText = Object.values(r).join(" ");
-      const low = allText.toLowerCase();
-      if(low.includes("tesisat") && low.includes("koordinat")){ baslik++; return; }
-      if((low.includes("trakya") || low.includes("tredaş")) && !/\d{7,}/.test(allText)){ baslik++; return; }
-
-      let tes = pick(r, ["tesisat","abone","sözleşme","sozlesme"]).replace(/\D/g,"").trim();
+      if(isGroupRow(r)){ baslik++; return; }
+      let tes = String(r["Tesisat"]||r["TESİSAT"]||"").replace(/\D/g,"").trim();
       if(!tes){
-        const m2 = allText.match(/\b(\d{10,12})\b/);
+        const all = Object.values(r).join(" ");
+        const m2 = all.match(/\b(\d{10})\b/);
         if(m2) tes = m2[1];
       }
-      let cRaw = pick(r, ["koordinat","kordinat","konum","enlem","boylam","lat","lon"]);
+      let cRaw = String(r["KOORDİNAT"]||r["Koordinat"]||r["KOORDINAT"]||"").trim();
       if(!cRaw){
-        // Sütun adı bulunamadıysa, satırdaki koordinat desenini bul: 40,xxx-26,xxx
-        const cm = allText.match(/\d{1,2}[.,]\d{4,}\s*-\s*\d{1,2}[.,]\d{4,}/);
+        const all = Object.values(r).join(" ");
+        const cm = all.match(/\d{1,2}[.,]\d{4,}\s*-\s*\d{1,2}[.,]\d{4,}/);
         if(cm) cRaw = cm[0];
       }
       if(!tes) return;
@@ -660,22 +676,20 @@ $("excelCoordInput").onchange = async e => {
       else bozuk++;
     });
 
-    let duzelen = 0, bulunamayan = 0, zatenVar = 0;
+    let duzelen=0, bulunamayan=0, zatenVar=0;
     allJobs.forEach(j => {
       const t = String(j.tesisatNo||"").replace(/\D/g,"");
       if(!t) return;
       if(coordMap[t]){
         if(j.koordinat === coordMap[t]) zatenVar++;
         else { j.koordinat = coordMap[t]; duzelen++; }
-      } else {
-        bulunamayan++;
-      }
+      } else bulunamayan++;
     });
 
     $("adminStatus").textContent = `✅ 2. Dosya Bitti!`;
-    $("adminDetail").textContent = `Koordinat dosyası: ${rows.length} satır | Bulunan koordinat: ${Object.keys(coordMap).length} | Düzelen: ${duzelen} iş | Zaten doğru olan: ${zatenVar} | Eşleşmeyen: ${bulunamayan} | Bozuk koordinat: ${bozuk}. Şimdi bir kayıtta Haritada Aç de, pin tam düşecek.`;
-    if(duzelen === 0 && zatenVar === 0){
-      $("adminDetail").textContent += " ⚠️ Hiç eşleşmedi! 2 dosyadaki Tesisat No'lar aynı mı? Birinde başında 0 olabilir, kontrol et abim.";
+    $("adminDetail").textContent = `Sayfa: ${sheetName} | Koordinat dosyası: ${rows.length} satır | Bulunan: ${Object.keys(coordMap).length} | Düzelen: ${duzelen} | Zaten doğru: ${zatenVar} | Eşleşmeyen: ${bulunamayan} | Bozuk: ${bozuk}.`;
+    if(duzelen===0 && zatenVar===0){
+      $("adminDetail").textContent += " ⚠️ Hiç eşleşmedi! Önce 1. dosyayı yükledin mi abim?";
     }
     saveAll(true);
   }catch(err){ $("adminStatus").textContent = "⚠️ Hata: " + err.message; }
@@ -685,7 +699,7 @@ $("excelCoordInput").onchange = async e => {
 $("faultExcelInput").onchange=async e=>{
   const f=e.target.files[0]; if(!f) return; $("adminStatus").textContent="⏳ Hatalı Excel okunuyor...";
   try{
-    const rows=await readExcelFull(f);
+    const {rows} = await readExcelSmart(f, "ANY");
     const faults=rows.map(r=>classifyFault(r)).filter(x=>x.rawAddress||x.tesisatNo||x.koordinat);
     const res=mergeByTes(allFaults,faults); allFaults=res.items;
     $("adminStatus").textContent=`✅ Hatalı: ${rows.length} satır okundu, ${res.addedCount} yeni. Toplam: ${allFaults.length}`;
@@ -698,7 +712,7 @@ $("pdfInput").onchange=async e=>{
   const f=e.target.files[0]; if(!f) return;
   $("adminStatus").textContent="⏳ PDF okunuyor, bekle abim...";
   try{
-    if(!window.pdfjsLib){ $("adminStatus").textContent="⚠️ PDF kütüphanesi yüklenemedi, interneti kontrol et."; return; }
+    if(!window.pdfjsLib){ $("adminStatus").textContent="⚠️ PDF kütüphanesi yüklenemedi."; return; }
     const buf=await f.arrayBuffer();
     const pdf=await pdfjsLib.getDocument({data:buf}).promise;
     let fullText="";
@@ -717,12 +731,12 @@ $("pdfInput").onchange=async e=>{
         const coordMatch=line.match(/(\d{2}[.,]\d{3,6})\D+(\d{2}[.,]\d{3,6})/);
         let coord="";
         if(coordMatch) coord=cleanCoord(coordMatch[1]+"-"+coordMatch[2]);
-        faults.push({id:`pdf_${Date.now()}_${idx}`,tesisatNo:tesMatch[1],personel:"PDF'ten Aktarıldı",planGrubu:"Genel",rawAddress:line.slice(0,250),durumNotu:"PDF Kaydı - Detay için PDF'e bak",koordinat:coord,flags:["DASH_OR_TRUNCATED"]});
+        faults.push({id:`pdf_${Date.now()}_${idx}`,tesisatNo:tesMatch[1],personel:"PDF'ten Aktarıldı",planGrubu:"Genel",rawAddress:line.slice(0,250),durumNotu:"PDF Kaydı",koordinat:coord,flags:["DASH_OR_TRUNCATED"]});
       }
     });
-    if(!faults.length){ $("adminStatus").textContent="⚠️ PDF'de tesisat no bulunamadı. PDF taranmış fotoğraf ise okunamaz, Excel'i dene."; return; }
+    if(!faults.length){ $("adminStatus").textContent="⚠️ PDF'de tesisat no bulunamadı."; return; }
     const res=mergeByTes(allFaults,faults); allFaults=res.items;
-    $("adminStatus").textContent=`✅ PDF: ${faults.length} kayıt bulundu, ${res.addedCount} yeni eklendi. Toplam: ${allFaults.length}`;
+    $("adminStatus").textContent=`✅ PDF: ${faults.length} kayıt bulundu, ${res.addedCount} yeni.`;
     saveAll(true); switchModule("FAULT");
   }catch(err){ $("adminStatus").textContent="⚠️ PDF Hatası: "+err.message; }
   e.target.value="";
